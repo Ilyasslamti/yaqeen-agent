@@ -9,7 +9,7 @@ from datetime import datetime
 # 1. إعدادات الصفحة
 # ==========================================
 st.set_page_config(
-    page_title="وكيل يقين - Llama 3 Edition",
+    page_title="وكيل يقين - Llama 3.3 Edition",
     page_icon="🦅",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -18,7 +18,7 @@ st.set_page_config(
 # CSS
 st.markdown("""
 <style>
-    .main-header {font-size: 2.2rem; color: #f55036; text-align: center; margin-bottom: 0.5rem;} /* لون Groq البرتقالي */
+    .main-header {font-size: 2.2rem; color: #f55036; text-align: center; margin-bottom: 0.5rem;}
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
@@ -74,7 +74,7 @@ def get_text(url):
     except: return None
 
 def rewrite(text, tone, instr):
-    # نستخدم Llama 3 70B لأنه الأقوى للعربية
+    # استخدام الموديل الجديد Llama 3.3 (الأحدث والأقوى)
     prompt = f"""
     أنت صحفي خبير في "هاشمي بريس".
     المهمة: أعد صياغة الخبر التالي بشكل احترافي جداً.
@@ -95,7 +95,8 @@ def rewrite(text, tone, instr):
                 {"role": "system", "content": "You are a professional Arabic journalist editor."},
                 {"role": "user", "content": prompt}
             ],
-            model="llama3-70b-8192", # النموذج الأقوى والمجاني حالياً
+            # هنا قمنا بالتحديث للموديل الجديد
+            model="llama-3.3-70b-versatile",
             temperature=0.7,
         )
         return chat_completion.choices[0].message.content
@@ -105,8 +106,8 @@ def rewrite(text, tone, instr):
 # 4. الواجهة
 # ==========================================
 with st.sidebar:
-    st.title("🦅 يقين (Groq)")
-    st.caption("يعمل بمحرك Llama 3 السريع")
+    st.title("🦅 يقين (Llama 3.3)")
+    st.caption("Powered by Groq")
     cat = st.selectbox("القسم:", list(RSS_SOURCES.keys()))
     tone = st.select_slider("الأسلوب:", ["رسمي", "تحليلي", "عاجل"])
     ins = st.text_input("تعليمات:")
@@ -125,7 +126,7 @@ if news:
             col1, col2 = st.columns(2)
             col1.info("الأصل"); col1.text_area("", txt, height=300)
             with col2:
-                with st.spinner("جاري الكتابة (بسرعة البرق)..."):
+                with st.spinner("جاري الكتابة..."):
                     res = rewrite(txt, tone, ins)
                     st.success("النتيجة"); st.markdown(res)
         else: st.error("تعذر جلب النص (الموقع محمي)")
