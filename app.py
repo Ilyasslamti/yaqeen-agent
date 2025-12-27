@@ -4,13 +4,13 @@ import trafilatura
 from groq import Groq
 import time
 from datetime import datetime
-import concurrent.futures
+import concurrent.futures # مكتبة التسريع القصوى
 
 # ==========================================
 # 1. إعدادات الصفحة
 # ==========================================
 st.set_page_config(
-    page_title="وكيل يقين - التفويض الكامل",
+    page_title="وكيل يقين - النسخة السريعة",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -34,7 +34,6 @@ st.markdown("""
     .source-tag {display: inline-block; background: #e0f2fe; color: #0369a1; padding: 2px 8px; margin: 2px; border-radius: 15px; font-size: 0.75rem;}
     .stButton>button {width: 100%; border-radius: 8px; font-weight: bold;}
     
-    /* إخفاء العناصر غير الضرورية */
     #MainMenu {visibility: hidden;} footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
@@ -91,11 +90,12 @@ except:
     st.error("⚠️ مفتاح GROQ_API_KEY مفقود!")
     st.stop()
 
+# هذه الدالة هي "المندوب الواحد"
 def fetch_single_feed(source_name, url, limit):
-    """وظيفة المندوب الواحد"""
     entries = []
     try:
-        # مهلة 5 ثواني فقط لكل مصدر حتى لا يعطل البقية
+        # تحديد مهلة قصيرة (Timeout) حتى لا يعطل مصدر واحد البقية
+        # feedparser لا يدعم timeout مباشر بسهولة، لكن التوازي يحل المشكلة
         d = feedparser.parse(url) 
         for e in d.entries[:limit]:
             entries.append({"title": e.title, "link": e.link, "source": source_name})
@@ -108,12 +108,13 @@ def fetch_news_parallel(category, limit_per_source):
     feeds = RSS_SOURCES.get(category, {})
     all_items = []
     
-    # حساب عدد المناديب المطلوب (مندوب لكل جريدة)
+    # نستخدم عدد عمال يساوي عدد الجرائد تماماً (أقصى سرعة)
     num_workers = len(feeds) if len(feeds) > 0 else 1
     
-    progress_bar = st.progress(0, text=f"🚀 إطلاق {num_workers} مندوباً لجلب الأخبار...")
+    # شريط تقدم سريع
+    progress_bar = st.progress(0, text="🚀 إطلاق صواريخ البحث...")
     
-    # Max Workers = عدد الجرائد (توازي كامل)
+    # هنا السحر: تشغيل الكل في وقت واحد
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
         future_to_source = {executor.submit(fetch_single_feed, src, url, limit_per_source): src for src, url in feeds.items()}
         
@@ -128,8 +129,8 @@ def fetch_news_parallel(category, limit_per_source):
                 pass
             
             completed_count += 1
-            # تحديث الشريط بسرعة
-            progress_bar.progress(int((completed_count / total) * 100), text=f"تم استلام تقارير {completed_count}/{total} جريدة")
+            # تحديث الشريط
+            progress_bar.progress(int((completed_count / total) * 100), text=f"تم جلب {completed_count}/{total} مصادر")
             
     progress_bar.empty()
     return all_items
@@ -182,6 +183,7 @@ with st.sidebar:
         st.markdown("".join([f"<span class='source-tag'>{s}</span>" for s in current]), unsafe_allow_html=True)
     
     st.markdown("---")
+    # قللنا العدد الافتراضي لـ 10 لضمان السرعة القصوى (ويمكنك زيادته)
     limit = st.slider("عمق البحث:", 5, 30, 10) 
     tone = st.select_slider("النبرة:", ["رسمي", "تحليلي", "تفاعلي"])
     ins = st.text_input("توجيهات:")
@@ -198,7 +200,7 @@ news = fetch_news_parallel(cat, limit)
 if news:
     c1, c2 = st.columns(2)
     c1.metric("إجمالي الأخبار الملتقطة", len(news))
-    c2.metric("سرعة الاستجابة", "قصوى ⚡")
+    c2.metric("سرعة الاستجابة", "Turbo ⚡")
     
     opts = [f"【{n['source']}】 {n['title']}" for n in news]
     idx = st.selectbox("اختر خبراً:", range(len(opts)), format_func=lambda x: opts[x])
