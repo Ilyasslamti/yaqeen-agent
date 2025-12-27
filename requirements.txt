@@ -1,0 +1,6 @@
+streamlit
+feedparser
+trafilatura
+google-generativeai
+beautifulsoup4
+lxml_html_clean
