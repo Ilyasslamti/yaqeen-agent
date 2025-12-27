@@ -1,6 +1,6 @@
 streamlit
 feedparser
 trafilatura
-google-generativeai>=0.8.3
+groq
 beautifulsoup4
 lxml_html_clean
