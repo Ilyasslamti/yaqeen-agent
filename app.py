@@ -7,8 +7,14 @@ import json
 import os
 import time
 import threading
+import socket
 from datetime import datetime
 import pytz
+
+# ==========================================
+# 0. ضبط المهلة (لحل مشكلة التوقف)
+# ==========================================
+socket.setdefaulttimeout(4)
 
 # ==========================================
 # 1. إعدادات الصفحة
@@ -17,62 +23,37 @@ st.set_page_config(
     page_title="وكيل يقين AI",
     page_icon="🦅",
     layout="wide",
-    initial_sidebar_state="expanded" # جعلناها مفتوحة لتراها بوضوح
+    initial_sidebar_state="collapsed"
 )
 
 DB_FILE = "news_db.json"
 
 # ==========================================
-# 2. CSS (التصميم المستقر للهاتف والحاسوب)
+# 2. CSS
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
-    
     * { font-family: 'Cairo', sans-serif !important; }
-
-    /* محاذاة آمنة */
     h1, h2, h3, h4, h5, h6, .stMarkdown, .stText, p { text-align: right !important; }
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { direction: rtl; text-align: right; }
-
-    /* البطاقات */
-    .news-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-right: 4px solid #3b82f6;
-        padding: 15px;
-        border-radius: 12px;
-        margin-bottom: 15px;
-        text-align: right;
-        direction: rtl;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
     
+    .news-card {
+        background: #ffffff; border: 1px solid #e2e8f0; border-right: 4px solid #3b82f6;
+        padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: right; direction: rtl;
+    }
     .seo-result {
-        background: #f0fdfa;
-        border: 1px solid #ccfbf1;
-        border-right: 4px solid #0d9488;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: right;
-        direction: rtl;
-        margin-top: 10px;
+        background: #f0fdfa; border: 1px solid #ccfbf1; border-right: 4px solid #0d9488;
+        padding: 20px; border-radius: 12px; text-align: right; direction: rtl; margin-top: 10px;
     }
-
-    /* الأزرار */
-    .stButton>button {
-        width: 100%;
-        border-radius: 10px;
-        font-weight: 700;
-        min-height: 50px;
-    }
-
+    .stButton>button { width: 100%; border-radius: 10px; font-weight: 700; min-height: 50px; }
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
+    @media (max-width: 640px) { h1 { font-size: 1.8rem !important; } }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. المصادر (تمت مراجعتها بدقة)
+# 3. المصادر (تأكد أن الأقسام الجديدة هنا)
 # ==========================================
 RSS_SOURCES = {
     "أخبار الشمال 🌊": {
@@ -103,7 +84,6 @@ RSS_SOURCES = {
         "غالية": "https://ghalia.ma/feed",
         "هسبريس فن": "https://www.hespress.com/art-et-culture/feed",
         "اليوم 24 فن": "https://alyaoum24.com/category/%D9%81%D9%86/feed",
-        "شوف تيفي فن": "https://chouftv.ma/category/%D9%81%D9%86-%D9%88-%D9%85%D8%B4%D8%A7%D9%87%D9%8A%D8%B1/feed",
         "سيدتي نت": "https://www.sayidaty.net/rss/3",
     },
     "الرياضية ⚽": {
@@ -138,22 +118,36 @@ def fetch_single_feed(source_name, url, limit):
     except: pass
     return entries
 
-def update_database_logic():
-    """تحديث شامل لقاعدة البيانات"""
+def update_database_logic(progress_callback=None):
     all_data = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    total_feeds = sum(len(v) for v in RSS_SOURCES.values())
+    completed = 0
+    
+    # استخدام التوازي مع مهلة زمنية
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        futures = []
         for category, feeds in RSS_SOURCES.items():
-            cat_items = []
-            futures = [executor.submit(fetch_single_feed, src, url, 15) for src, url in feeds.items()]
-            for f in concurrent.futures.as_completed(futures):
-                cat_items.extend(f.result())
-            all_data[category] = cat_items
+            for src, url in feeds.items():
+                futures.append((executor.submit(fetch_single_feed, src, url, 15), category))
+        
+        results_map = {cat: [] for cat in RSS_SOURCES.keys()}
+        
+        for future, category in futures:
+            try:
+                items = future.result() 
+                results_map[category].extend(items)
+            except: pass
             
-    db_content = { "last_updated": datetime.now().timestamp(), "data": all_data }
-    temp_file = DB_FILE + ".tmp"
-    with open(temp_file, 'w', encoding='utf-8') as f:
-        json.dump(db_content, f, ensure_ascii=False)
-    os.replace(temp_file, DB_FILE)
+            completed += 1
+            if progress_callback:
+                progress_callback(completed / total_feeds)
+                
+    db_content = { "last_updated": datetime.now().timestamp(), "data": results_map }
+    
+    try:
+        with open(DB_FILE, 'w', encoding='utf-8') as f:
+            json.dump(db_content, f, ensure_ascii=False)
+    except: pass
 
 # --- العامل الخلفي ---
 @st.cache_resource
@@ -161,24 +155,17 @@ def start_background_worker():
     def worker_loop():
         while True:
             try:
-                # التحقق من وجود الملف
-                if not os.path.exists(DB_FILE):
-                    update_database_logic()
-                else:
+                if os.path.exists(DB_FILE):
                     with open(DB_FILE, 'r', encoding='utf-8') as f: db = json.load(f)
                     last_ts = db.get('last_updated', 0)
-                    
-                    # التحديث كل ساعة
                     if (datetime.now() - datetime.fromtimestamp(last_ts)).total_seconds() > 3600:
                         update_database_logic()
-
-                # المسح الليلي (2:30 بتوقيت المغرب)
+                
                 tz = pytz.timezone('Africa/Casablanca')
                 now = datetime.now(tz)
                 if now.hour == 2 and 30 <= now.minute <= 35:
                     if os.path.exists(DB_FILE): os.remove(DB_FILE)
                     time.sleep(400)
-                
                 time.sleep(60)
             except: time.sleep(60)
 
@@ -189,7 +176,7 @@ def start_background_worker():
 start_background_worker()
 
 # ==========================================
-# 5. الواجهة الأمامية والمنطق الذكي
+# 5. الواجهة والذكاء الاصطناعي
 # ==========================================
 def get_text(url):
     try:
@@ -216,75 +203,76 @@ def rewrite(text, tone, instr):
 
 st.markdown("<h1 style='text-align: center; color: #1e3a8a;'>🤖 وكيل يقين AI</h1>", unsafe_allow_html=True)
 
-# --- كود التصحيح الذاتي (Self-Healing Logic) ---
-# هذا الكود يفحص إذا كانت الأقسام الجديدة مفقودة من الملف القديم
+# --- تهيئة أولية إذا لم يوجد ملف ---
+if not os.path.exists(DB_FILE):
+    st.info("جاري تهيئة النظام لأول مرة (قد يستغرق دقيقة)...")
+    my_bar = st.progress(0)
+    update_database_logic(progress_callback=my_bar.progress)
+    my_bar.empty()
+    st.rerun()
+
+# --- العرض الرئيسي ---
+# هنا التغيير الجذري: نقرأ الأقسام من الكود (RSS_SOURCES) وليس من الملف القديم
+current_categories = list(RSS_SOURCES.keys())
+
+# محاولة تحميل البيانات الموجودة
+news_data = {}
 if os.path.exists(DB_FILE):
     try:
         with open(DB_FILE, 'r', encoding='utf-8') as f:
-            db = json.load(f)
-        
-        saved_keys = set(db['data'].keys())
-        code_keys = set(RSS_SOURCES.keys())
-        
-        # إذا كان هناك اختلاف بين الكود والملف (أقسام ناقصة)
-        if code_keys != saved_keys:
-            st.warning("⚠️ تم اكتشاف أقسام جديدة (مثل الفنية والرياضية). جاري تحديث النظام تلقائياً...")
-            update_database_logic() # فرض التحديث
-            st.rerun() # إعادة تحميل الصفحة لإظهار الجديد
-            
-    except:
-        # إذا كان الملف تالفاً
-        update_database_logic()
+            db_full = json.load(f)
+            news_data = db_full.get('data', {})
+    except: pass
+
+with st.sidebar:
+    st.header("⚙️ التحكم")
+    
+    # 1. القائمة تقرأ الآن من الكود مباشرة (ستظهر كل الأقسام فوراً)
+    cat = st.selectbox("📂 القسم", current_categories)
+    
+    # جلب الأخبار الخاصة بالقسم المختار من الذاكرة
+    news_list = news_data.get(cat, [])
+    
+    st.divider()
+    st.subheader("🧠 الصياغة")
+    tone = st.select_slider("النبرة", ["رسمي", "تحليلي", "تفاعلي"])
+    ins = st.text_input("توجيهات")
+    
+    st.divider()
+    if st.button("🔄 تحديث شامل (Force Update)"):
+        with st.spinner("جاري جلب آخر الأخبار..."):
+            update_database_logic()
         st.rerun()
 
-# --- العرض ---
-if os.path.exists(DB_FILE):
-    with open(DB_FILE, 'r', encoding='utf-8') as f:
-        db = json.load(f)
+# منطقة النتائج
+if news_list:
+    st.success(f"**{cat}:** {len(news_list)} خبر متاح.")
+    opts = [f"【{n['source']}】 {n['title']}" for n in news_list]
+    idx = st.selectbox("👇 اختر الخبر:", range(len(opts)), format_func=lambda x: opts[x])
     
-    with st.sidebar:
-        st.header("⚙️ الأقسام")
-        cat = st.selectbox("📂 اختر القسم", list(db['data'].keys()))
-        news_list = db['data'][cat]
-        
-        st.divider()
-        st.subheader("🧠 الصياغة")
-        tone = st.select_slider("النبرة", ["رسمي", "تحليلي", "تفاعلي"])
-        ins = st.text_input("توجيهات")
-        
-        st.divider()
-        if st.button("🔄 تحديث شامل"):
-            with st.spinner("جاري التحديث..."):
-                update_database_logic()
-            st.rerun()
-
-    if news_list:
-        st.success(f"**{cat}:** تم جلب {len(news_list)} خبر.")
-        
-        opts = [f"【{n['source']}】 {n['title']}" for n in news_list]
-        idx = st.selectbox("👇 القائمة:", range(len(opts)), format_func=lambda x: opts[x])
-        
-        if st.button("✨ صياغة ذكية (AI)", type="primary"):
-            sel = news_list[idx]
-            with st.status("🤖 جاري العمل...", expanded=True) as s:
-                txt = get_text(sel['link'])
-                if txt:
-                    res = rewrite(txt, tone, ins)
-                    s.update(label="تم!", state="complete", expanded=False)
-                    
-                    c1, c2 = st.columns([1, 1])
-                    with c1:
-                        st.info("الأصل")
-                        st.markdown(f"<div class='news-card' style='max-height:300px;overflow-y:auto'>{txt[:600]}...</div>", unsafe_allow_html=True)
-                    with c2:
-                        st.success("النتيجة")
-                        st.markdown(f"<div class='seo-result'>{res}</div>", unsafe_allow_html=True)
-                        st.download_button("📥 تحميل", res, "article.txt")
-                else:
-                    s.update(label="فشل", state="error")
-                    st.error("موقع محمي")
-    else:
-        st.warning("لا توجد أخبار هنا حالياً.")
-
+    if st.button("✨ تشغيل المحرر الذكي", type="primary"):
+        sel = news_list[idx]
+        with st.status("🤖 جاري العمل...", expanded=True) as s:
+            txt = get_text(sel['link'])
+            if txt:
+                res = rewrite(txt, tone, ins)
+                s.update(label="تم!", state="complete", expanded=False)
+                
+                c1, c2 = st.columns([1, 1])
+                with c1:
+                    st.write("النص الأصلي:")
+                    st.markdown(f"<div class='news-card' style='max-height:300px;overflow-y:auto'>{txt[:600]}...</div>", unsafe_allow_html=True)
+                with c2:
+                    st.success("النتيجة:")
+                    st.markdown(f"<div class='seo-result'>{res}</div>", unsafe_allow_html=True)
+                    st.download_button("📥 تحميل", res, "article.txt")
+            else:
+                s.update(label="فشل", state="error")
+                st.error("الموقع محمي")
 else:
-    st.info("⏳ جاري بناء قاعدة البيانات بالأقسام الجديدة... (انتظر دقيقة)")
+    # إذا اخترت قسماً جديداً ولم تجد فيه أخباراً بعد
+    st.warning(f"القسم **'{cat}'** فارغ حالياً في الذاكرة.")
+    if st.button(f"📥 جلب أخبار {cat} الآن"):
+        with st.spinner("جاري التحديث..."):
+            update_database_logic()
+        st.rerun()
