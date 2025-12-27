@@ -12,12 +12,12 @@ from datetime import datetime
 # 0. إعدادات أساسية
 # ==========================================
 st.set_page_config(page_title="وكيل يقين AI", page_icon="🦅", layout="wide")
-socket.setdefaulttimeout(10) # مهلة كافية
+socket.setdefaulttimeout(10)
 
-DB_FILE = "news_db_final.json" # اسم جديد لضمان بداية نظيفة
+DB_FILE = "news_db_final.json"
 
 # ==========================================
-# 1. المصادر (هذه هي القائمة التي ستظهر لك)
+# 1. المصادر
 # ==========================================
 RSS_SOURCES = {
     "أخبار الشمال 🌊": {
@@ -48,27 +48,32 @@ RSS_SOURCES = {
 }
 
 # ==========================================
-# 2. تصميم CSS (مبسط وآمن جداً)
+# 2. CSS (إصلاح مشكلة الاختفاء)
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
     * { font-family: 'Cairo', sans-serif !important; }
     
-    /* ضمان ظهور النصوص لليمين */
+    /* محاذاة النصوص */
     .stMarkdown, .stText, h1, h2, h3, p, div { text-align: right !important; }
     
+    /* إصلاح القائمة المنسدلة */
+    .stSelectbox div[data-baseweb="select"] { direction: rtl; text-align: right; }
+    .stSelectbox label { text-align: right; wfont-size: 1.2rem; }
+
     /* البطاقات */
     .news-card {
         background: #fff; border: 1px solid #ddd; padding: 15px; 
         border-radius: 8px; margin-bottom: 10px; text-align: right; direction: rtl;
     }
     
-    /* الأزرار */
-    .stButton>button { width: 100%; height: 50px; font-weight: bold; }
+    /* الأزرار كبيرة وواضحة */
+    .stButton>button { width: 100%; height: 55px; font-weight: bold; font-size: 18px; border-radius: 12px; }
     
-    /* إخفاء القوائم التقنية */
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;}
+    /* هام: حذفنا كود إخفاء الهيدر الذي كان يسبب المشكلة */
+    #MainMenu {visibility: visible;} 
+    footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -131,71 +136,70 @@ def rewrite(text, tone, instr):
     except Exception as e: return str(e)
 
 # ==========================================
-# 4. الواجهة (هنا الإصلاح: القائمة خارج الشرط)
+# 4. الواجهة (التصميم الجديد للموبايل)
 # ==========================================
 
-st.title("🦅 وكيل يقين")
+st.markdown("<h1 style='text-align: center; color: #1e3a8a;'>🦅 وكيل يقين</h1>", unsafe_allow_html=True)
 
-# تحميل قاعدة البيانات الحالية
+# تحميل البيانات
 db = load_db()
 
-# --- القائمة الجانبية (تظهر دائماً) ---
+# --- 1. اختيار القسم (في منتصف الشاشة وليس في القائمة الجانبية) ---
+st.markdown("### 📂 اختر القسم الصحفي:")
+all_categories = list(RSS_SOURCES.keys())
+# نستخدم radio button لأنه أسهل في التنقل، أو selectbox كبير
+selected_cat = st.selectbox("", all_categories, label_visibility="collapsed")
+
+st.divider()
+
+# --- 2. الإعدادات الجانبية (فقط للصياغة) ---
 with st.sidebar:
-    st.header("⚙️ التحكم")
-    
-    # نقرأ الأقسام من الكود مباشرة (RSS_SOURCES) وليس من الملف
-    # هذا يضمن ظهور الأقسام حتى لو الملف مفقود
-    all_categories = list(RSS_SOURCES.keys())
-    selected_cat = st.selectbox("اختر القسم:", all_categories)
-    
-    st.divider()
-    st.subheader("إعدادات AI")
-    tone = st.select_slider("النبرة", ["رسمي", "تحليلي", "تفاعلي"])
-    ins = st.text_input("توجيهات")
-    
-    st.divider()
-    # زر تحديث يدوي لهذا القسم
-    if st.button(f"🔄 تحديث {selected_cat} الآن"):
-        with st.spinner("جاري الاتصال بالمصادر..."):
-            items = update_category_data(selected_cat)
-            db[selected_cat] = items
-            save_db(db)
-        st.success("تم التحديث!")
-        st.rerun()
+    st.header("⚙️ إعدادات الصياغة")
+    tone = st.select_slider("النبرة", ["رسمي", "تحليلي", "عاجل"])
+    ins = st.text_input("توجيهات إضافية")
+    st.info("نصيحة: اختر القسم من الشاشة الرئيسية.")
 
-# --- العرض الرئيسي ---
+# --- 3. منطقة العمل ---
 
-# هل توجد أخبار محفوظة لهذا القسم؟
+# هل القسم موجود في الذاكرة؟
 if selected_cat in db and len(db[selected_cat]) > 0:
     news_list = db[selected_cat]
-    st.info(f"يوجد {len(news_list)} خبر محفوظ في قسم {selected_cat}")
     
-    # قائمة الاختيار
+    # زر تحديث صغير بجانب العنوان
+    c1, c2 = st.columns([3, 1])
+    with c1: st.success(f"متاح {len(news_list)} خبر في {selected_cat}")
+    with c2: 
+        if st.button("🔄 تحديث"):
+            with st.spinner("جاري التحديث..."):
+                items = update_category_data(selected_cat)
+                db[selected_cat] = items
+                save_db(db)
+            st.rerun()
+    
+    # قائمة الأخبار
     opts = [f"{n['source']} - {n['title']}" for n in news_list]
-    idx = st.selectbox("اختر الخبر:", range(len(opts)), format_func=lambda x: opts[x])
+    idx = st.selectbox("👇 اختر الخبر للمعالجة:", range(len(opts)), format_func=lambda x: opts[x])
     
-    if st.button("✨ صياغة الخبر", type="primary"):
+    # زر الصياغة الكبير
+    if st.button("✨ صياغة الخبر الآن", type="primary"):
         sel = news_list[idx]
-        with st.status("جاري العمل..."):
+        with st.status("جاري العمل...", expanded=True):
+            st.write("سحب النص...")
             txt = get_text(sel['link'])
             if txt:
+                st.write("كتابة المقال...")
                 res = rewrite(txt, tone, ins)
-                c1, c2 = st.columns(2)
-                with c1:
-                    st.warning("الأصل")
-                    st.markdown(f"<div class='news-card' style='height:300px;overflow:auto'>{txt[:600]}...</div>", unsafe_allow_html=True)
-                with c2:
-                    st.success("النتيجة")
-                    st.markdown(f"<div class='news-card'>{res}</div>", unsafe_allow_html=True)
-                    st.download_button("تحميل", res, "article.txt")
-            else: st.error("الموقع محمي")
+                
+                st.markdown("---")
+                st.subheader("النتيجة النهائية:")
+                st.markdown(f"<div class='news-card' style='background:#f0fdf4; border-color:#22c55e'>{res}</div>", unsafe_allow_html=True)
+                st.download_button("📥 تحميل المقال", res, "article.txt")
+            else: st.error("تعذر جلب النص (الموقع محمي)")
 else:
-    # حالة القسم الفارغ (أو أول مرة)
-    st.warning(f"لا توجد أخبار محفوظة لقسم **{selected_cat}**.")
-    st.write("اضغط الزر أدناه لجلب الأخبار لأول مرة:")
-    
-    if st.button(f"📥 جلب أخبار {selected_cat}", type="primary"):
-        with st.spinner("جاري العمل..."):
+    # حالة القسم الفارغ
+    st.warning(f"لا توجد أخبار محفوظة لقسم: {selected_cat}")
+    if st.button(f"📥 جلب أخبار {selected_cat} الآن", type="primary"):
+        with st.spinner("جاري الاتصال بالمصادر..."):
             items = update_category_data(selected_cat)
             db[selected_cat] = items
             save_db(db)
