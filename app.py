@@ -17,13 +17,13 @@ st.set_page_config(
     page_title="وكيل يقين AI",
     page_icon="🦅",
     layout="wide",
-    initial_sidebar_state="collapsed" # مغلقة على الموبايل لتوفير المساحة
+    initial_sidebar_state="expanded" # جعلناها مفتوحة لتراها بوضوح
 )
 
 DB_FILE = "news_db.json"
 
 # ==========================================
-# 2. CSS الاحترافي (مراعي للموبايل)
+# 2. CSS (التصميم المستقر للهاتف والحاسوب)
 # ==========================================
 st.markdown("""
 <style>
@@ -31,11 +31,11 @@ st.markdown("""
     
     * { font-family: 'Cairo', sans-serif !important; }
 
-    /* تحسينات عامة للمحاذاة */
+    /* محاذاة آمنة */
     h1, h2, h3, h4, h5, h6, .stMarkdown, .stText, p { text-align: right !important; }
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { direction: rtl; text-align: right; }
 
-    /* تصميم البطاقات (Cards) */
+    /* البطاقات */
     .news-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
@@ -45,10 +45,9 @@ st.markdown("""
         margin-bottom: 15px;
         text-align: right;
         direction: rtl;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     
-    /* صندوق النتيجة */
     .seo-result {
         background: #f0fdfa;
         border: 1px solid #ccfbf1;
@@ -60,32 +59,20 @@ st.markdown("""
         margin-top: 10px;
     }
 
-    /* تحسين الأزرار */
+    /* الأزرار */
     .stButton>button {
         width: 100%;
         border-radius: 10px;
         font-weight: 700;
-        padding: 0.5rem 1rem;
         min-height: 50px;
-        font-size: 16px !important;
-    }
-    
-    div[data-testid="stButton"] button {
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
     }
 
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
-    
-    /* تحسين للموبايل */
-    @media (max-width: 640px) {
-        h1 { font-size: 1.8rem !important; }
-    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. المصادر (تمت الاستعادة + إضافة القسم الفني)
+# 3. المصادر (تمت مراجعتها بدقة)
 # ==========================================
 RSS_SOURCES = {
     "أخبار الشمال 🌊": {
@@ -114,13 +101,10 @@ RSS_SOURCES = {
         "سلطانة": "https://soltana.ma/feed",
         "لالة مولاتي": "http://www.lallamoulati.ma/feed/",
         "غالية": "https://ghalia.ma/feed",
-        "هسبريس (فن)": "https://www.hespress.com/art-et-culture/feed",
-        "اليوم 24 (فن)": "https://alyaoum24.com/category/%D9%81%D9%86/feed",
-        "شوف تيفي (فن)": "https://chouftv.ma/category/%D9%81%D9%86-%D9%88-%D9%85%D8%B4%D8%A7%D9%87%D9%8A%D8%B1/feed",
-        "Le360 (ثقافة)": "https://ar.le360.ma/culture/rss",
-        "فبراير (فن)": "https://febrayer.com/category/%D9%81%D9%86-%D9%88%D8%AB%D9%82%D8%A7%D9%81%D8%A9/feed",
-        "برلمان (فن)": "https://www.barlamane.com/category/%D8%AB%D9%82%D8%A7%D9%81%D8%A9-%D9%88%D9%81%D9%86/feed",
-        "سيدتي (المغرب)": "https://www.sayidaty.net/rss/3",
+        "هسبريس فن": "https://www.hespress.com/art-et-culture/feed",
+        "اليوم 24 فن": "https://alyaoum24.com/category/%D9%81%D9%86/feed",
+        "شوف تيفي فن": "https://chouftv.ma/category/%D9%81%D9%86-%D9%88-%D9%85%D8%B4%D8%A7%D9%87%D9%8A%D8%B1/feed",
+        "سيدتي نت": "https://www.sayidaty.net/rss/3",
     },
     "الرياضية ⚽": {
         "البطولة": "https://www.elbotola.com/rss",
@@ -132,7 +116,7 @@ RSS_SOURCES = {
 }
 
 # ==========================================
-# 4. المحرك الخلفي (Backend)
+# 4. المحرك الخلفي
 # ==========================================
 try:
     if "GROQ_API_KEY" in st.secrets:
@@ -155,6 +139,7 @@ def fetch_single_feed(source_name, url, limit):
     return entries
 
 def update_database_logic():
+    """تحديث شامل لقاعدة البيانات"""
     all_data = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         for category, feeds in RSS_SOURCES.items():
@@ -170,32 +155,30 @@ def update_database_logic():
         json.dump(db_content, f, ensure_ascii=False)
     os.replace(temp_file, DB_FILE)
 
-# --- الخلفية (Background Worker) ---
+# --- العامل الخلفي ---
 @st.cache_resource
 def start_background_worker():
     def worker_loop():
         while True:
             try:
-                if os.path.exists(DB_FILE):
+                # التحقق من وجود الملف
+                if not os.path.exists(DB_FILE):
+                    update_database_logic()
+                else:
                     with open(DB_FILE, 'r', encoding='utf-8') as f: db = json.load(f)
                     last_ts = db.get('last_updated', 0)
-                else: last_ts = 0
+                    
+                    # التحديث كل ساعة
+                    if (datetime.now() - datetime.fromtimestamp(last_ts)).total_seconds() > 3600:
+                        update_database_logic()
 
-                now = datetime.now()
-                tz_ma = pytz.timezone('Africa/Casablanca')
-                now_ma = datetime.now(tz_ma)
-
-                # المسح الليلي (02:30 صباحاً)
-                if now_ma.hour == 2 and 30 <= now_ma.minute <= 35:
-                    if os.path.exists(DB_FILE):
-                        os.remove(DB_FILE)
-                        time.sleep(400) 
-                        continue
-
-                # التحديث كل ساعة
-                diff = now - datetime.fromtimestamp(last_ts)
-                if diff.total_seconds() > 3600 or last_ts == 0:
-                    update_database_logic()
+                # المسح الليلي (2:30 بتوقيت المغرب)
+                tz = pytz.timezone('Africa/Casablanca')
+                now = datetime.now(tz)
+                if now.hour == 2 and 30 <= now.minute <= 35:
+                    if os.path.exists(DB_FILE): os.remove(DB_FILE)
+                    time.sleep(400)
+                
                 time.sleep(60)
             except: time.sleep(60)
 
@@ -206,7 +189,7 @@ def start_background_worker():
 start_background_worker()
 
 # ==========================================
-# 5. الواجهة الأمامية (Frontend)
+# 5. الواجهة الأمامية والمنطق الذكي
 # ==========================================
 def get_text(url):
     try:
@@ -217,11 +200,10 @@ def get_text(url):
 def rewrite(text, tone, instr):
     if not client: return "خطأ: المفتاح مفقود"
     prompt = f"""
-    أنت محرر ذكاء اصطناعي متقدم لـ "هاشمي بريس".
-    المهمة: أعد صياغة الخبر باحترافية SEO.
+    أنت محرر ذكي لـ "هاشمي بريس". أعد صياغة الخبر.
     النص: {text[:2500]}
     الأسلوب: {tone}. ملاحظات: {instr}.
-    العنوان: H1 جذاب.
+    العنوان H1 جذاب.
     """
     try:
         res = client.chat.completions.create(
@@ -234,65 +216,75 @@ def rewrite(text, tone, instr):
 
 st.markdown("<h1 style='text-align: center; color: #1e3a8a;'>🤖 وكيل يقين AI</h1>", unsafe_allow_html=True)
 
-# التأكد من وجود البيانات
+# --- كود التصحيح الذاتي (Self-Healing Logic) ---
+# هذا الكود يفحص إذا كانت الأقسام الجديدة مفقودة من الملف القديم
+if os.path.exists(DB_FILE):
+    try:
+        with open(DB_FILE, 'r', encoding='utf-8') as f:
+            db = json.load(f)
+        
+        saved_keys = set(db['data'].keys())
+        code_keys = set(RSS_SOURCES.keys())
+        
+        # إذا كان هناك اختلاف بين الكود والملف (أقسام ناقصة)
+        if code_keys != saved_keys:
+            st.warning("⚠️ تم اكتشاف أقسام جديدة (مثل الفنية والرياضية). جاري تحديث النظام تلقائياً...")
+            update_database_logic() # فرض التحديث
+            st.rerun() # إعادة تحميل الصفحة لإظهار الجديد
+            
+    except:
+        # إذا كان الملف تالفاً
+        update_database_logic()
+        st.rerun()
+
+# --- العرض ---
 if os.path.exists(DB_FILE):
     with open(DB_FILE, 'r', encoding='utf-8') as f:
         db = json.load(f)
     
-    # القائمة الجانبية
     with st.sidebar:
-        st.header("⚙️ التحكم")
-        # هنا ستجد كل الأقسام (شمال، مغرب، فن، رياضة)
+        st.header("⚙️ الأقسام")
         cat = st.selectbox("📂 اختر القسم", list(db['data'].keys()))
-        
-        # التأكد من وجود أخبار في القسم المختار
-        if cat in db['data']:
-            news_list = db['data'][cat]
-        else:
-            news_list = []
-            
-        st.divider()
-        st.subheader("🧠 إعدادات AI")
-        tone = st.select_slider("نبرة المحرر", ["رسمي", "تحليلي", "تفاعلي"])
-        ins = st.text_input("توجيهات (اختياري)")
+        news_list = db['data'][cat]
         
         st.divider()
-        if st.button("🔄 تحديث شامل الآن"):
+        st.subheader("🧠 الصياغة")
+        tone = st.select_slider("النبرة", ["رسمي", "تحليلي", "تفاعلي"])
+        ins = st.text_input("توجيهات")
+        
+        st.divider()
+        if st.button("🔄 تحديث شامل"):
             with st.spinner("جاري التحديث..."):
                 update_database_logic()
             st.rerun()
 
     if news_list:
-        st.markdown(f"**أخبار قسم {cat}:** {len(news_list)} خبر")
+        st.success(f"**{cat}:** تم جلب {len(news_list)} خبر.")
         
         opts = [f"【{n['source']}】 {n['title']}" for n in news_list]
-        idx = st.selectbox("👇 اختر الخبر:", range(len(opts)), format_func=lambda x: opts[x])
+        idx = st.selectbox("👇 القائمة:", range(len(opts)), format_func=lambda x: opts[x])
         
-        if st.button("✨ صياغة ذكية (AI Rewrite)", type="primary"):
+        if st.button("✨ صياغة ذكية (AI)", type="primary"):
             sel = news_list[idx]
-            
-            with st.status("🤖 جاري المعالجة...", expanded=True) as s:
-                st.write("📥 سحب البيانات...")
+            with st.status("🤖 جاري العمل...", expanded=True) as s:
                 txt = get_text(sel['link'])
                 if txt:
-                    st.write("🧠 Llama 3.3 يكتب...")
                     res = rewrite(txt, tone, ins)
                     s.update(label="تم!", state="complete", expanded=False)
                     
                     c1, c2 = st.columns([1, 1])
                     with c1:
-                        st.info("📄 النص الأصلي")
-                        st.markdown(f"<div class='news-card' style='max-height: 300px; overflow-y: auto;'>{txt[:600]}...</div>", unsafe_allow_html=True)
+                        st.info("الأصل")
+                        st.markdown(f"<div class='news-card' style='max-height:300px;overflow-y:auto'>{txt[:600]}...</div>", unsafe_allow_html=True)
                     with c2:
-                        st.success("✨ النتيجة (هاشمي بريس)")
+                        st.success("النتيجة")
                         st.markdown(f"<div class='seo-result'>{res}</div>", unsafe_allow_html=True)
-                        st.download_button("📥 تحميل TXT", res, f"ai_article_{int(time.time())}.txt")
+                        st.download_button("📥 تحميل", res, "article.txt")
                 else:
                     s.update(label="فشل", state="error")
-                    st.error("الموقع محمي، حاول مع خبر آخر.")
+                    st.error("موقع محمي")
     else:
-        st.warning("لا توجد أخبار في هذا القسم حالياً أو جاري التحديث.")
+        st.warning("لا توجد أخبار هنا حالياً.")
 
 else:
-    st.warning("⏳ النظام يقوم بالتمهيد الأولي وجلب كل الأقسام... (انتظر دقيقة ثم حدث الصفحة)")
-    # إذا لم يكن الملف موجوداً، سيتم إنشاؤه تلقائياً في الخلفية خلال 60 ثانية
+    st.info("⏳ جاري بناء قاعدة البيانات بالأقسام الجديدة... (انتظر دقيقة)")
