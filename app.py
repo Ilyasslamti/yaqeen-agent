@@ -15,21 +15,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS لتحسين المظهر وجعله يشبه لوحات التحكم الاحترافية
+# CSS لتحسين المظهر
 st.markdown("""
 <style>
     .main-header {font-size: 2.2rem; color: #1E3A8A; font-weight: bold; text-align: center; margin-bottom: 0.5rem;}
     .sub-header {font-size: 1.1rem; color: #555; text-align: center; margin-bottom: 2rem;}
-    .news-card {
-        padding: 1rem; 
-        border-radius: 8px; 
-        border: 1px solid #eee; 
-        background-color: white; 
-        margin-bottom: 0.8rem;
-        transition: transform 0.2s;
-    }
-    .news-card:hover {transform: scale(1.01); border-color: #1E3A8A;}
-    
     /* إخفاء عناصر Streamlit الافتراضية */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
