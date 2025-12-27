@@ -8,73 +8,65 @@ import concurrent.futures
 # 1. إعدادات الصفحة
 # ==========================================
 st.set_page_config(
-    page_title="وكيل يقين - النسخة المستقرة",
+    page_title="وكيل يقين - المحرر الذكي",
     page_icon="🦅",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ==========================================
-# 2. تصميم CSS (تم الإصلاح)
+# 2. إصلاح التصميم (CSS الآمن)
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
     
-    /* تطبيق الخط العربي على كل العناصر */
-    * {
-        font-family: 'Cairo', sans-serif !important;
+    /* تطبيق الخط على الجميع */
+    html, body, [class*="css"] {
+        font-family: 'Cairo', sans-serif;
     }
 
-    /* إصلاح التشوه: نجعل النصوص عربية لكن لا نقلب هيكل الصفحة بالكامل */
-    .stApp {
-        direction: rtl; 
+    /* الحل السحري: بدلاً من قلب الموقع كاملاً وتشويهه 
+       نقوم بمحاذاة النصوص فقط لليمين داخل الحاويات
+    */
+    
+    /* محاذاة العناوين والنصوص العادية */
+    .stMarkdown, .stText, h1, h2, h3, h4, h5, h6, p, div {
+        text-align: right;
     }
     
-    /* ضبط القائمة الجانبية لتظهر يمين الشاشة بشكل صحيح */
-    section[data-testid="stSidebar"] {
+    /* محاذاة القوائم المنسدلة والمدخلات */
+    .stSelectbox div[data-baseweb="select"], .stTextInput input {
         direction: rtl;
         text-align: right;
     }
 
-    /* العناوين */
-    h1, h2, h3, .main-header {
-        font-family: 'Cairo', sans-serif;
-        text-align: center;
-        color: #1e3a8a; /* أزرق ملكي */
-    }
-
-    /* الصناديق والبطاقات */
+    /* صناديق المحتوى المخصصة */
     .content-box {
+        direction: rtl;
         background-color: #ffffff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e0e0e0;
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        text-align: right; /* ضمان محاذاة النص لليمين */
-        direction: rtl;
+        text-align: right; /* مهم جداً */
     }
 
     .seo-box {
-        background-color: #f8fafc;
-        border-right: 5px solid #10b981; /* خط أخضر جمالي */
+        direction: rtl;
+        background-color: #f8f9fa;
+        border-right: 5px solid #10b981;
+        text-align: right;
     }
 
-    /* تحسين شكل الأزرار */
+    /* تحسين الأزرار */
     .stButton>button {
         width: 100%;
         border-radius: 8px;
         font-weight: bold;
-        height: 3em;
     }
 
-    /* إصلاح القوائم المنسدلة */
-    .stSelectbox, .stSlider {
-        direction: rtl;
-    }
-
-    /* إخفاء عناصر تقنية غير ضرورية */
+    /* إخفاء القوائم التقنية */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
@@ -125,7 +117,7 @@ RSS_SOURCES = {
 }
 
 # ==========================================
-# 4. المنطق (محرك التوازي الأقصى)
+# 4. المنطق (سريع ومتوازي)
 # ==========================================
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -139,8 +131,7 @@ def fetch_single_feed(source_name, url, limit):
         d = feedparser.parse(url) 
         for e in d.entries[:limit]:
             entries.append({"title": e.title, "link": e.link, "source": source_name})
-    except:
-        pass
+    except: pass
     return entries
 
 @st.cache_data(ttl=300)
@@ -148,17 +139,16 @@ def fetch_news_parallel(category, limit_per_source):
     feeds = RSS_SOURCES.get(category, {})
     all_items = []
     
-    # استخدام التوازي الكامل (مندوب لكل جريدة)
+    # التوازي الكامل
     num_workers = len(feeds) if len(feeds) > 0 else 1
     
-    with st.spinner('جاري الاتصال بجميع المصادر في وقت واحد...'):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-            future_to_source = {executor.submit(fetch_single_feed, src, url, limit_per_source): src for src, url in feeds.items()}
-            for future in concurrent.futures.as_completed(future_to_source):
-                try:
-                    data = future.result()
-                    all_items.extend(data)
-                except: pass
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+        future_to_source = {executor.submit(fetch_single_feed, src, url, limit_per_source): src for src, url in feeds.items()}
+        for future in concurrent.futures.as_completed(future_to_source):
+            try:
+                data = future.result()
+                all_items.extend(data)
+            except: pass
             
     return all_items
 
@@ -197,18 +187,18 @@ def rewrite(text, tone, instr):
     except Exception as e: return f"خطأ: {str(e)}"
 
 # ==========================================
-# 5. الواجهة الرسومية (المنظمة)
+# 5. الواجهة (النظيفة)
 # ==========================================
 with st.sidebar:
-    st.title("🦅 لوحة التحكم")
-    st.markdown("---")
+    st.image("https://cdn-icons-png.flaticon.com/512/3208/3208761.png", width=50)
+    st.markdown("### لوحة التحكم")
     
     cat = st.selectbox("القسم:", list(RSS_SOURCES.keys()))
     
-    # عرض المصادر بشكل نصي بسيط لتجنب كسر التصميم
+    # عرض أسماء المصادر بطريقة بسيطة لا تكسر التصميم
     current = list(RSS_SOURCES[cat].keys())
     with st.expander(f"المصادر ({len(current)})"):
-        st.write("، ".join(current))
+        st.caption("، ".join(current))
     
     st.markdown("---")
     limit = st.slider("عمق البحث:", 5, 30, 10) 
@@ -219,17 +209,17 @@ with st.sidebar:
         st.cache_data.clear()
         st.rerun()
 
-# المتن الرئيسي
+# العنوان الرئيسي
 st.markdown("<h1 style='text-align: center; color: #1e3a8a;'>وكيل يقين</h1>", unsafe_allow_html=True)
 
-# تشغيل
+# التشغيل
 news = fetch_news_parallel(cat, limit)
 
 if news:
-    # إحصائيات سريعة
-    col1, col2 = st.columns(2)
-    col1.success(f"تم جلب {len(news)} خبراً")
-    col2.info("النظام: متصل وسريع ⚡")
+    # إحصائيات
+    c1, c2 = st.columns(2)
+    c1.metric("عدد الأخبار", len(news))
+    c2.metric("الحالة", "نشط ⚡")
     
     opts = [f"【{n['source']}】 {n['title']}" for n in news]
     idx = st.selectbox("اختر خبراً:", range(len(opts)), format_func=lambda x: opts[x])
@@ -240,15 +230,19 @@ if news:
             txt = get_text(sel['link'])
             
         if txt:
-            c1, c2 = st.columns([1, 1])
-            # استخدام Markdown عادي لتجنب مشاكل CSS المعقدة
-            with c1:
+            # هنا نستخدم الـ HTML المخصص لضمان اتجاه النص
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
                 st.subheader("النص الأصلي")
-                st.text_area("", txt, height=400)
-            with c2:
+                # عرض النص داخل صندوق مخصص
+                st.markdown(f"<div class='content-box'>{txt[:1000]}...</div>", unsafe_allow_html=True)
+            
+            with col2:
                 st.subheader("النسخة المحسنة")
                 with st.spinner("Llama 3.3 يكتب..."):
                     res = rewrite(txt, tone, ins)
+                    # عرض النتيجة
                     st.markdown(f"<div class='content-box seo-box'>{res}</div>", unsafe_allow_html=True)
                     st.download_button("تحميل TXT", res, "article.txt")
         else: st.error("الموقع محمي.")
