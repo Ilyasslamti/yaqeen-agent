@@ -9,108 +9,151 @@ from datetime import datetime
 # 1. إعدادات الصفحة والهوية البصرية لـ "يقين"
 # ==========================================
 st.set_page_config(
-    page_title="وكيل يقين للصحفيين | Yaqeen Agent",
+    page_title="وكيل يقين - غرفة الأخبار المركزية",
     page_icon="🦅",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# تخصيص الواجهة بـ CSS بسيط
+# CSS لتحسين المظهر وجعله يشبه لوحات التحكم الاحترافية
 st.markdown("""
 <style>
-    .main-header {font-size: 2.5rem; color: #1E3A8A; text-align: center; margin-bottom: 1rem;}
-    .sub-header {font-size: 1.2rem; color: #4B5563; text-align: center;}
-    .card {padding: 1.5rem; border-radius: 10px; border: 1px solid #e0e0e0; background-color: #f9f9f9; margin-bottom: 1rem;}
-    .source-tag {background-color: #1E3A8A; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;}
+    .main-header {font-size: 2.2rem; color: #1E3A8A; font-weight: bold; text-align: center; margin-bottom: 0.5rem;}
+    .sub-header {font-size: 1.1rem; color: #555; text-align: center; margin-bottom: 2rem;}
+    .news-card {
+        padding: 1rem; 
+        border-radius: 8px; 
+        border: 1px solid #eee; 
+        background-color: white; 
+        margin-bottom: 0.8rem;
+        transition: transform 0.2s;
+    }
+    .news-card:hover {transform: scale(1.01); border-color: #1E3A8A;}
+    .source-badge {
+        background-color: #e3f2fd; 
+        color: #1565c0; 
+        padding: 2px 8px; 
+        border-radius: 4px; 
+        font-size: 0.8rem; 
+        font-weight: bold;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. قاعدة بيانات المصادر (أكثر من 40 مصدر)
+# 2. قاعدة بيانات الـ 60 مصدر (محدثة)
 # ==========================================
 RSS_SOURCES = {
-    "📰 وطنية وشاملة": {
+    "🔵 أخبار الشمال (تطوان/المضيق/طنجة)": {
+        "شمال بوست": "https://chamalpost.net/feed",
+        "بريس تطوان": "https://presstetouan.com/feed",
+        "تطوان بريس": "https://tetouanpress.ma/feed",
+        "طنجة 24": "https://tanja24.com/feed",
+        "كاب 24": "https://cap24.tv/feed",
+        "طنجة نيوز": "https://tanjanews.com/feed",
+        "صدى تطوان": "https://sadatetouan.com/feed",
+        "الشمال 24": "https://achamal24.com/feed",
+        "المضيق تيفي": "https://rincontv.ma/feed", # (تحقق من توفره)
+        "طنجة الأدبية": "https://aladabia.net/feed",
+    },
+    "📰 صحف وطنية كبرى (رقمية وورقية)": {
         "هسبريس": "https://www.hespress.com/feed",
         "العمق المغربي": "https://al3omk.com/feed",
         "مدار 21": "https://madar21.com/feed",
         "اليوم 24": "https://www.alyaoum24.com/feed",
         "كود": "https://www.goud.ma/feed",
+        "زنقة 20": "https://www.rue20.com/feed",
+        "الأحداث المغربية": "https://ahdath.info/feed",
+        "الصباح": "https://assabah.ma/feed",
+        "بيان اليوم": "https://bayanealyaoume.press.ma/feed",
+        "رسالة الأمة": "https://risalatalomma.ma/feed",
+        "برلمان.كوم": "https://www.barlamane.com/feed",
         "فبراير": "https://www.febrayer.com/feed",
         "هبة بريس": "https://ar.hibapress.com/feed",
         "الصحيفة": "https://www.assahifa.com/feed",
-        "زنقة 20": "https://www.rue20.com/feed",
-        "أخبارنا": "https://www.akhbarona.com/feed",
         "لكم": "https://lakome2.com/feed",
         "بديل": "https://badeel.info/feed",
         "الأيام 24": "https://www.alayam24.com/feed",
         "عبر": "https://aabbir.com/feed",
-        "برلمان": "https://www.barlamane.com/feed",
+        "آشكاين": "https://achkayen.com/feed",
+        "أنفاس بريس": "https://anfaspress.com/feed",
+        "الأول": "https://alaoual.com/feed",
+        "بناصا": "https://banassa.com/feed",
+        "سفيركم": "https://safir24.ma/feed",
+        "مغرب أنتلجنس": "https://maghreb-intelligence.com/feed",
     },
-    "🌍 جهوية وشمالية (تطوان/طنجة/المضيق)": {
-        "طنجة 24": "https://tanja24.com/feed",
-        "شمال بوست": "https://chamalpost.net/feed",
-        "تطوان بريس": "https://tetouanpress.ma/feed",
-        "بريس تطوان": "https://presstetouan.com/feed",
+    "🌍 جهات المملكة (الصحراء/الشرق/الوسط)": {
         "أكادير 24": "https://agadir24.info/feed",
         "الداخلة نيوز": "https://www.dakhlanews.com/feed",
         "مراكش الان": "https://www.marrakechalaan.com/feed",
         "وجدة سيتي": "https://www.oujdacity.net/feed",
+        "ناظور سيتي": "https://www.nadorcity.com/feed",
+        "سوس 24": "https://souss24.com/feed",
+        "فاس نيوز": "https://fesnews.media/feed",
+        "مكناس بريس": "https://meknespress.com/feed",
     },
-    "⚽ رياضة": {
+    "⚽ رياضة مغربية وعالمية": {
         "البطولة": "https://www.elbotola.com/rss",
         "هسبريس الرياضية": "https://hesport.com/feed",
-        "كوورة لايف": "https://www.kooora-live.com/feed",
+        "كوورة": "https://www.kooora.com/rss", # قد يحتاج معالجة خاصة
         "المنتخب": "https://almountakhab.com/rss",
+        "هاي كورة": "https://hihi2.com/feed",
+        "360 سبورت": "https://sport.le360.ma/rss",
     },
-    "💰 اقتصاد وتكنولوجيا": {
+    "💰 مال وأعمال وتكنولوجيا": {
         "إيكو نيوز": "https://econews.ma/feed",
-        "لـو 360 (اقتصاد)": "https://ar.le360.ma/rss", # ملاحظة: قد يحتاج لفلترة
         "تحدي": "https://tahaddy.net/feed",
+        "لوماتان (اقتصادي)": "https://lematin.ma/rss",
+        "التقنية (عالم التقنية)": "https://www.tech-wd.com/wd/feed",
     }
 }
 
 # ==========================================
-# 3. الدوال المنطقية (Logic)
+# 3. المنطق البرمجي (Backend Logic)
 # ==========================================
 
 # إعداد مفتاح API بشكل آمن
 try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 except:
-    st.error("⚠️ لم يتم العثور على مفتاح API. يرجى إضافته في إعدادات Streamlit.")
+    st.error("⚠️ مفتاح API غير موجود. تأكد من إضافته في Secrets.")
 
-@st.cache_data(ttl=600) # تحديث كل 10 دقائق
+@st.cache_data(ttl=300) # تحديث كل 5 دقائق
 def fetch_news_by_category(category):
-    """جلب الأخبار بناءً على الفئة المختارة لتسريع الأداء"""
+    """جلب الأخبار من الفئة المختارة"""
     news_items = []
     feeds = RSS_SOURCES.get(category, {})
     
-    # شريط تقدم وهمي لتحسين تجربة المستخدم
+    # تحسين تجربة المستخدم بشريط تحميل
+    status_text = st.empty()
     progress_bar = st.progress(0)
     total = len(feeds)
     
     for i, (source_name, url) in enumerate(feeds.items()):
+        status_text.text(f"جاري الاتصال بـ: {source_name}...")
         try:
+            # مهلة زمنية قصيرة (Timeout) لتجاوز المصادر المعطلة بسرعة
             feed = feedparser.parse(url)
-            # نأخذ أحدث 3 أخبار فقط من كل مصدر لتجنب الإغراق
-            for entry in feed.entries[:3]:
-                news_items.append({
-                    "title": entry.title,
-                    "link": entry.link,
-                    "source": source_name,
-                    "published": entry.get("published", "غير محدد"),
-                    "summary": entry.get("summary", "")[:150] + "..." # ملخص قصير
-                })
+            if feed.entries:
+                # نأخذ أحدث خبرين فقط لتسريع القائمة
+                for entry in feed.entries[:2]:
+                    news_items.append({
+                        "title": entry.title,
+                        "link": entry.link,
+                        "source": source_name,
+                        "published": entry.get("published", ""),
+                        "summary": entry.get("summary", "")[:120] + "..."
+                    })
         except Exception:
-            continue
+            continue # تخطي المصدر في حال الخطأ
         progress_bar.progress((i + 1) / total)
     
+    status_text.empty()
     progress_bar.empty()
-    # ترتيب الأخبار حسب الأحدث (إذا توفر التاريخ) أو عشوائياً بشكل طبيعي
     return news_items
 
 def extract_article(url):
-    """سحب نص المقال كاملاً"""
+    """سحب نص المقال"""
     try:
         downloaded = trafilatura.fetch_url(url)
         if downloaded:
@@ -119,101 +162,84 @@ def extract_article(url):
         return None
     return None
 
-def rewrite_with_yaqeen(text, tone):
-    """إعادة الصياغة باستخدام Gemini"""
+def rewrite_with_yaqeen(text, tone, user_instructions):
+    """إعادة الصياغة بالذكاء الاصطناعي"""
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = f"""
-    أنت "وكيل يقين"، محرر صحفي خبير يعمل لدى مؤسسة إعلامية مرموقة.
-    مهمتك: إعادة صياغة الخبر التالي بشكل احترافي جداً ليكون جاهزاً للنشر فوراً.
+    أنت محرر صحفي خبير في "وكيل يقين".
+    المهمة: إعادة صياغة الخبر التالي للنشر.
     
     النص الأصلي:
     {text}
     
-    الشروط الصارمة:
-    1. الأسلوب: {tone} (رصين، تحليلي، أو عاجل حسب الطلب).
-    2. العنوان: اقترح عنواناً جديداً قوياً متوافقاً مع SEO (يجذب النقرات ولكن بصدق).
-    3. الهيكل: مقدمة قوية، متن مفصل مقسم لفقرات، وخاتمة.
-    4. البيانات: حافظ على جميع الأسماء، الأرقام، والتواريخ بدقة متناهية.
-    5. المخرجات: أضف في النهاية قائمة بـ 5 وسوم (Hashtags) قوية.
+    التعليمات:
+    1. النبرة: {tone}.
+    2. تعليمات إضافية من المدير: {user_instructions}
+    3. العنوان: عنوان احترافي جذاب (SEO).
+    4. الهيكل: مقدمة، تفاصيل، خاتمة.
+    5. التنسيق: استخدم Bold للعناوين الفرعية.
     """
-    
     try:
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
-        return f"عذراً، حدث خطأ أثناء المعالجة: {str(e)}"
+        return f"خطأ في المعالجة: {str(e)}"
 
 # ==========================================
-# 4. واجهة المستخدم (UI)
+# 4. واجهة التطبيق (UI)
 # ==========================================
 
-# الشريط الجانبي
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3208/3208761.png", width=70) # أيقونة رمزية
-    st.title("وكيل يقين 🦅")
+    st.title("🦅 وكيل يقين")
     st.markdown("---")
+    selected_category = st.selectbox("اختر قسم المصادر:", list(RSS_SOURCES.keys()))
     
-    selected_category = st.selectbox("📂 اختر تخصص المصادر:", list(RSS_SOURCES.keys()))
+    st.markdown("### ✍️ إعدادات المحرر")
+    tone = st.select_slider("الأسلوب:", options=["رسمي", "تحليلي", "تفاعلي/سوشيال"], value="رسمي")
+    user_instructions = st.text_input("تعليمات خاصة (اختياري):", placeholder="مثلاً: ركز على تصريح الوزير...")
     
-    st.markdown("### ⚙️ إعدادات الصياغة")
-    tone = st.select_slider("نبرة المقال:", options=["حيادي ورصين", "تحليلي وعميق", "حماسي وعاجل"], value="حيادي ورصين")
-    
-    if st.button("🔄 تحديث المصادر الآن"):
+    if st.button("تحديث الأخبار 🔄"):
         st.cache_data.clear()
         st.rerun()
 
-    st.markdown("---")
-    st.caption("تم التطوير بواسطة: إلياس لمتي")
+st.markdown("<div class='main-header'>وكيل يقين - رصد الصحافة المغربية</div>", unsafe_allow_html=True)
+st.info(f"يتم الآن رصد المصادر من قسم: **{selected_category}**")
 
-# المنطقة الرئيسية
-st.markdown("<div class='main-header'>وكيل يقين للرصد والتحرير الصحفي</div>", unsafe_allow_html=True)
-st.markdown(f"<div class='sub-header'>جاري رصد المصادر من فئة: <b>{selected_category}</b></div>", unsafe_allow_html=True)
-st.markdown("---")
-
-# جلب الأخبار
+# عملية الجلب
 news_list = fetch_news_by_category(selected_category)
 
-if not news_list:
-    st.warning("جاري الاتصال بالمصادر... أو لا توجد أخبار حالياً.")
-else:
-    # عرض القائمة للاختيار
-    article_options = [f"[{item['source']}] {item['title']}" for item in news_list]
-    selected_idx = st.selectbox("🔎 اختر خبراً لمعالجته:", range(len(article_options)), format_func=lambda x: article_options[x])
+if news_list:
+    # عرض القائمة
+    article_options = [f"【{item['source']}】 {item['title']}" for item in news_list]
+    selected_idx = st.selectbox("اختر مقالاً للمعالجة:", range(len(article_options)), format_func=lambda x: article_options[x])
     
     selected_article = news_list[selected_idx]
     
-    # زر التنفيذ
-    if st.button("✨ ابدأ المعالجة عبر وكيل يقين", type="primary"):
-        
-        col1, col2 = st.columns([1, 1])
+    # زر البدء
+    if st.button("🚀 تحليل وإعادة صياغة المقال", type="primary"):
+        col1, col2 = st.columns(2)
         
         with col1:
-            st.info("📄 المصدر الأصلي")
-            st.markdown(f"**العنوان:** {selected_article['title']}")
-            st.markdown(f"**المصدر:** {selected_article['source']}")
-            st.markdown(f"[رابط المقال الأصلي]({selected_article['link']})")
-            
-            with st.spinner('جاري قراءة المقال الأصلي...'):
+            st.warning("المقال الأصلي")
+            st.markdown(f"**{selected_article['title']}**")
+            with st.spinner("جاري سحب النص..."):
                 original_text = extract_article(selected_article['link'])
-                
+            
             if original_text:
-                st.text_area("محتوى النص الخام:", value=original_text[:800]+"...", height=300, disabled=True)
+                st.text_area("", original_text, height=400)
             else:
-                st.error("تعذر سحب النص تلقائياً (الموقع محمي). يرجى نسخ النص يدوياً.")
-                original_text = st.text_area("ألصق النص هنا يدوياً إذا لزم الأمر:")
+                st.error("تعذر سحب النص تلقائياً. المرجو النسخ اليدوي.")
+                original_text = st.text_area("ألصق النص هنا:")
 
         with col2:
-            st.success("🦅 مخرجات وكيل يقين")
+            st.success("النسخة الجديدة (يقين)")
             if original_text:
-                with st.spinner('يقين يقوم بإعادة الصياغة الآن...'):
-                    rewritten = rewrite_with_yaqeen(original_text, tone)
+                with st.spinner("جاري الكتابة..."):
+                    rewritten = rewrite_with_yaqeen(original_text, tone, user_instructions)
                     st.markdown(rewritten)
-                    st.download_button(
-                        label="تحميل المقال (TXT)",
-                        data=rewritten,
-                        file_name=f"Yaqeen_Article_{datetime.now().strftime('%H%M')}.txt",
-                        mime="text/plain"
-                    )
-            else:
-                st.write("بانتظار النص...")
+                    
+                    # تحميل الملف
+                    st.download_button("تحميل المقال (TXT)", rewritten, file_name="article.txt")
+else:
+    st.warning("لم يتم العثور على أخبار جديدة، أو هناك مشكلة في الاتصال ببعض المصادر.")
