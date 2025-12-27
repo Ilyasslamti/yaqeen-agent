@@ -11,28 +11,87 @@ from datetime import datetime
 import pytz
 
 # ==========================================
-# 1. إعدادات الصفحة
+# 1. إعدادات الصفحة (Mobile Optimized)
 # ==========================================
 st.set_page_config(
-    page_title="وكيل يقين - الطيار الآلي",
-    page_icon="🦅",
-    layout="wide"
+    page_title="وكيل يقين AI",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="collapsed" # جعل القائمة مغلقة افتراضياً على الموبايل لتوفير المساحة
 )
 
 DB_FILE = "news_db.json"
 
 # ==========================================
-# 2. CSS (التصميم المستقر)
+# 2. CSS الاحترافي (مراعي للموبايل والحاسوب)
 # ==========================================
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+    
+    /* توحيد الخط */
     * { font-family: 'Cairo', sans-serif !important; }
+
+    /* تحسينات عامة للمحاذاة */
     h1, h2, h3, h4, h5, h6, .stMarkdown, .stText, p { text-align: right !important; }
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { direction: rtl; text-align: right; }
-    .news-card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: right; direction: rtl; border: 1px solid #eee; }
-    .seo-result { background: #f0fdf4; border-right: 4px solid #16a34a; padding: 20px; border-radius: 8px; text-align: right; direction: rtl; }
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;}
+
+    /* تصميم البطاقات (Cards) - ممتاز للموبايل */
+    .news-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-right: 4px solid #3b82f6; /* أزرق */
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        text-align: right;
+        direction: rtl;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+    
+    /* تصميم صندوق النتيجة (AI Result) */
+    .seo-result {
+        background: #f0fdfa; /* تيل فاتح */
+        border: 1px solid #ccfbf1;
+        border-right: 4px solid #0d9488; /* لون مميز للذكاء الاصطناعي */
+        padding: 20px;
+        border-radius: 12px;
+        text-align: right;
+        direction: rtl;
+        margin-top: 10px;
+    }
+
+    /* تحسين الأزرار للموبايل (أكبر وأوضح) */
+    .stButton>button {
+        width: 100%;
+        border-radius: 10px;
+        font-weight: 700;
+        padding: 0.5rem 1rem;
+        min-height: 50px; /* ارتفاع مناسب للإصبع */
+        font-size: 16px !important;
+    }
+    
+    /* زر الذكاء الاصطناعي الخاص */
+    div[data-testid="stButton"] button {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    div[data-testid="stButton"] button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* إخفاء العناصر المزعجة */
+    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
+    
+    /* تحسين عرض الموبايل للنصوص */
+    @media (max-width: 640px) {
+        h1 { font-size: 1.8rem !important; }
+        .stMarkdown p { font-size: 1rem !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -61,14 +120,12 @@ RSS_SOURCES = {
 }
 
 # ==========================================
-# 4. المحرك الخلفي (Backend Logic)
+# 4. المحرك الخلفي (Backend)
 # ==========================================
 try:
     if "GROQ_API_KEY" in st.secrets:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-    else:
-        st.warning("⚠️ مفتاح Groq مفقود")
-        client = None
+    else: client = None
 except: client = None
 
 def fetch_single_feed(source_name, url, limit):
@@ -86,8 +143,6 @@ def fetch_single_feed(source_name, url, limit):
     return entries
 
 def update_database_logic():
-    """الدالة التي تقوم بالعمل الشاق"""
-    print(f"[{datetime.now()}] بدء التحديث الخلفي...")
     all_data = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         for category, feeds in RSS_SOURCES.items():
@@ -97,70 +152,47 @@ def update_database_logic():
                 cat_items.extend(f.result())
             all_data[category] = cat_items
             
-    db_content = {
-        "last_updated": datetime.now().timestamp(),
-        "data": all_data
-    }
-    # الكتابة الذرية لتجنب تلف الملف
+    db_content = { "last_updated": datetime.now().timestamp(), "data": all_data }
     temp_file = DB_FILE + ".tmp"
     with open(temp_file, 'w', encoding='utf-8') as f:
         json.dump(db_content, f, ensure_ascii=False)
     os.replace(temp_file, DB_FILE)
-    print(f"[{datetime.now()}] تم التحديث وحفظ الملف.")
 
-# --- نظام الجدولة الخلفية (Background Scheduler) ---
+# --- الخلفية (Background Worker) ---
 @st.cache_resource
 def start_background_worker():
-    """هذا العامل يعمل في الخلفية للأبد ولا يتوقف"""
     def worker_loop():
         while True:
             try:
-                # 1. التحقق من الملف
                 if os.path.exists(DB_FILE):
-                    with open(DB_FILE, 'r', encoding='utf-8') as f:
-                        db = json.load(f)
+                    with open(DB_FILE, 'r', encoding='utf-8') as f: db = json.load(f)
                     last_ts = db.get('last_updated', 0)
-                else:
-                    last_ts = 0
+                else: last_ts = 0
 
                 now = datetime.now()
-                last_time = datetime.fromtimestamp(last_ts)
-                
-                # توقيت المغرب للتنظيف
                 tz_ma = pytz.timezone('Africa/Casablanca')
                 now_ma = datetime.now(tz_ma)
 
-                # شرط 1: التنظيف الساعة 2:30 صباحاً
                 if now_ma.hour == 2 and 30 <= now_ma.minute <= 35:
                     if os.path.exists(DB_FILE):
                         os.remove(DB_FILE)
-                        print("🧹 تم تنظيف الأرشيف اليومي.")
-                        # ننتظر قليلاً حتى لا يكرر الحذف في نفس الدقيقة
                         time.sleep(400) 
                         continue
 
-                # شرط 2: التحديث كل ساعة
-                diff = now - last_time
+                diff = now - datetime.fromtimestamp(last_ts)
                 if diff.total_seconds() > 3600 or last_ts == 0:
                     update_database_logic()
-                
-                # ننام دقيقة قبل الفحص التالي
                 time.sleep(60)
-                
-            except Exception as e:
-                print(f"خطأ في العامل الخلفي: {e}")
-                time.sleep(60)
+            except: time.sleep(60)
 
-    # تشغيل الخيط في الخلفية
     t = threading.Thread(target=worker_loop, daemon=True)
     t.start()
     return t
 
-# تشغيل العامل الخلفي مرة واحدة فقط
 start_background_worker()
 
 # ==========================================
-# 5. الواجهة الأمامية (Frontend)
+# 5. الواجهة الأمامية (AI & Mobile UI)
 # ==========================================
 def get_text(url):
     try:
@@ -169,12 +201,13 @@ def get_text(url):
     except: return None
 
 def rewrite(text, tone, instr):
-    if not client: return "خطأ: المفتاح غير موجود"
+    if not client: return "خطأ: المفتاح مفقود"
     prompt = f"""
-    أنت محرر صحفي. أعد صياغة هذا الخبر لـ "هاشمي بريس".
+    أنت محرر ذكاء اصطناعي متقدم لـ "هاشمي بريس".
+    المهمة: أعد صياغة الخبر باحترافية SEO.
     النص: {text[:2500]}
     الأسلوب: {tone}. ملاحظات: {instr}.
-    العنوان H1 جذاب.
+    العنوان: H1 جذاب.
     """
     try:
         res = client.chat.completions.create(
@@ -185,43 +218,65 @@ def rewrite(text, tone, instr):
         return res.choices[0].message.content
     except Exception as e: return str(e)
 
-st.title("🦅 وكيل يقين - الأرشيف التلقائي")
+# --- العنوان والشعار ---
+st.markdown("<h1 style='text-align: center; color: #1e3a8a;'>🤖 وكيل يقين AI</h1>", unsafe_allow_html=True)
 
-# قراءة البيانات للعرض
 if os.path.exists(DB_FILE):
     with open(DB_FILE, 'r', encoding='utf-8') as f:
         db = json.load(f)
     
-    last_up = datetime.fromtimestamp(db['last_updated']).strftime('%H:%M')
-    st.caption(f"📅 آخر تحديث للنظام: {last_up} (يتم التحديث تلقائياً كل ساعة)")
-    
+    # القائمة الجانبية (للهاتف تكون مغلقة، وللحاسوب مفتوحة حسب الرغبة)
     with st.sidebar:
-        st.header("التحكم")
-        cat = st.selectbox("القسم", list(db['data'].keys()))
+        st.header("⚙️ لوحة التحكم")
+        cat = st.selectbox("📂 القسم", list(db['data'].keys()))
         news_list = db['data'][cat]
-        tone = st.select_slider("النبرة", ["رسمي", "تحليلي", "تفاعلي"])
-        ins = st.text_input("توجيهات")
-        if st.button("تحديث يدوي قسري"):
+        
+        st.divider()
+        st.subheader("🧠 إعدادات الذكاء الاصطناعي")
+        tone = st.select_slider("نبرة المحرر", ["رسمي", "تحليلي", "تفاعلي"])
+        ins = st.text_input("توجيهات خاصة (اختياري)")
+        
+        st.divider()
+        if st.button("🔄 تحديث يدوي فوري"):
             with st.spinner("جاري التحديث..."):
                 update_database_logic()
             st.rerun()
 
     # عرض الأخبار
-    opts = [f"【{n['source']}】 {n['title']}" for n in news_list]
-    idx = st.selectbox("اختر الخبر:", range(len(opts)), format_func=lambda x: opts[x])
+    # نستخدم selectbox لأنه أسهل على الموبايل من الجداول الكبيرة
+    st.markdown(f"**الأخبار المتاحة في الأرشيف:** {len(news_list)} خبر")
     
-    if st.button("✨ صياغة"):
+    opts = [f"【{n['source']}】 {n['title']}" for n in news_list]
+    idx = st.selectbox("👇 اختر الخبر من القائمة:", range(len(opts)), format_func=lambda x: opts[x])
+    
+    # زر التشغيل الجديد (أيقونة الذكاء الاصطناعي)
+    # استخدمنا type="primary" ليكون ملوناً وواضحاً على الهاتف
+    if st.button("✨ تشغيل المحرر الذكي (AI Rewrite)", type="primary"):
         sel = news_list[idx]
-        with st.status("جاري العمل..."):
+        
+        with st.status("🤖 جاري المعالجة الذكية...", expanded=True) as s:
+            st.write("📥 سحب البيانات...")
             txt = get_text(sel['link'])
             if txt:
+                st.write("🧠 Llama 3.3 يفكر ويكتب...")
                 res = rewrite(txt, tone, ins)
-                col1, col2 = st.columns(2)
-                col1.info("الأصل"); col1.markdown(f"<div class='news-card'>{txt[:500]}...</div>", unsafe_allow_html=True)
-                col2.success("النتيجة"); col2.markdown(f"<div class='seo-result'>{res}</div>", unsafe_allow_html=True)
-                st.download_button("تحميل", res, "art.txt")
-            else: st.error("الموقع محمي")
+                s.update(label="تمت الصياغة بنجاح!", state="complete", expanded=False)
+                
+                # تخطيط مرن (للحاسوب عمودين، وللهاتف ينزلون تحت بعض تلقائياً)
+                c1, c2 = st.columns([1, 1])
+                
+                with c1:
+                    st.info("📄 النص الأصلي")
+                    st.markdown(f"<div class='news-card' style='max-height: 300px; overflow-y: auto;'>{txt[:600]}...</div>", unsafe_allow_html=True)
+                
+                with c2:
+                    st.success("✨ النتيجة (هاشمي بريس)")
+                    st.markdown(f"<div class='seo-result'>{res}</div>", unsafe_allow_html=True)
+                    # زر التحميل (بديل النسخ الصعب على الموبايل)
+                    st.download_button("📥 تحميل المقال (TXT)", res, f"yaqeen_ai_{int(time.time())}.txt", key="dl_btn")
+            else:
+                s.update(label="فشل العملية", state="error")
+                st.error("الموقع محمي، حاول مع خبر آخر.")
 
 else:
-    st.warning("⏳ النظام يقوم بالتمهيد الأولي وجلب الأخبار... يرجى تحديث الصفحة بعد دقيقة.")
-    # إذا لم يوجد ملف، العامل الخلفي سيقوم بإنشائه قريباً
+    st.warning("⏳ النظام يجهز نفسه لأول مرة... (انتظر دقيقة ثم حدث الصفحة)")
