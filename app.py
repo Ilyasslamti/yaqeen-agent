@@ -25,7 +25,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. المصادر
+# 2. المصادر (عينة سريعة للتجربة)
 # ==========================================
 RSS_SOURCES = {
     "🔵 أخبار الشمال": {
@@ -33,21 +33,16 @@ RSS_SOURCES = {
         "بريس تطوان": "https://presstetouan.com/feed",
         "تطوان بريس": "https://tetouanpress.ma/feed",
         "طنجة 24": "https://tanja24.com/feed",
-        "كاب 24": "https://cap24.tv/feed",
     },
     "📰 صحف وطنية": {
         "هسبريس": "https://www.hespress.com/feed",
         "العمق": "https://al3omk.com/feed",
         "مدار 21": "https://madar21.com/feed",
-        "اليوم 24": "https://www.alyaoum24.com/feed",
         "كود": "https://www.goud.ma/feed",
-        "زنقة 20": "https://www.rue20.com/feed",
-        "الصباح": "https://assabah.ma/feed",
     },
     "⚽ رياضة": {
         "البطولة": "https://www.elbotola.com/rss",
         "هسبريس الرياضية": "https://hesport.com/feed",
-        "المنتخب": "https://almountakhab.com/rss",
     }
 }
 
@@ -79,11 +74,12 @@ def get_text(url):
     except: return None
 
 def rewrite(text, tone, instr):
-    model = genai.GenerativeModel('gemini-pro')
+    # نستخدم الموديل الحديث فلاش لأنه يدعم نصوص أطول وأسرع
+    model = genai.GenerativeModel('gemini-1.5-flash')
     prompt = f"أعد صياغة هذا الخبر لصحيفة هاشمي بريس.\nالنبرة: {tone}\nتعليمات: {instr}\nالنص: {text}"
     try:
         return model.generate_content(prompt).text
-    except Exception as e: return str(e)
+    except Exception as e: return f"خطأ: {str(e)}"
 
 # ==========================================
 # 4. الواجهة
@@ -110,8 +106,10 @@ if news:
             with col2:
                 with st.spinner("جاري الكتابة..."):
                     res = rewrite(txt, tone, ins)
-                    st.success("النتيجة"); st.markdown(res)
-        else: st.error("تعذر جلب النص")
+                    if "404" in res:
+                        st.error("خطأ في الموديل. تأكد من تحديث requirements.txt")
+                    else:
+                        st.success("النتيجة"); st.markdown(res)
+        else: st.error("تعذر جلب النص (الموقع محمي)")
 else:
     st.warning("لا توجد أخبار حالياً.")
-# End of file
