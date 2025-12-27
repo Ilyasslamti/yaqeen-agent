@@ -114,7 +114,7 @@ RSS_SOURCES = {
 
 # إعداد مفتاح API بشكل آمن
 try:
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+    genai.configure(api_key=st.secrets["AIzaSyDwea9zoO6rlbXjopPY_NILVW7jLfp1Qos"])
 except:
     st.error("⚠️ مفتاح API غير موجود. تأكد من إضافته في Secrets.")
 
@@ -203,7 +203,7 @@ with st.sidebar:
         st.cache_data.clear()
         st.rerun()
 
-st.markdown("<div class='main-header'>وكيل يقين - رصد الصحافة المغربية</div>", unsafe_allow_html=True)
+st.markdown("<div class='main-header'>وكيل يقين - سكربت يقست للاخبار </div>", unsafe_allow_html=True)
 st.info(f"يتم الآن رصد المصادر من قسم: **{selected_category}**")
 
 # عملية الجلب
@@ -243,3 +243,4 @@ if news_list:
                     st.download_button("تحميل المقال (TXT)", rewritten, file_name="article.txt")
 else:
     st.warning("لم يتم العثور على أخبار جديدة، أو هناك مشكلة في الاتصال ببعض المصادر.")
+
