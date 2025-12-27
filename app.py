@@ -8,72 +8,68 @@ import concurrent.futures
 # 1. إعدادات الصفحة
 # ==========================================
 st.set_page_config(
-    page_title="وكيل يقين - المحرر الذكي",
+    page_title="وكيل يقين",
     page_icon="🦅",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ==========================================
-# 2. إصلاح التصميم (CSS الآمن جداً للهواتف)
+# 2. تصميم CSS (الوضع الآمن للهواتف)
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
     
-    /* 1. توحيد الخط */
-    html, body, [class*="css"] {
-        font-family: 'Cairo', sans-serif;
+    /* تطبيق الخط على الجميع */
+    * {
+        font-family: 'Cairo', sans-serif !important;
     }
 
-    /* 2. إصلاح المحاذاة دون كسر الهيكل */
-    /* نجعل النصوص لليمين، لكن لا نقلب الصفحة كاملة */
-    .stMarkdown, .stText, h1, h2, h3, h4, h5, h6, p, div {
+    /* هام جداً: لا نستخدم direction: rtl للصفحة كاملة لتجنب تداخل القائمة */
+    
+    /* محاذاة العناوين والنصوص لليمين */
+    h1, h2, h3, h4, h5, h6, .stMarkdown, .stText, p {
+        text-align: right !important;
+    }
+    
+    /* جعل حقول الإدخال تكتب من اليمين */
+    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
+        direction: rtl;
         text-align: right;
     }
     
-    /* 3. إصلاح القائمة الجانبية */
-    section[data-testid="stSidebar"] {
+    /* تنسيق القائمة الجانبية (النصوص لليمين لكن الهيكل ثابت) */
+    section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] h1 {
         text-align: right;
-        /* لا نضع direction: rtl هنا لأنه يكسر القائمة على الموبايل */
     }
 
-    /* 4. تنسيق الصناديق لتكون عربية */
-    .content-box {
-        direction: rtl; /* هنا فقط نسمح بالقلب داخل الصندوق */
+    /* الصناديق المخصصة للمحتوى (هنا نطبق RTL بأمان) */
+    .arabic-box {
+        direction: rtl;
+        text-align: right;
         background-color: #ffffff;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 15px;
-        text-align: right;
-    }
-
-    .seo-box {
-        direction: rtl;
-        background-color: #f8f9fa;
-        border-right: 5px solid #10b981;
-        text-align: right;
+        border: 1px solid #e5e5e5;
         padding: 20px;
         border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-
-    /* 5. إصلاح القوائم المنسدلة */
-    .stSelectbox div[data-baseweb="select"] {
+    
+    .seo-result {
         direction: rtl;
-    }
-
-    /* 6. تحسين الأزرار */
-    .stButton>button {
-        width: 100%;
+        text-align: right;
+        background-color: #f0fdf4; /* خلفية خضراء فاتحة جداً */
+        border-right: 4px solid #16a34a;
+        padding: 20px;
         border-radius: 8px;
-        font-weight: bold;
     }
 
-    /* إخفاء القوائم التقنية */
+    /* إخفاء العناصر التقنية */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    
+    header {visibility: hidden;}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -121,7 +117,7 @@ RSS_SOURCES = {
 }
 
 # ==========================================
-# 4. المنطق (سريع ومتوازي)
+# 4. المنطق (Groq + Threads)
 # ==========================================
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -164,20 +160,19 @@ def get_text(url):
 def rewrite(text, tone, instr):
     prompt = f"""
     أنت خبير سيو ومحرر صحفي (Senior Editor) في "هاشمي بريس".
-    المهمة: أعد هندسة الخبر التالي.
+    المهمة: إعادة صياغة الخبر التالي بشكل احترافي.
     
-    المدخلات:
+    المعطيات:
     - النص: {text}
     - النبرة: {tone}
     - ملاحظات: {instr}
 
     المطلوب:
-    1. عنوان H1 مغناطيسي (SEO).
-    2. مقدمة تجذب القارئ فوراً.
-    3. جسم المقال مقسم بعناوين فرعية H2.
-    4. خاتمة و 3 وسوم قوية.
+    1. عنوان جذاب (SEO).
+    2. مقدمة، متن، وخاتمة.
+    3. وسوم (Hashtags).
     
-    اللغة: عربية فصحى حديثة وسلسة.
+    اللغة: عربية فصحى سليمة.
     """
     try:
         chat_completion = client.chat.completions.create(
@@ -190,64 +185,61 @@ def rewrite(text, tone, instr):
     except Exception as e: return f"خطأ: {str(e)}"
 
 # ==========================================
-# 5. الواجهة (النظيفة)
+# 5. واجهة المستخدم (Layout)
 # ==========================================
 with st.sidebar:
-    st.title("🦅 لوحة التحكم")
-    st.markdown("---")
+    st.markdown("### 🦅 لوحة التحكم")
     
     cat = st.selectbox("القسم:", list(RSS_SOURCES.keys()))
     
-    # عرض أسماء المصادر بطريقة بسيطة لا تكسر التصميم
+    # عرض المصادر بطريقة نصية بسيطة جداً لتجنب المشاكل
     current = list(RSS_SOURCES[cat].keys())
-    with st.expander(f"المصادر ({len(current)})"):
-        st.caption("، ".join(current))
+    with st.expander("المصادر المتاحة"):
+        st.caption(" - ".join(current))
     
     st.markdown("---")
-    limit = st.slider("عمق البحث:", 5, 30, 10) 
+    limit = st.slider("عدد الأخبار:", 5, 30, 10) 
     tone = st.select_slider("النبرة:", ["رسمي", "تحليلي", "تفاعلي"])
     ins = st.text_input("توجيهات:")
     
-    if st.button("🚀 تحديث المصادر", type="primary"):
+    if st.button("تحديث المصادر", type="primary"):
         st.cache_data.clear()
         st.rerun()
 
-# العنوان الرئيسي
+# المتن الرئيسي
 st.markdown("<h1 style='text-align: center; color: #1e3a8a;'>وكيل يقين</h1>", unsafe_allow_html=True)
 
-# التشغيل
+# الجلب
 news = fetch_news_parallel(cat, limit)
 
 if news:
-    # إحصائيات
-    c1, c2 = st.columns(2)
-    c1.metric("عدد الأخبار", len(news))
-    c2.metric("الحالة", "نشط ⚡")
+    st.info(f"تم جلب {len(news)} خبراً بنجاح (وضع السرعة القصوى)")
     
     opts = [f"【{n['source']}】 {n['title']}" for n in news]
-    idx = st.selectbox("اختر خبراً:", range(len(opts)), format_func=lambda x: opts[x])
+    idx = st.selectbox("اختر الخبر:", range(len(opts)), format_func=lambda x: opts[x])
     
-    if st.button("✨ صياغة فورية"):
+    if st.button("✨ بدء الصياغة"):
         sel = news[idx]
-        with st.spinner("جاري المعالجة..."):
+        with st.spinner("جاري القراءة..."):
             txt = get_text(sel['link'])
             
         if txt:
-            # هنا نستخدم الـ HTML المخصص لضمان اتجاه النص
-            col1, col2 = st.columns([1, 1])
+            # استخدام أعمدة قياسية
+            col1, col2 = st.columns(2)
             
             with col1:
-                st.subheader("النص الأصلي")
-                # عرض النص داخل صندوق مخصص
-                st.markdown(f"<div class='content-box'>{txt[:1000]}...</div>", unsafe_allow_html=True)
+                st.markdown("#### النص الأصلي")
+                # عرض النص داخل صندوق RTL مخصص
+                st.markdown(f"<div class='arabic-box'>{txt[:800]}...</div>", unsafe_allow_html=True)
             
             with col2:
-                st.subheader("النسخة المحسنة")
-                with st.spinner("Llama 3.3 يكتب..."):
+                st.markdown("#### صياغة هاشمي بريس")
+                with st.spinner("جاري الكتابة..."):
                     res = rewrite(txt, tone, ins)
-                    # عرض النتيجة
-                    st.markdown(f"<div class='seo-box'>{res}</div>", unsafe_allow_html=True)
-                    st.download_button("تحميل TXT", res, "article.txt")
-        else: st.error("الموقع محمي.")
+                    # عرض النتيجة داخل صندوق SEO مخصص
+                    st.markdown(f"<div class='seo-result'>{res}</div>", unsafe_allow_html=True)
+                    st.download_button("تحميل المقال", res, "article.txt")
+        else:
+            st.warning("تعذر قراءة النص (الموقع محمي). حاول مع خبر آخر.")
 else:
-    st.info("اضغط زر التحديث للبدء")
+    st.write("اضغط زر التحديث في القائمة الجانبية.")
