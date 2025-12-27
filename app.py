@@ -9,28 +9,112 @@ from datetime import datetime
 # 1. إعدادات الصفحة
 # ==========================================
 st.set_page_config(
-    page_title="وكيل يقين - النسخة الشاملة",
+    page_title="وكيل يقين - المحرر الذكي",
     page_icon="🦅",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# CSS
+# ==========================================
+# 2. التصميم الاحترافي (CSS Injection)
+# ==========================================
 st.markdown("""
 <style>
-    .main-header {font-size: 2.2rem; color: #1e3a8a; text-align: center; margin-bottom: 0.5rem; font-family: 'Segoe UI', sans-serif;}
-    .seo-box {border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; background-color: #ffffff;}
-    .source-tag {
-        display: inline-block; background-color: #f3f4f6; color: #374151;
-        padding: 4px 8px; margin: 2px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #e5e7eb;
+    /* استيراد خط 'Cairo' العربي من جوجل */
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800&display=swap');
+
+    /* تطبيق الخط على كامل التطبيق */
+    html, body, [class*="css"] {
+        font-family: 'Cairo', sans-serif;
+        direction: rtl; /* ضمان الاتجاه من اليمين لليسار */
     }
+
+    /* تحسين العنوان الرئيسي */
+    .main-header {
+        background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 2.8rem;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .sub-header {
+        text-align: center;
+        color: #64748b;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* تصميم البطاقات (Cards) للنصوص */
+    .content-box {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f1f5f9;
+        margin-bottom: 20px;
+    }
+
+    .original-box {
+        border-right: 4px solid #94a3b8; /* رمادي للنص الأصلي */
+    }
+
+    .seo-box {
+        border-right: 4px solid #10b981; /* أخضر للنتيجة النهائية */
+        background-color: #fcfdfd;
+    }
+
+    /* تحسين الأزرار */
+    .stButton>button {
+        width: 100%;
+        background: linear-gradient(45deg, #2563eb, #1d4ed8);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    }
+
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(37, 99, 235, 0.3);
+        background: linear-gradient(45deg, #1d4ed8, #1e40af);
+    }
+
+    /* تحسين القائمة الجانبية */
+    section[data-testid="stSidebar"] {
+        background-color: #f8fafc;
+        border-left: 1px solid #e2e8f0;
+    }
+
+    /* وسوم المصادر */
+    .source-tag {
+        display: inline-block;
+        background-color: #e0f2fe;
+        color: #0369a1;
+        padding: 4px 10px;
+        margin: 3px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid #bae6fd;
+    }
+
+    /* إخفاء عناصر Streamlit الافتراضية */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. المصادر
+# 3. بيانات المصادر
 # ==========================================
 RSS_SOURCES = {
     "🔵 أخبار الشمال": {
@@ -70,12 +154,12 @@ RSS_SOURCES = {
 }
 
 # ==========================================
-# 3. المنطق (Groq)
+# 4. المنطق البرمجي (Backend)
 # ==========================================
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 except:
-    st.error("⚠️ خطأ: مفتاح GROQ_API_KEY مفقود في Secrets")
+    st.error("⚠️ خطأ: يرجى التأكد من مفتاح GROQ_API_KEY في الإعدادات.")
     st.stop()
 
 @st.cache_data(ttl=300)
@@ -83,8 +167,8 @@ def fetch_news(category, limit_per_source):
     items = []
     feeds = RSS_SOURCES.get(category, {})
     
-    progress_text = "جاري الاتصال بغرف الأخبار..."
-    my_bar = st.progress(0, text=progress_text)
+    # Custom Progress Bar styling needed? Streamlit's default is fine for now.
+    my_bar = st.progress(0, text="جاري الاتصال بغرف الأخبار...")
     total_feeds = len(feeds)
     
     for i, (src, url) in enumerate(feeds.items()):
@@ -108,29 +192,28 @@ def get_text(url):
 
 def rewrite(text, tone, instr):
     prompt = f"""
-    أنت خبير سيو ومحرر صحفي (Senior Editor).
-    المهمة: أعد صياغة الخبر التالي ليكون جاهزاً للنشر في "هاشمي بريس".
+    أنت خبير سيو ومحرر صحفي (Senior Editor) لدى "هاشمي بريس".
+    المهمة: أعد هندسة الخبر التالي ليتصدر محركات البحث ويجذب القراء.
 
-    التعليمات:
-    1. أعد الكتابة بلغة عربية قوية وصحفية.
-    2. النبرة: {tone}
-    3. تعليمات: {instr}
+    البيانات المدخلة:
+    - النص الأصلي: {text}
+    - النبرة المطلوبة: {tone}
+    - ملاحظات إضافية: {instr}
+
+    المطلوب (Strict Format):
+    1. عنوان H1 جذاب (Click-worthy) وغير مضلل.
+    2. مقدمة قوية تحتوي الكلمة المفتاحية.
+    3. محتوى مقسم بذكاء (عناوين فرعية H2).
+    4. خاتمة تلخيصية.
+    5. قسم خاص بالـ SEO في النهاية (وصف ميتا + وسوم).
     
-    معايير السيو (SEO):
-    - استخرج الكلمة المفتاحية وضعها في العنوان والمقدمة.
-    - اكتب عنواناً رئيسياً (H1) جذاباً.
-    - اكتب وصف ميتا (Meta Description) دقيق.
-    - قسّم النص إلى عناوين فرعية (H2, H3).
-    - اقترح 3 وسوم (Tags).
-
-    النص الأصلي:
-    {text}
+    اللغة: عربية فصحى صحفية عالية المستوى.
     """
     
     try:
         chat_completion = client.chat.completions.create(
             messages=[
-                {"role": "system", "content": "You are an expert Arabic News Editor & SEO Specialist."},
+                {"role": "system", "content": "You are a professional News Editor and SEO Specialist."},
                 {"role": "user", "content": prompt}
             ],
             model="llama-3.3-70b-versatile",
@@ -141,59 +224,78 @@ def rewrite(text, tone, instr):
     except Exception as e: return f"خطأ تقني: {str(e)}"
 
 # ==========================================
-# 4. واجهة المستخدم
+# 5. بناء الواجهة (Frontend Layout)
 # ==========================================
 with st.sidebar:
-    st.title("🦅 يقين (Pro)")
+    st.image("https://cdn-icons-png.flaticon.com/512/3208/3208761.png", width=60)
+    st.title("لوحة تحكم يقين")
     st.markdown("---")
     
-    # اختيار القسم وعرض الجرائد
-    cat = st.selectbox("📂 القسم:", list(RSS_SOURCES.keys()))
+    # 1. Selection
+    st.markdown("### 📂 المصادر")
+    cat = st.selectbox("اختر القسم الصحفي:", list(RSS_SOURCES.keys()))
     
-    # عرض الجرائد (الميزة الجديدة)
+    # Source Tags
     current_sources = list(RSS_SOURCES[cat].keys())
-    with st.expander(f"👁️ عرض مصادر هذا القسم ({len(current_sources)})", expanded=True):
+    with st.expander(f"👁️ عرض المصادر النشطة ({len(current_sources)})"):
         sources_html = "".join([f"<span class='source-tag'>{s}</span>" for s in current_sources])
         st.markdown(sources_html, unsafe_allow_html=True)
     
     st.markdown("---")
     
-    # التحكم
-    limit = st.slider("عدد الأخبار/جريدة:", 5, 30, 15)
+    # 2. Controls
+    st.markdown("### ⚙️ الإعدادات")
+    limit = st.slider("عمق البحث (خبر/جريدة):", 5, 30, 15)
+    tone = st.select_slider("نبرة الصياغة:", ["رسمي ومحايد", "تحليلي معمق", "سوشيال/تفاعلي"])
+    ins = st.text_input("توجيهات خاصة للمحرر:")
     
-    st.markdown("### ✍️ المحرر")
-    tone = st.select_slider("النبرة:", ["رسمي", "تحليلي", "تفاعلي"])
-    ins = st.text_input("توجيهات:")
-    
-    if st.button("تحديث المصادر 🔄", type="primary"): 
+    st.markdown("---")
+    if st.button("🚀 بدء المسح الشامل", type="primary"): 
         st.cache_data.clear()
         st.rerun()
 
-st.markdown("<div class='main-header'>وكيل يقين - غرفة التحرير</div>", unsafe_allow_html=True)
+# Main Area
+st.markdown("<div class='main-header'>وكيل يقين للصحافة الذكية</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub-header'>نظام الرصد وإعادة الصياغة بتقنية Llama 3.3</div>", unsafe_allow_html=True)
 
-# التشغيل
+# Fetching Logic
 news = fetch_news(cat, limit)
 
 if news:
-    count = len(news)
-    st.success(f"تم رصد **{count}** مقالاً.")
+    # Top Stats
+    c1, c2, c3 = st.columns(3)
+    c1.metric("إجمالي الأخبار", len(news))
+    c2.metric("المصادر النشطة", len(current_sources))
+    c3.metric("تاريخ التحديث", datetime.now().strftime("%H:%M"))
     
+    st.markdown("---")
+    
+    # News Selector
     opts = [f"【{n['source']}】 {n['title']}" for n in news]
-    idx = st.selectbox("اختر خبراً:", range(len(opts)), format_func=lambda x: opts[x])
+    idx = st.selectbox("📝 اختر خبراً للمعالجة:", range(len(opts)), format_func=lambda x: opts[x])
     
-    if st.button("🚀 صياغة احترافية (SEO)"):
+    if st.button("✨ تحليل وصياغة المقال (SEO)"):
         sel = news[idx]
-        with st.spinner("جاري المعالجة..."):
+        with st.spinner("جاري سحب البيانات وتحليل النص..."):
             txt = get_text(sel['link'])
             
         if txt:
-            col1, col2 = st.columns([1, 1.3])
-            col1.info("النص الأصلي"); col1.text_area("", txt, height=600, disabled=True)
+            col1, col2 = st.columns([1, 1.2])
+            
+            with col1:
+                st.markdown("### 📄 النص الأصلي")
+                st.markdown(f"<div class='content-box original-box'>{txt[:2000]}... (عرض جزئي)</div>", unsafe_allow_html=True)
+            
             with col2:
-                st.success("النسخة المحسنة")
-                with st.spinner("Llama 3.3 يكتب..."):
+                st.markdown("### 🦅 نسخة هاشمي بريس")
+                with st.spinner("Llama 3.3 يقوم بالكتابة الآن..."):
                     res = rewrite(txt, tone, ins)
-                    st.markdown(f"<div class='seo-box'>{res}</div>", unsafe_allow_html=True)
-        else: st.error("تعذر سحب النص.")
+                    st.markdown(f"<div class='content-box seo-box'>{res}</div>", unsafe_allow_html=True)
+                    
+                    # Download Button moved inside container logic if possible, or below
+                    st.download_button("📥 تحميل المقال (TXT)", res, file_name="article.txt")
+        else: 
+            st.error("تعذر سحب النص. قد يكون الموقع يستخدم حماية عالية.")
+
 else:
-    st.info("اضغط 'تحديث المصادر' للبدء...")
+    st.info("👈 اضغط على 'بدء المسح الشامل' من القائمة الجانبية لبدء العمل.")
