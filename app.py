@@ -29,22 +29,15 @@ st.markdown("""
         transition: transform 0.2s;
     }
     .news-card:hover {transform: scale(1.01); border-color: #1E3A8A;}
-    .source-badge {
-        background-color: #e3f2fd; 
-        color: #1565c0; 
-        padding: 2px 8px; 
-        border-radius: 4px; 
-        font-size: 0.8rem; 
-        font-weight: bold;
-    }
-    /* إخفاء علامة القفل الخاصة بـ Streamlit */
+    
+    /* إخفاء عناصر Streamlit الافتراضية */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. قاعدة بيانات الـ 60 مصدر (محدثة وشاملة)
+# 2. قاعدة بيانات المصادر (محدثة وشاملة)
 # ==========================================
 RSS_SOURCES = {
     "🔵 أخبار الشمال (تطوان/المضيق/طنجة)": {
@@ -116,7 +109,7 @@ RSS_SOURCES = {
 try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 except Exception as e:
-    st.error("⚠️ خطأ في مفتاح API. يرجى التأكد من إضافته في إعدادات Secrets في Streamlit Cloud.")
+    st.error("⚠️ خطأ: لم يتم العثور على مفتاح API. تأكد من إضافته في إعدادات Secrets في Streamlit.")
     st.stop()
 
 @st.cache_data(ttl=300) # تحديث كل 5 دقائق
@@ -166,7 +159,7 @@ def extract_article(url):
 def rewrite_with_yaqeen(text, tone, user_instructions):
     """إعادة الصياغة باستخدام Gemini Pro"""
     
-    # 🔴 التعديل الأساسي هنا: استخدام gemini-pro المستقر
+    # استخدام gemini-pro المستقر
     model = genai.GenerativeModel('gemini-pro')
     
     prompt = f"""
@@ -248,109 +241,6 @@ if news_list:
                 original_text = st.text_area("ألصق النص هنا يدوياً:")
 
         with col2:
-            st.success("✨ النسخة الجديدة (يقين)")
-            if original_text:
-                with st.spinner("جاري الكتابة بأسلوب صحفي محترف..."):
-                    rewritten = rewrite_with_yaqeen(original_text, tone, user_instructions)
-                    st.markdown(rewritten)
-                    
-                    # تحميل الملف
-                    st.download_button(
-                        label="📥 تحميل المقال (TXT)", 
-                        data=rewritten, 
-                        file_name=f"Yaqeen_News_{datetime.now().strftime('%H%M')}.txt"
-                    )
-else:
-    st.warning("لم يتم العثور على أخبار جديدة، أو هناك مشكلة في الاتصال ببعض المصادر.")                    })
-        except Exception:
-            continue # تخطي المصدر في حال الخطأ
-        progress_bar.progress((i + 1) / total)
-    
-    status_text.empty()
-    progress_bar.empty()
-    return news_items
-
-def extract_article(url):
-    """سحب نص المقال"""
-    try:
-        downloaded = trafilatura.fetch_url(url)
-        if downloaded:
-            return trafilatura.extract(downloaded)
-    except:
-        return None
-    return None
-
-def rewrite_with_yaqeen(text, tone, user_instructions):
-    """إعادة الصياغة بالذكاء الاصطناعي"""
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    
-    prompt = f"""
-    أنت محرر صحفي خبير في "وكيل يقين".
-    المهمة: إعادة صياغة الخبر التالي للنشر.
-    
-    النص الأصلي:
-    {text}
-    
-    التعليمات:
-    1. النبرة: {tone}.
-    2. تعليمات إضافية من المدير: {user_instructions}
-    3. العنوان: عنوان احترافي جذاب (SEO).
-    4. الهيكل: مقدمة، تفاصيل، خاتمة.
-    5. التنسيق: استخدم Bold للعناوين الفرعية.
-    """
-    try:
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        return f"خطأ في المعالجة: {str(e)}"
-
-# ==========================================
-# 4. واجهة التطبيق (UI)
-# ==========================================
-
-with st.sidebar:
-    st.title("🦅 وكيل يقين")
-    st.markdown("---")
-    selected_category = st.selectbox("اختر قسم المصادر:", list(RSS_SOURCES.keys()))
-    
-    st.markdown("### ✍️ إعدادات المحرر")
-    tone = st.select_slider("الأسلوب:", options=["رسمي", "تحليلي", "تفاعلي/سوشيال"], value="رسمي")
-    user_instructions = st.text_input("تعليمات خاصة (اختياري):", placeholder="مثلاً: ركز على تصريح الوزير...")
-    
-    if st.button("تحديث الأخبار 🔄"):
-        st.cache_data.clear()
-        st.rerun()
-
-st.markdown("<div class='main-header'>وكيل يقين - سكربت يقست للاخبار </div>", unsafe_allow_html=True)
-st.info(f"يتم الآن رصد المصادر من قسم: **{selected_category}**")
-
-# عملية الجلب
-news_list = fetch_news_by_category(selected_category)
-
-if news_list:
-    # عرض القائمة
-    article_options = [f"【{item['source']}】 {item['title']}" for item in news_list]
-    selected_idx = st.selectbox("اختر مقالاً للمعالجة:", range(len(article_options)), format_func=lambda x: article_options[x])
-    
-    selected_article = news_list[selected_idx]
-    
-    # زر البدء
-    if st.button("🚀 تحليل وإعادة صياغة المقال", type="primary"):
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.warning("المقال الأصلي")
-            st.markdown(f"**{selected_article['title']}**")
-            with st.spinner("جاري سحب النص..."):
-                original_text = extract_article(selected_article['link'])
-            
-            if original_text:
-                st.text_area("", original_text, height=400)
-            else:
-                st.error("تعذر سحب النص تلقائياً. المرجو النسخ اليدوي.")
-                original_text = st.text_area("ألصق النص هنا:")
-
-  with col2:
             st.success("✨ النسخة الجديدة (يقين)")
             if original_text:
                 with st.spinner("جاري الكتابة بأسلوب صحفي محترف..."):
