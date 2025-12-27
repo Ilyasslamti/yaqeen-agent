@@ -1,6 +1,7 @@
 streamlit
 feedparser
 trafilatura
-groq
+groq==0.5.0
 beautifulsoup4
 lxml_html_clean
+concurrent-futures; python_version < "3.8"
