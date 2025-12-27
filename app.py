@@ -350,16 +350,18 @@ if news_list:
                 st.error("تعذر سحب النص تلقائياً. المرجو النسخ اليدوي.")
                 original_text = st.text_area("ألصق النص هنا:")
 
-        with col2:
-            st.success("النسخة الجديدة (يقين)")
+  with col2:
+            st.success("✨ النسخة الجديدة (يقين)")
             if original_text:
-                with st.spinner("جاري الكتابة..."):
+                with st.spinner("جاري الكتابة بأسلوب صحفي محترف..."):
                     rewritten = rewrite_with_yaqeen(original_text, tone, user_instructions)
                     st.markdown(rewritten)
                     
                     # تحميل الملف
-                    st.download_button("تحميل المقال (TXT)", rewritten, file_name="article.txt")
+                    st.download_button(
+                        label="📥 تحميل المقال (TXT)", 
+                        data=rewritten, 
+                        file_name=f"Yaqeen_News_{datetime.now().strftime('%H%M')}.txt"
+                    )
 else:
     st.warning("لم يتم العثور على أخبار جديدة، أو هناك مشكلة في الاتصال ببعض المصادر.")
-
-
