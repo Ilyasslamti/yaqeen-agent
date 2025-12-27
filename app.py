@@ -15,41 +15,38 @@ st.set_page_config(
 )
 
 # ==========================================
-# 2. إصلاح التصميم (CSS الآمن)
+# 2. إصلاح التصميم (CSS الآمن جداً للهواتف)
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
     
-    /* تطبيق الخط على الجميع */
+    /* 1. توحيد الخط */
     html, body, [class*="css"] {
         font-family: 'Cairo', sans-serif;
     }
 
-    /* الحل السحري: بدلاً من قلب الموقع كاملاً وتشويهه 
-       نقوم بمحاذاة النصوص فقط لليمين داخل الحاويات
-    */
-    
-    /* محاذاة العناوين والنصوص العادية */
+    /* 2. إصلاح المحاذاة دون كسر الهيكل */
+    /* نجعل النصوص لليمين، لكن لا نقلب الصفحة كاملة */
     .stMarkdown, .stText, h1, h2, h3, h4, h5, h6, p, div {
         text-align: right;
     }
     
-    /* محاذاة القوائم المنسدلة والمدخلات */
-    .stSelectbox div[data-baseweb="select"], .stTextInput input {
-        direction: rtl;
+    /* 3. إصلاح القائمة الجانبية */
+    section[data-testid="stSidebar"] {
         text-align: right;
+        /* لا نضع direction: rtl هنا لأنه يكسر القائمة على الموبايل */
     }
 
-    /* صناديق المحتوى المخصصة */
+    /* 4. تنسيق الصناديق لتكون عربية */
     .content-box {
-        direction: rtl;
+        direction: rtl; /* هنا فقط نسمح بالقلب داخل الصندوق */
         background-color: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 15px;
-        text-align: right; /* مهم جداً */
+        text-align: right;
     }
 
     .seo-box {
@@ -57,9 +54,16 @@ st.markdown("""
         background-color: #f8f9fa;
         border-right: 5px solid #10b981;
         text-align: right;
+        padding: 20px;
+        border-radius: 10px;
     }
 
-    /* تحسين الأزرار */
+    /* 5. إصلاح القوائم المنسدلة */
+    .stSelectbox div[data-baseweb="select"] {
+        direction: rtl;
+    }
+
+    /* 6. تحسين الأزرار */
     .stButton>button {
         width: 100%;
         border-radius: 8px;
@@ -139,7 +143,6 @@ def fetch_news_parallel(category, limit_per_source):
     feeds = RSS_SOURCES.get(category, {})
     all_items = []
     
-    # التوازي الكامل
     num_workers = len(feeds) if len(feeds) > 0 else 1
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
@@ -190,8 +193,8 @@ def rewrite(text, tone, instr):
 # 5. الواجهة (النظيفة)
 # ==========================================
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3208/3208761.png", width=50)
-    st.markdown("### لوحة التحكم")
+    st.title("🦅 لوحة التحكم")
+    st.markdown("---")
     
     cat = st.selectbox("القسم:", list(RSS_SOURCES.keys()))
     
@@ -243,7 +246,7 @@ if news:
                 with st.spinner("Llama 3.3 يكتب..."):
                     res = rewrite(txt, tone, ins)
                     # عرض النتيجة
-                    st.markdown(f"<div class='content-box seo-box'>{res}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='seo-box'>{res}</div>", unsafe_allow_html=True)
                     st.download_button("تحميل TXT", res, "article.txt")
         else: st.error("الموقع محمي.")
 else:
