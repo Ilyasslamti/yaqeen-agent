@@ -13,10 +13,10 @@ from datetime import datetime
 # ==========================================
 st.set_page_config(page_title="يقين - Manadger Tech", page_icon="🦅", layout="wide")
 socket.setdefaulttimeout(10)
-DB_FILE = "news_db_v3.json" # نسخة جديدة
+DB_FILE = "news_db_v4.json" # إصدار جديد للملف لضمان عدم تداخل البيانات القديمة
 
 # ==========================================
-# 1. المصادر (تم تحديث قسم الفن)
+# 1. المصادر
 # ==========================================
 RSS_SOURCES = {
     "أخبار الشمال": {
@@ -56,55 +56,60 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
     
-    /* توحيد الخط للنصوص العربية فقط */
+    /* توحيد الخط للنصوص العربية */
     h1, h2, h3, h4, h5, h6, p, div, span, label, button, .stMarkdown, .stText {
         font-family: 'Cairo', sans-serif !important;
         text-align: right;
     }
     
-    /* الهوية البصرية (الترويسة) */
+    /* الترويسة */
     .brand-header {
         text-align: center;
-        padding: 20px;
+        padding: 30px;
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 15px;
-        margin-bottom: 20px;
+        border-radius: 20px;
+        margin-bottom: 25px;
         border: 1px solid #dee2e6;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
     .brand-title {
         color: #1e3a8a;
-        font-size: 2.2rem;
+        font-size: 2.5rem;
         font-weight: 800;
         margin: 0;
     }
     .brand-subtitle {
         color: #6c757d;
-        font-size: 1.1rem;
-        margin-top: 5px;
+        font-size: 1.2rem;
+        margin-top: 10px;
+        font-weight: 600;
     }
     .company-tag {
         background-color: #1e3a8a;
         color: white;
-        padding: 2px 10px;
-        border-radius: 10px;
-        font-size: 0.8rem;
-        vertical-align: middle;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        margin-top: 5px;
+        display: inline-block;
     }
 
-    /* تحسين التبويبات (Tabs) */
+    /* التبويبات (Tabs) */
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
         justify-content: center;
+        margin-bottom: 20px;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 50px;
+        height: 55px;
         white-space: pre-wrap;
-        background-color: #fff;
-        border-radius: 8px;
+        background-color: #ffffff;
+        border-radius: 10px;
         color: #495057;
-        font-weight: 600;
+        font-weight: 700;
         border: 1px solid #dee2e6;
-        padding: 0 20px;
+        padding: 0 25px;
+        font-size: 1.1rem;
     }
     .stTabs [aria-selected="true"] {
         background-color: #1e3a8a !important;
@@ -115,26 +120,24 @@ st.markdown("""
     /* البطاقات */
     .news-card {
         background: #fff; border: 1px solid #e9ecef; border-right: 5px solid #3b82f6;
-        padding: 15px; border-radius: 10px; margin-bottom: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        padding: 15px; border-radius: 12px; margin-bottom: 12px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         direction: rtl;
     }
     
     /* صندوق النتيجة */
     .result-box {
         background: #f0fdf4; border: 1px solid #bbf7d0; border-right: 5px solid #22c55e;
-        padding: 20px; border-radius: 10px; direction: rtl;
+        padding: 20px; border-radius: 12px; direction: rtl; margin-top: 15px;
     }
 
     /* الأزرار */
-    .stButton>button { width: 100%; border-radius: 8px; font-weight: 700; height: 45px; }
+    .stButton>button { width: 100%; border-radius: 10px; font-weight: 700; height: 50px; font-size: 16px; }
     
-    /* إخفاء العناصر التقنية */
     #MainMenu {visibility: visible;} footer {visibility: hidden;}
     
-    /* إصلاح للموبايل */
     @media (max-width: 640px) {
-        .brand-title { font-size: 1.6rem; }
+        .brand-title { font-size: 1.8rem; }
         .stTabs [data-baseweb="tab"] { padding: 0 10px; font-size: 0.9rem; }
     }
 </style>
@@ -189,7 +192,7 @@ def get_text(url):
 
 def rewrite(text, tone, instr):
     if not client: return "خطأ: المفتاح مفقود"
-    prompt = f"أعد صياغة هذا الخبر لـ هاشمي بريس. الأسلوب: {tone}. ملاحظات: {instr}. النص: {text[:2500]}"
+    prompt = f"أنت محرر صحفي لـ هاشمي بريس. أعد صياغة الخبر: {text[:2500]}. الأسلوب: {tone}. ملاحظات: {instr}. العنوان H1."
     try:
         res = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
@@ -202,72 +205,74 @@ def rewrite(text, tone, instr):
 # 4. بناء الواجهة (الهيكلية الجديدة)
 # ==========================================
 
-# 1. الترويسة (Header)
+# A. الترويسة الجديدة
 st.markdown("""
 <div class='brand-header'>
-    <h1 class='brand-title'>🦅 يقين - <span style='font-size:1.5rem'>وكيل ذكاء اصطناعي</span></h1>
-    <div style='margin-top:5px'>
-        <span class='company-tag'>Manadger Tech</span>
-    </div>
+    <h1 class='brand-title'>يقين - وكيل ذكاء اصطناعي</h1>
+    <span class='company-tag'>من شركة Manadger Tech</span>
     <p class='brand-subtitle'>سكربت ناشر للكتاب والصحفيين</p>
 </div>
 """, unsafe_allow_html=True)
 
-# 2. تحميل البيانات
+# B. تحميل البيانات
 db = load_db()
 
-# 3. شريط التصنيفات (Tabs)
+# C. القائمة الجانبية (للطوارئ فقط)
+with st.sidebar:
+    st.header("⚙️ أدوات النظام")
+    # هذا الزر هو الحل لمشكلة "عدم التغير"
+    if st.button("🧹 مسح الذاكرة وإعادة التشغيل", type="primary"):
+        st.cache_data.clear()
+        if os.path.exists(DB_FILE):
+            os.remove(DB_FILE)
+        st.rerun()
+
+# D. شريط التصنيفات (Tabs)
 cats = list(RSS_SOURCES.keys())
 tabs = st.tabs(cats)
 
-# 4. محتوى التبويبات
+# E. محتوى التبويبات
 for i, cat_name in enumerate(cats):
     with tabs[i]:
-        # A. زر التحديث الخاص بالقسم
-        col_msg, col_btn = st.columns([3, 1])
-        
-        # فحص وجود بيانات
+        # التأكد من وجود بيانات
         if cat_name in db and len(db[cat_name]) > 0:
             news_list = db[cat_name]
-            with col_msg:
-                st.info(f"متاح {len(news_list)} مقال في {cat_name}")
-            with col_btn:
-                if st.button("🔄 تحديث", key=f"r_{i}"):
-                    with st.spinner("جاري جلب الجديد..."):
+            
+            # صف العنوان وزر التحديث
+            c_info, c_up = st.columns([3, 1])
+            with c_info:
+                st.success(f"متاح {len(news_list)} مقال")
+            with c_up:
+                if st.button("🔄 تحديث", key=f"btn_{i}"):
+                    with st.spinner("جاري التحديث..."):
                         items = update_category_data(cat_name)
                         db[cat_name] = items
                         save_db(db)
                     st.rerun()
 
-            # B. قائمة المقالات
+            # القائمة وأدوات الصياغة
             opts = [f"{n['source']} | {n['title']}" for n in news_list]
-            idx = st.selectbox("اختر المقال:", range(len(opts)), format_func=lambda x: opts[x], key=f"s_{i}")
+            idx = st.selectbox("اختر المقال:", range(len(opts)), format_func=lambda x: opts[x], key=f"sel_{i}")
 
-            # C. أدوات الصياغة (تظهر فقط بعد اختيار المقال)
-            with st.expander("⚙️ إعدادات الصياغة (اختياري)", expanded=False):
-                tone = st.select_slider("الأسلوب", ["رسمي", "تحليلي", "تفاعلي"], key=f"t_{i}")
-                ins = st.text_input("توجيهات إضافية", key=f"in_{i}")
+            with st.expander("⚙️ خيارات الصياغة (اختياري)"):
+                tone = st.select_slider("الأسلوب", ["رسمي", "تحليلي", "تفاعلي"], key=f"tone_{i}")
+                ins = st.text_input("توجيهات إضافية", key=f"ins_{i}")
 
-            # D. زر التنفيذ
-            if st.button("✨ إعادة صياغة المقال", type="primary", key=f"g_{i}"):
+            if st.button("✨ إعادة صياغة المقال", type="primary", key=f"go_{i}"):
                 sel = news_list[idx]
-                with st.status("جاري معالجة النص...", expanded=True):
-                    st.write("📥 سحب المحتوى...")
+                with st.status("جاري العمل...", expanded=True):
+                    st.write("📥 سحب النص...")
                     txt = get_text(sel['link'])
                     if txt:
                         st.write("🧠 الذكاء الاصطناعي يكتب...")
                         res = rewrite(txt, tone, ins)
-                        
-                        st.markdown("---")
-                        st.success("تمت الصياغة بنجاح!")
+                        st.success("تم!")
                         st.markdown(f"<div class='result-box'>{res}</div>", unsafe_allow_html=True)
-                        st.download_button("📥 تحميل النص", res, "article.txt", key=f"d_{i}")
-                    else:
-                        st.error("عذراً، هذا الموقع محمي ولا يسمح بسحب النص.")
-
+                        st.download_button("📥 تحميل النص", res, "article.txt", key=f"dl_{i}")
+                    else: st.error("الموقع محمي")
         else:
-            # حالة القسم الفارغ
-            st.warning(f"لا توجد مقالات محفوظة في {cat_name}")
+            # القسم الفارغ
+            st.warning(f"لا توجد مقالات في {cat_name}")
             if st.button(f"📥 جلب مقالات {cat_name} الآن", type="primary", key=f"init_{i}"):
                 with st.spinner("جاري الاتصال بالمصادر..."):
                     items = update_category_data(cat_name)
