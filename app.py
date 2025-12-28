@@ -9,14 +9,27 @@ import socket
 from datetime import datetime
 
 # ==========================================
-# 0. إعدادات النظام
+# 0. إعدادات النظام القسري (Force System Update)
 # ==========================================
+# هذا المتغير هو الحل لمشكلتك. إذا تغير هذا الرقم، سيقوم النظام بمسح كل شيء قديم
+SYSTEM_VERSION = "V5.0_MANADGER_TECH" 
+
 st.set_page_config(page_title="يقين - Manadger Tech", page_icon="🦅", layout="wide")
 socket.setdefaulttimeout(10)
-DB_FILE = "news_db_v4.json" # إصدار جديد للملف لضمان عدم تداخل البيانات القديمة
+DB_FILE = "news_db_v5.json"
 
 # ==========================================
-# 1. المصادر
+# 1. نظام التنظيف الذاتي (Self-Cleaning)
+# ==========================================
+# هذا الكود يعمل قبل أي شيء آخر لضمان ظهور التحديثات
+if "sys_version" not in st.session_state:
+    st.session_state["sys_version"] = SYSTEM_VERSION
+    # مسح الذاكرة المؤقتة للتطبيق
+    st.cache_data.clear()
+    st.cache_resource.clear()
+
+# ==========================================
+# 2. المصادر (القائمة الكاملة)
 # ==========================================
 RSS_SOURCES = {
     "أخبار الشمال": {
@@ -26,20 +39,19 @@ RSS_SOURCES = {
         "تطوان بريس": "https://tetouanpress.ma/feed",
         "كاب 24": "https://cap24.tv/feed",
     },
-    "صحافة المغرب": {
+    "الصحافة المغربية": {
         "هسبريس": "https://www.hespress.com/feed",
         "العمق": "https://al3omk.com/feed",
         "مدار 21": "https://madar21.com/feed",
         "كود": "https://www.goud.ma/feed",
         "الصباح": "https://assabah.ma/feed",
     },
-    "فن وثقافة": {
+    "فن ومشاهير": {
         "لالة مولاتي": "http://www.lallamoulati.ma/feed/",
         "سلطانة": "https://soltana.ma/feed",
         "غالية": "https://ghalia.ma/feed",
         "هسبريس فن": "https://www.hespress.com/art-et-culture/feed",
         "سيدتي": "https://www.sayidaty.net/rss/3",
-        "إليكِ": "https://www.ilaiki.net/feed",
     },
     "الرياضة": {
         "البطولة": "https://www.elbotola.com/rss",
@@ -50,101 +62,113 @@ RSS_SOURCES = {
 }
 
 # ==========================================
-# 2. تصميم الواجهة (Manadger Tech Style)
+# 3. تصميم Manadger Tech (CSS)
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
     
-    /* توحيد الخط للنصوص العربية */
+    * { font-family: 'Cairo', sans-serif !important; }
+    
+    /* محاذاة النصوص */
     h1, h2, h3, h4, h5, h6, p, div, span, label, button, .stMarkdown, .stText {
-        font-family: 'Cairo', sans-serif !important;
         text-align: right;
     }
     
-    /* الترويسة */
-    .brand-header {
+    /* الترويسة المؤسسية */
+    .header-container {
         text-align: center;
+        background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
         padding: 30px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 20px;
-        margin-bottom: 25px;
-        border: 1px solid #dee2e6;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border-radius: 15px;
+        border-bottom: 4px solid #1e3a8a;
+        margin-bottom: 20px;
     }
-    .brand-title {
+    .main-title {
         color: #1e3a8a;
         font-size: 2.5rem;
         font-weight: 800;
         margin: 0;
     }
-    .brand-subtitle {
+    .sub-title {
         color: #6c757d;
-        font-size: 1.2rem;
-        margin-top: 10px;
+        font-size: 1.1rem;
         font-weight: 600;
+        margin-top: 5px;
     }
-    .company-tag {
+    .company-badge {
         background-color: #1e3a8a;
         color: white;
-        padding: 5px 15px;
+        padding: 4px 12px;
         border-radius: 20px;
-        font-size: 0.9rem;
-        margin-top: 5px;
+        font-size: 0.85rem;
         display: inline-block;
+        margin-bottom: 10px;
     }
 
-    /* التبويبات (Tabs) */
+    /* تحسين التبويبات */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
         justify-content: center;
-        margin-bottom: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     .stTabs [data-baseweb="tab"] {
-        height: 55px;
-        white-space: pre-wrap;
-        background-color: #ffffff;
-        border-radius: 10px;
-        color: #495057;
         font-weight: 700;
-        border: 1px solid #dee2e6;
-        padding: 0 25px;
-        font-size: 1.1rem;
+        color: #495057;
+        padding: 10px 20px;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #1e3a8a !important;
-        color: white !important;
-        border: none;
+        color: #1e3a8a !important;
+        border-bottom: 3px solid #1e3a8a !important;
     }
 
     /* البطاقات */
     .news-card {
-        background: #fff; border: 1px solid #e9ecef; border-right: 5px solid #3b82f6;
-        padding: 15px; border-radius: 12px; margin-bottom: 12px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-right: 5px solid #3b82f6;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
         direction: rtl;
+        text-align: right;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
-    
+
     /* صندوق النتيجة */
     .result-box {
-        background: #f0fdf4; border: 1px solid #bbf7d0; border-right: 5px solid #22c55e;
-        padding: 20px; border-radius: 12px; direction: rtl; margin-top: 15px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-right: 5px solid #22c55e;
+        border-radius: 10px;
+        padding: 20px;
+        direction: rtl;
+        margin-top: 15px;
     }
 
     /* الأزرار */
-    .stButton>button { width: 100%; border-radius: 10px; font-weight: 700; height: 50px; font-size: 16px; }
+    .stButton>button {
+        width: 100%;
+        border-radius: 8px;
+        height: 50px;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    #MainMenu {visibility: visible;} 
+    footer {visibility: hidden;}
     
-    #MainMenu {visibility: visible;} footer {visibility: hidden;}
-    
+    /* تحسين للموبايل */
     @media (max-width: 640px) {
-        .brand-title { font-size: 1.8rem; }
-        .stTabs [data-baseweb="tab"] { padding: 0 10px; font-size: 0.9rem; }
+        .main-title { font-size: 1.8rem; }
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. المنطق (Backend)
+# 4. المنطق الخلفي (Backend)
 # ==========================================
 try:
     if "GROQ_API_KEY" in st.secrets:
@@ -174,13 +198,20 @@ def update_category_data(category):
     return all_items
 
 def load_db():
+    # التحقق من الإصدار
     if os.path.exists(DB_FILE):
         try:
-            with open(DB_FILE, 'r', encoding='utf-8') as f: return json.load(f)
+            with open(DB_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                # إذا كان الملف لا يحتوي على إصدار النظام الحالي، نعتبره تالفاً
+                if data.get("version") != SYSTEM_VERSION:
+                    return {}
+                return data
         except: return {}
     return {}
 
 def save_db(data):
+    data["version"] = SYSTEM_VERSION # ختم الإصدار
     with open(DB_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False)
 
@@ -192,7 +223,7 @@ def get_text(url):
 
 def rewrite(text, tone, instr):
     if not client: return "خطأ: المفتاح مفقود"
-    prompt = f"أنت محرر صحفي لـ هاشمي بريس. أعد صياغة الخبر: {text[:2500]}. الأسلوب: {tone}. ملاحظات: {instr}. العنوان H1."
+    prompt = f"أعد صياغة هذا الخبر لـ هاشمي بريس. الأسلوب: {tone}. ملاحظات: {instr}. النص: {text[:2500]}"
     try:
         res = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
@@ -202,62 +233,52 @@ def rewrite(text, tone, instr):
     except Exception as e: return str(e)
 
 # ==========================================
-# 4. بناء الواجهة (الهيكلية الجديدة)
+# 5. الواجهة الأمامية (Frontend)
 # ==========================================
 
 # A. الترويسة الجديدة
 st.markdown("""
-<div class='brand-header'>
-    <h1 class='brand-title'>يقين - وكيل ذكاء اصطناعي</h1>
-    <span class='company-tag'>من شركة Manadger Tech</span>
-    <p class='brand-subtitle'>سكربت ناشر للكتاب والصحفيين</p>
+<div class='header-container'>
+    <span class='company-badge'>Manadger Tech</span>
+    <h1 class='main-title'>وكيل يقين AI</h1>
+    <p class='sub-title'>سكربت ناشر للكتاب والصحفيين</p>
 </div>
 """, unsafe_allow_html=True)
 
-# B. تحميل البيانات
+# B. البيانات
 db = load_db()
 
-# C. القائمة الجانبية (للطوارئ فقط)
-with st.sidebar:
-    st.header("⚙️ أدوات النظام")
-    # هذا الزر هو الحل لمشكلة "عدم التغير"
-    if st.button("🧹 مسح الذاكرة وإعادة التشغيل", type="primary"):
-        st.cache_data.clear()
-        if os.path.exists(DB_FILE):
-            os.remove(DB_FILE)
-        st.rerun()
-
-# D. شريط التصنيفات (Tabs)
+# C. التبويبات (Tabs) - التنقل السهل
 cats = list(RSS_SOURCES.keys())
 tabs = st.tabs(cats)
 
-# E. محتوى التبويبات
 for i, cat_name in enumerate(cats):
     with tabs[i]:
-        # التأكد من وجود بيانات
-        if cat_name in db and len(db[cat_name]) > 0:
-            news_list = db[cat_name]
+        # هل توجد بيانات؟
+        if cat_name in db and "data" in db and cat_name in db["data"] and len(db["data"][cat_name]) > 0:
+            news_list = db["data"][cat_name]
             
-            # صف العنوان وزر التحديث
-            c_info, c_up = st.columns([3, 1])
-            with c_info:
-                st.success(f"متاح {len(news_list)} مقال")
-            with c_up:
-                if st.button("🔄 تحديث", key=f"btn_{i}"):
+            # معلومات وتحديث
+            c1, c2 = st.columns([3, 1])
+            with c1: st.success(f"متاح {len(news_list)} مقال")
+            with c2:
+                if st.button("🔄 تحديث", key=f"up_{i}"):
                     with st.spinner("جاري التحديث..."):
-                        items = update_category_data(cat_name)
-                        db[cat_name] = items
+                        if "data" not in db: db["data"] = {}
+                        db["data"][cat_name] = update_category_data(cat_name)
                         save_db(db)
                     st.rerun()
 
-            # القائمة وأدوات الصياغة
+            # اختيار المقال
             opts = [f"{n['source']} | {n['title']}" for n in news_list]
             idx = st.selectbox("اختر المقال:", range(len(opts)), format_func=lambda x: opts[x], key=f"sel_{i}")
 
-            with st.expander("⚙️ خيارات الصياغة (اختياري)"):
-                tone = st.select_slider("الأسلوب", ["رسمي", "تحليلي", "تفاعلي"], key=f"tone_{i}")
-                ins = st.text_input("توجيهات إضافية", key=f"ins_{i}")
+            # أدوات الصياغة
+            with st.expander("⚙️ خيارات الصياغة"):
+                tone = st.select_slider("الأسلوب", ["رسمي", "تحليلي", "تفاعلي"], key=f"tn_{i}")
+                ins = st.text_input("توجيهات", key=f"in_{i}")
 
+            # التنفيذ
             if st.button("✨ إعادة صياغة المقال", type="primary", key=f"go_{i}"):
                 sel = news_list[idx]
                 with st.status("جاري العمل...", expanded=True):
@@ -271,11 +292,11 @@ for i, cat_name in enumerate(cats):
                         st.download_button("📥 تحميل النص", res, "article.txt", key=f"dl_{i}")
                     else: st.error("الموقع محمي")
         else:
-            # القسم الفارغ
-            st.warning(f"لا توجد مقالات في {cat_name}")
+            # حالة القسم الفارغ (أو أول مرة)
+            st.warning(f"لا توجد مقالات محفوظة في {cat_name}")
             if st.button(f"📥 جلب مقالات {cat_name} الآن", type="primary", key=f"init_{i}"):
                 with st.spinner("جاري الاتصال بالمصادر..."):
-                    items = update_category_data(cat_name)
-                    db[cat_name] = items
+                    if "data" not in db: db["data"] = {}
+                    db["data"][cat_name] = update_category_data(cat_name)
                     save_db(db)
                 st.rerun()
