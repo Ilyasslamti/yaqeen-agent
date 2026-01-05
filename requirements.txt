@@ -4,3 +4,4 @@ feedparser
 trafilatura
 requests
 lxml_html_clean
+duckduckgo_search
