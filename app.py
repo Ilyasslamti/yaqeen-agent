@@ -1,69 +1,75 @@
-def rewrite_seo_architect(text, tone, keyword):
-    if not client: return "خطأ في الاتصال"
+import streamlit as st
+import feedparser
+import trafilatura
+from groq import Groq
+import concurrent.futures
+import json
+import os
+import socket
+import requests
+from datetime import datetime
+
+# ==========================================
+# 0. إعدادات النظام والهوية (Manadger Tech)
+# ==========================================
+SYSTEM_VERSION = "V16.2_PRO_FINAL" 
+ACCESS_PASSWORD = "Manager_Tech_2026" 
+
+st.set_page_config(page_title="وكيل يقين الصحفي - Manadger Tech", page_icon="📈", layout="wide")
+socket.setdefaulttimeout(25) 
+DB_FILE = "news_db_v16.json"
+
+# ==========================================
+# 1. نظام الحماية (المحصن)
+# ==========================================
+def check_password():
+    if "authenticated" not in st.session_state:
+        st.session_state["authenticated"] = False
     
-    prompt = f"""
-    أنت رئيس تحرير جريدة مشهورة وخبير في تحسين محركات البحث (SEO). 
-    حول النص "الجامد" التالي إلى مقال صحفي "نابض بالحياة" يثير حماس القراء.
-    
-    الكلمة المفتاحية: {keyword}
-    
-    القواعد الذهبية (التزام صارم):
-    1. العنوان: صغ عنواناً "انفجارياً" يحبس الأنفاس، يتضمن الكلمة المفتاحية، ويعد القارئ بكشف أسرار. (بدون رموز Markdown).
-    2. الأسلوب القصصي: لا تسرد حقائق فقط، بل اصنع قصة. استخدم أفعالاً قوية (يفجر، يكشف، يزلزل، يقود).
-    3. كلمات الانتقال الذكية: نوع في روابط الجمل (بالموازاة مع ذلك، وفي غمرة هذا النجاح، ولم يقف الأمر عند هذا الحد، بل تجاوزه إلى..).
-    4. معايير Yoast SEO: 
-       - جمل قصيرة ورشيقة.
-       - مبني للمعلوم (اجعل الفنانين هم الأبطال في الجمل).
-       - الكلمة المفتاحية في أول المقال وفي العناوين الفرعية.
-    5. التنسيق: عناوين فرعية مثيرة بدون رموز.
-    
-    الأسلوب: {tone}. الكلمة المفتاحية: {keyword}.
-    النص الأصلي: {text}
-    """
-    try:
-        res = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile", 
-            temperature=0.6 # رفع الحرارة قليلاً لزيادة الإبداع اللغوي
-        )
-        return res.choices[0].message.content
-    except Exception as e: return str(e)                    st.session_state["authenticated"] = True
+    if not st.session_state["authenticated"]:
+        st.markdown("<div style='text-align: center; background: #1e3a8a; color: white; padding: 2rem; border-radius: 15px;'><h1>🔐 وكيل يقين الصحفي</h1><p>من مجموعة منادجر للتطوير وحلول الويب</p></div>", unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            password_input = st.text_input("أدخل مفتاح الوصول الخاص بك:", type="password")
+            if st.button("دخول للنظام"):
+                if password_input == ACCESS_PASSWORD:
+                    st.session_state["authenticated"] = True
                     st.rerun()
                 else:
-                    st.error("❌ المفتاح غير صحيح")
+                    st.error("❌ مفتاح الوصول غير صحيح!")
         return False
     return True
 
 # ==========================================
-# 2. محرك الصياغة الهندسي (SEO ARCHITECT)
+# 2. محرك الهندسة الصحفية (SEO PRO ARCHITECT)
 # ==========================================
 try:
     if "GROQ_API_KEY" in st.secrets:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
     else:
         client = None
-except:
+except Exception:
     client = None
 
 def rewrite_seo_architect(text, tone, keyword):
     if not client: 
-        return "خطأ: تأكد من إضافة مفتاح API في Secrets باسم GROQ_API_KEY"
+        return "خطأ: تأكد من إعداد مفتاح GROQ_API_KEY في Secrets."
     
-    # تحسين الـ Prompt لمنع الكلمات الواصفة مثل "مغناطيسياً"
     prompt = f"""
-    بصفتك خبير محتوى رقمي ومتخصص في Yoast SEO، أعد صياغة النص التالي لتحويله إلى مقال صحفي احترافي متكامل.
+    أنت رئيس تحرير خبير في المحتوى الفني والسياسي وSEO. حول هذا النص الجامد إلى مقال صحفي نابض بالحياة.
     الكلمة المفتاحية المستهدفة: {keyword}
     
-    الخطة الهندسية للمقال:
-    1. العنوان الرئيسي: صغ عنواناً قوياً ومثيراً للاهتمام يتصدر نتائج البحث ويبدأ بالكلمة المفتاحية. 
-       (مهم: لا تكتب كلمات واصفة مثل 'مغناطيسياً' أو 'جذاب' في العنوان، فقط صغ العنوان بأسلوب قوي).
-    2. المقدمة: فقرة افتتاحية مكثفة تحتوي الكلمة المفتاحية وتلخص الحدث بقوة.
-    3. العناوين الفرعية: قسّم المقال بعناوين نصية واضحة في أسطر مستقلة بدون رموز Markdown.
-    4. معايير Yoast SEO للقراءة: 
-       - استخدم كلمات انتقال بكثافة (علاوة على ذلك، ومن جهة أخرى، وفي سياق متصل).
-       - الجمل قصيرة جداً (أقل من 18 كلمة لكل جملة).
-       - استخدم المبني للمعلوم (Active Voice) وتجنب 'تم' وأخواتها.
-       - الفقرات قصيرة (3 أسطر بحد أقصى).
+    الخطة التحريرية (التزام صارم):
+    1. العنوان: صغ عنواناً انفجارياً ومثيراً يتصدر نتائج البحث ويبدأ بالكلمة المفتاحية. 
+       (تنبيه: لا تضف كلمات مثل 'مغناطيسياً' أو أي رموز مثل ## أو **).
+    2. الأسلوب: لا تسرد حقائق فقط، اصنع قصة مشوقة. استخدم أفعالاً قوية (يفجر، يكشف، يقود، يتصدر).
+    3. التنسيق: استخدم عناوين فرعية نصية واضحة في أسطر مستقلة (بدون رموز Markdown نهائياً).
+    4. معايير Yoast SEO: 
+       - نوع في كلمات الانتقال (بالموازاة مع ذلك، وفي غمرة هذا النجاح، ولم يقف الأمر عند هذا الحد).
+       - جمل قصيرة ورشيقة (أقل من 18 كلمة).
+       - المبني للمعلوم حصراً (اجعل الفاعل هو بطل الجملة).
+       - الفقرات قصيرة (3 أسطر كحد أقصى).
     
     الأسلوب المطلوب: {tone}.
     النص الأصلي للمعالجة:
@@ -73,14 +79,14 @@ def rewrite_seo_architect(text, tone, keyword):
         res = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile", 
-            temperature=0.4
+            temperature=0.6 # رفع درجة الإبداع اللغوي
         )
         return res.choices[0].message.content
     except Exception as e:
-        return f"خطأ تقني: {str(e)}"
+        return f"خطأ تقني في الصياغة: {str(e)}"
 
 # ==========================================
-# 3. تشغيل السكربت بعد التحقق
+# 3. المنطق التشغيلي (Main Application)
 # ==========================================
 if check_password():
     
@@ -124,11 +130,14 @@ if check_password():
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div style='text-align: center; background: #1e3a8a; color: white; padding: 1rem; border-radius: 10px; margin-bottom: 2rem;'><h1>وكيل يقين الصحفي - خبير SEO</h1></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; background: #1e3a8a; color: white; padding: 1rem; border-radius: 10px; margin-bottom: 2rem;'><h1>وكيل يقين الصحفي - إصدار V16.2</h1></div>", unsafe_allow_html=True)
 
     if os.path.exists(DB_FILE):
-        with open(DB_FILE, 'r', encoding='utf-8') as f:
-            db = json.load(f)
+        try:
+            with open(DB_FILE, 'r', encoding='utf-8') as f:
+                db = json.load(f)
+        except:
+            db = {"data": {}}
     else:
         db = {"data": {}}
 
@@ -136,7 +145,7 @@ if check_password():
     for i, cat in enumerate(list(RSS_SOURCES.keys())):
         with tabs[i]:
             if st.button(f"🔄 تحديث {cat}", key=f"up_{i}"):
-                with st.spinner("جاري جلب آخر الأخبار..."):
+                with st.spinner("جاري جلب البيانات..."):
                     all_news = []
                     def fetch(n, u):
                         try:
@@ -153,27 +162,27 @@ if check_password():
 
             if cat in db["data"] and db["data"][cat]:
                 news_list = db["data"][cat]
-                choice = st.selectbox("اختر المقال:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
+                choice = st.selectbox("اختر المقال المراد هندسته:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
                 
                 c1, c2 = st.columns(2)
                 with c1:
-                    tone = st.selectbox("الأسلوب:", ["تحقيق صحفي رصين", "تقرير إخباري سريع", "تحليل تفاعلي"], key=f"tn_{i}")
+                    tone = st.selectbox("الأسلوب الصحفي:", ["تحقيق صحفي مثير", "تقرير إخباري رصين", "تحليل تفاعلي سريع"], key=f"tn_{i}")
                 with c2:
-                    keyword = st.text_input("الكلمة المفتاحية المستهدفة (SEO):", key=f"kw_{i}")
+                    keyword = st.text_input("الكلمة المفتاحية (SEO):", key=f"kw_{i}")
 
-                if st.button("🚀 توليد مقال احترافي متصدر", key=f"run_{i}"):
-                    with st.status("🏗️ جاري بناء المقال وفق معايير Yoast SEO...", expanded=True):
-                        raw = trafilatura.fetch_url(news_list[choice]['link'])
-                        txt = trafilatura.extract(raw)
-                        if txt:
-                            final_content = rewrite_seo_architect(txt, tone, keyword)
+                if st.button("🚀 صياغة المقال بمستوى احترافي", key=f"run_{i}"):
+                    with st.status("🏗️ جاري هندسة المقال وتطبيق معايير Yoast SEO...", expanded=True):
+                        raw_html = trafilatura.fetch_url(news_list[choice]['link'])
+                        main_text = trafilatura.extract(raw_html)
+                        if main_text:
+                            final_article = rewrite_seo_architect(main_text, tone, keyword)
                             st.markdown("### ✅ المقال النهائي المنسق")
-                            st.markdown(f"<div class='article-output'>{final_content}</div>", unsafe_allow_html=True)
-                            st.text_area("نسخة النشر المباشر:", final_content, height=450)
+                            st.markdown(f"<div class='article-output'>{final_article}</div>", unsafe_allow_html=True)
+                            st.text_area("نسخة النشر المباشر:", final_article, height=450)
                         else:
                             st.error("المصدر يمنع السحب التلقائي.")
             else:
                 st.info("اضغط تحديث لجلب البيانات.")
 
     st.markdown("---")
-    st.markdown("<p style='text-align:center; color:#666;'>وكيل يقين الصحفي V16.1 - تطوير وحلول الماندجر</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#666;'>وكيل يقين الصحفي - تطوير وحلول الماندجر للويب 2026</p>", unsafe_allow_html=True)
