@@ -9,17 +9,17 @@ import socket
 from datetime import datetime
 
 # ==========================================
-# 0. الإعدادات والهوية (الماندجر - V21.0)
+# 0. الإعدادات والتحصين البرمجي (الماندجر V21.2)
 # ==========================================
-SYSTEM_VERSION = "V21.0_SAMBANOVA_FULL"
+SYSTEM_VERSION = "V2.2_ يقين الإخباري"
 ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v21.json"
 
-st.set_page_config(page_title="يقين AI | الإصدار الاستراتيجي", page_icon="🦅", layout="wide")
+st.set_page_config(page_title="يقين AI | المحرك الاستراتيجي المحدث", page_icon="🦅", layout="wide")
 socket.setdefaulttimeout(40)
 
 # ==========================================
-# 1. محرك SambaNova (The Master Mind)
+# 1. محرك SambaNova المحدث (Meta-Llama-3.3-70B)
 # ==========================================
 def run_samba_writer(text, tone, keyword):
     try:
@@ -28,25 +28,25 @@ def run_samba_writer(text, tone, keyword):
             base_url="https://api.sambanova.ai/v1",
         )
         
-        # برومبت الماندجر المحدث: (10% مبني للمجهول + عناوين معتدلة)
         prompt = f"""
-        أنت محرر استقصائي نخبوي وخبير في استراتيجيات المحتوى. 
-        حول النص الخام إلى "مقال نخبوي دسم" يتبع القواعد الصارمة التالية:
+        أنت محرر استقصائي نخبوي وخبير في استراتيجيات المحتوى الرقمي. 
+        حول النص الخام إلى "مقال نخبوي دسم" يتبع قواعد الماندجر إلياس الصارمة:
 
-        1. **قوة الفاعل (Active Voice):** يجب ألا تتجاوز نسبة المبني للمجهول 10% من إجمالي النص. اجعل الفاعل هو بطل السرد دائماً.
-        2. **هيكلة الفقرات:** في حال كان المقال طويلاً، استخدم عناوين فرعية ذكية (H2) بـ"اعتدال" (لا تزد عن 3-4 عناوين للمقال الطويل لضمان التماسك).
-        3. **اللغة الرصينة:** ابْنِ فقرات طويلة النفس، مترابطة بالفواصل (،)، بعيداً عن أسلوب التقطيع البدائي.
-        4. **كلمات الانتقال:** ادمج روابط لغوية فخمة (علاوة على ذلك، وتأسيساً على هذا المشهد، وبالموازاة مع ذلك، بيد أن التدقيق يكشف..).
-        5. **منع التكرار:** ادمج كل المعلومات المتشابهة في تحليل واحد عميق، وامنع تكرار الأفكار نهائياً.
-        6. **السيو الاحترافي:** صغ عنواناً انفجارياً يبدأ بـ ({keyword}).
+        1. **السيادة اللغوية:** نسبة المبني للمجهول يجب ألا تتجاوز 10%. اجعل الفاعل هو بطل السرد (Active Voice).
+        2. **النفس الطويل:** ابْنِ فقرات طويلة، غنية، ومترابطة بالفواصل (،) بعيداً عن أسلوب التقطيع البدائي.
+        3. **الهيكلة المتزنة:** استخدم عناوين فرعية (H2) بـ"اعتدال" لتنظيم المقالات الطويلة فقط دون تشتيت القارئ.
+        4. **روابط الانتقال:** ادمج روابط فخمة (علاوة على ذلك، وتأسيساً على هذا المشهد، وبالموازاة مع ذلك، بيد أن التدقيق يكشف..).
+        5. **منع التكرار والتهريج:** ادمج المعلومات المتشابهة في تحليل واحد عميق، وامنع تكرار الأفكار نهائياً.
+        6. **السيو الاحترافي:** عنوان قوي يبدأ بـ ({keyword})، يثير الفضول ولا يحتوي على كلمة 'مغناطيسياً'.
 
         الأسلوب: {tone}. الكلمة المفتاحية: {keyword}.
-        النص الأصلي:
+        النص الأصلي للمعالجة:
         {text[:4500]}
         """
 
         response = client.chat.completions.create(
-            model='llama3-70b', 
+            # تم تحديث الموديل هنا لحل مشكلة Available Models
+            model='Meta-Llama-3.3-70B-Instruct', 
             messages=[
                 {"role": "system", "content": "محرر صحفي محترف وخبير في تحسين محركات البحث"},
                 {"role": "user", "content": prompt}
@@ -56,7 +56,7 @@ def run_samba_writer(text, tone, keyword):
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"خطأ تقني في الاتصال بمحرك SambaNova: {str(e)}"
+        return f"عذراً إلياس، حدث خطأ تقني في محرك SambaNova المحدث: {str(e)}"
 
 # ==========================================
 # 2. نظام الدخول والحماية
@@ -65,9 +65,9 @@ if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
-    st.markdown("<h2 style='text-align:center;'>🔐 دخول منصة يقين - محرك SambaNova</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center;'>🔐 دخول منصة يقين - الإصدار المحدث</h2>", unsafe_allow_html=True)
     pwd = st.text_input("مفتاح الوصول:", type="password")
-    if st.button("دخول"):
+    if st.button("فتح النظام"):
         if pwd == ACCESS_PASSWORD:
             st.session_state["authenticated"] = True
             st.rerun()
@@ -113,24 +113,24 @@ RSS_SOURCES = {
     "رياضة وفن ⚽": {
         "البطولة": "https://www.elbotola.com/rss", "هسبريس رياضة": "https://hesport.com/feed",
         "المنتخب": "https://almountakhab.com/rss", "لالة مولاتي": "https://www.lallamoulati.ma/feed/",
-        "سلطانة": "https://soltana.ma/feed", "هاي كورة": "https://hihi2.com/feed",
-        "في الجول": "https://www.filgoal.com/rss"
+        "سلطانة": "https://soltana.ma/feed", "غالية": "https://ghalia.ma/feed",
+        "هاي كورة": "https://hihi2.com/feed", "في الجول": "https://www.filgoal.com/rss"
     }
 }
 
 # ==========================================
-# 4. واجهة المستخدم الفخمة (Premium Layout)
+# 4. الواجهة والتنسيق (Premium UI)
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
     html, body, [class*="st-"] { font-family: 'Cairo', sans-serif; text-align: right; direction: rtl; }
     .article-output { white-space: pre-wrap; background-color: #ffffff; padding: 40px; border-radius: 20px; border: 1px solid #eee; line-height: 2.3; font-size: 1.3rem; text-align: justify; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-    .stButton>button { background: linear-gradient(90deg, #1e3a8a, #3b82f6); color: white; height: 3.5rem; border-radius: 12px; font-weight: 900; width: 100%; border: none; }
+    .stButton>button { background: linear-gradient(90deg, #1e3a8a, #3b82f6); color: white; height: 3.8rem; border-radius: 12px; font-weight: 900; width: 100%; border: none; }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🦅 يقين AI | محرك SambaNova الاستراتيجي")
+st.title("🦅 يقين AI | محرك SambaNova V21.2")
 
 # إدارة قاعدة البيانات
 if os.path.exists(DB_FILE):
@@ -142,8 +142,8 @@ else: db = {"data": {}}
 tabs = st.tabs(list(RSS_SOURCES.keys()))
 for i, cat in enumerate(list(RSS_SOURCES.keys())):
     with tabs[i]:
-        if st.button(f"🔄 تحديث أخبار {cat}", key=f"up_{i}"):
-            with st.spinner("جاري سحب المصادر الـ 53..."):
+        if st.button(f"🔄 تحديث شامل لـ {cat}", key=f"up_{i}"):
+            with st.spinner("جاري مسح الجرائد الـ 53..."):
                 all_news = []
                 def fetch_t(n, u):
                     try:
@@ -159,22 +159,22 @@ for i, cat in enumerate(list(RSS_SOURCES.keys())):
 
         if cat in db["data"] and db["data"][cat]:
             news_list = db["data"][cat]
-            choice = st.selectbox("اختر الخبر الخام:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
+            choice = st.selectbox("اختر المادة الخام للمقال:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
             c1, c2 = st.columns(2)
-            with c1: tone = st.selectbox("نبرة المقال:", ["تحليل استقصائي رصين", "تقرير استراتيجي مطول"], key=f"tn_{i}")
+            with c1: tone = st.selectbox("النبرة الاستراتيجية:", ["تحقيق استقصائي رصين", "تحليل استراتيجي معمق"], key=f"tn_{i}")
             with c2: keyword = st.text_input("الكلمة المفتاحية (SEO):", key=f"kw_{i}")
 
-            if st.button("🚀 هندسة المقال الآن", key=f"run_{i}"):
-                with st.spinner("جاري المعالجة بمحرك SambaNova..."):
+            if st.button("🚀 صياغة المقال الاستقصائي", key=f"run_{i}"):
+                with st.spinner("جاري المعالجة بمحرك SambaNova المحدث..."):
                     raw = trafilatura.fetch_url(news_list[choice]['link'])
                     txt = trafilatura.extract(raw)
                     if txt:
                         final = run_samba_writer(txt, tone, keyword)
-                        st.markdown("### ✅ المقال الاستراتيجي الجاهز")
+                        st.markdown("### ✅ المقال الاستراتيجي النهائي")
                         st.markdown(f"<div class='article-output'>{final}</div>", unsafe_allow_html=True)
-                        st.text_area("نسخة للنسخ المباشر:", final, height=500)
+                        st.text_area("للنسخ المباشر:", final, height=500)
                     else: st.error("فشل في سحب محتوى الخبر.")
         else: st.info("يرجى الضغط على 'تحديث' لجلب المصادر.")
 
 st.markdown("---")
-st.caption("يقين V21.0 - إدارة الماندجر إلياس - مدعوم بـ SambaNova")
+st.caption("يقين V21.2 - إدارة الماندجر إلياس - مدعوم بـ SambaNova المحدث 2026")
