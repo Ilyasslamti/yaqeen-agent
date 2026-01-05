@@ -10,15 +10,37 @@ import requests
 from datetime import datetime
 
 # ==========================================
-# 0. إعدادات النظام والهوية (النسخة النهائية)
+# 0. إعدادات النظام والهوية
 # ==========================================
-SYSTEM_VERSION = "V14.0_FINAL_SEO" 
-st.set_page_config(page_title="وكيل يقين الصحفي - Manadger Tech", page_icon="🗞️", layout="wide")
+SYSTEM_VERSION = "V15.0_SECURE_PRO" 
+ACCESS_PASSWORD = "Manager_Tech_2026" # 🔑 الرقم السري الخاص بك (يمكنك تغييره)
+
+st.set_page_config(page_title="وكيل يقين الصحفي - نظام محصن", page_icon="🔐", layout="wide")
 socket.setdefaulttimeout(20) 
 DB_FILE = "news_db_v14.json"
 
 # ==========================================
-# 1. نظام التنظيف الذكي (3 صباحاً)
+# 1. نظام الحماية وتسجيل الدخول
+# ==========================================
+def check_password():
+    """يرجع True إذا كان المستخدم قد أدخل الرقم السري الصحيح."""
+    if "authenticated" not in st.session_state:
+        st.session_state["authenticated"] = False
+
+    if not st.session_state["authenticated"]:
+        st.markdown("<div class='brand-header'><h1>🔐 نظام يقين المحصن</h1><p>يرجى إدخال مفتاح الوصول للمتابعة</p></div>", unsafe_allow_html=True)
+        password_input = st.text_input("مفتاح الوصول (Password):", type="password")
+        if st.button("تسجيل الدخول"):
+            if password_input == ACCESS_PASSWORD:
+                st.session_state["authenticated"] = True
+                st.rerun()
+            else:
+                st.error("❌ مفتاح الوصول غير صحيح!")
+        return False
+    return True
+
+# ==========================================
+# 2. نظام التنظيف الذكي (3 صباحاً)
 # ==========================================
 def auto_purge_at_3am():
     now = datetime.now()
@@ -31,10 +53,136 @@ def auto_purge_at_3am():
 
 auto_purge_at_3am()
 
-# ==========================================
-# 2. القائمة العملاقة للمصادر (45+ مصدر)
-# ==========================================
-RSS_SOURCES = {
+# استدعاء نظام الحماية قبل البدء
+if check_password():
+
+    # ==========================================
+    # 3. القائمة العملاقة للمصادر (45+ مصدر)
+    # ==========================================
+    RSS_SOURCES = {
+        "الصحافة الوطنية 🇲🇦": {
+            "هسبريس": "https://www.hespress.com/feed",
+            "شوف تيفي": "https://chouftv.ma/feed",
+            "العمق المغربي": "https://al3omk.com/feed",
+            "زنقة 20": "https://www.rue20.com/feed",
+            "هبة بريس": "https://ar.hibapress.com/feed",
+            "اليوم 24": "https://alyaoum24.com/feed",
+            "Le360": "https://ar.le360.ma/rss",
+            "آشكاين": "https://achkayen.com/feed",
+            "لكم": "https://lakome2.com/feed",
+        },
+        "أخبار الشمال والجهات 🌊": {
+            "شمال بوست": "https://chamalpost.net/feed",
+            "بريس تطوان": "https://presstetouan.com/feed",
+            "طنجة 24": "https://tanja24.com/feed",
+            "تطوان بريس": "https://tetouanpress.ma/feed",
+            "أكادير 24": "https://agadir24.info/feed",
+        },
+        "أخبار دولية واقتصاد 🌍": {
+            "سكاي نيوز عربية": "https://www.skynewsarabia.com/rss/v1/middle-east.xml",
+            "الجزيرة نت": "https://www.aljazeera.net/alritem/rss/rss.xml",
+            "فرانس 24": "https://www.france24.com/ar/rss",
+            "اقتصادكم": "https://www.economistcom.ma/feed",
+        },
+        "فن ورياضة ⚽": {
+            "البطولة": "https://www.elbotola.com/rss",
+            "هسبريس رياضة": "https://hesport.com/feed",
+            "المنتخب": "https://almountakhab.com/rss",
+            "لالة مولاتي": "https://www.lallamoulati.ma/feed/",
+        }
+    }
+
+    # ==========================================
+    # 4. CSS (واجهة الماندجر الاحترافية)
+    # ==========================================
+    st.markdown("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+        html, body, [class*="st-"] { font-family: 'Cairo', sans-serif; text-align: right; }
+        .brand-header {
+            text-align: center; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            color: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; border-bottom: 5px solid #3b82f6;
+        }
+        .article-output {
+            white-space: pre-wrap; background-color: #ffffff; color: #111; padding: 30px; 
+            border-radius: 12px; border: 1px solid #cfd8dc; line-height: 2; font-size: 1.15rem;
+        }
+        .stButton>button { background: #1e3a8a; color: white; border-radius: 10px; height: 3.5rem; width: 100%; font-weight: bold;}
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ==========================================
+    # 5. محرك الصياغة الذكي
+    # ==========================================
+    try:
+        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+    except: client = None
+
+    def rewrite_mega_pro(text, tone, instr):
+        if not client: return "خطأ في الإعدادات"
+        prompt = f"أنت خبير SEO. أعد صياغة هذا النص كمقال صحفي منسق بدون رموز Markdown. العنوان جذاب في البداية. الجمل قصيرة جداً (أقل من 18 كلمة). المبني للمعلوم بنسبة 100%. فقرات قصيرة. الأسلوب: {tone}. الكلمة المفتاحية: {instr}. النص: {text[:3800]}"
+        try:
+            res = client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model="llama-3.3-70b-versatile", temperature=0.3
+            )
+            return res.choices[0].message.content
+        except Exception as e: return str(e)
+
+    # ==========================================
+    # 6. الواجهة والمنطق
+    # ==========================================
+    st.markdown("<div class='brand-header'><h1>وكيل يقين الصحفي</h1><p>من مجموعة منادجر للتطوير وحلول الويب</p></div>", unsafe_allow_html=True)
+
+    # (بقية كود جلب الأخبار وعرض التبويبات كما في النسخة السابقة...)
+    def fetch_items(name, url):
+        try:
+            d = feedparser.parse(url)
+            return [{"title": e.title, "link": e.link, "source": name} for e in d.entries[:10]]
+        except: return []
+
+    if os.path.exists(DB_FILE):
+        with open(DB_FILE, 'r', encoding='utf-8') as f: db = json.load(f)
+    else: db = {"data": {}}
+
+    tabs = st.tabs(list(RSS_SOURCES.keys()))
+    for i, cat in enumerate(list(RSS_SOURCES.keys())):
+        with tabs[i]:
+            col_up, col_sel = st.columns([1, 4])
+            with col_up:
+                if st.button(f"🔄 تحديث {cat}", key=f"btn_{i}"):
+                    with st.spinner("جاري جلب البيانات..."):
+                        all_news = []
+                        with concurrent.futures.ThreadPoolExecutor(max_workers=15) as exec:
+                            futures = [exec.submit(fetch_items, n, u) for n, u in RSS_SOURCES[cat].items()]
+                            for f in concurrent.futures.as_completed(futures): all_news.extend(f.result())
+                        db["data"][cat] = all_news
+                        with open(DB_FILE, 'w', encoding='utf-8') as f: json.dump(db, f, ensure_ascii=False)
+                    st.rerun()
+
+            if cat in db["data"] and db["data"][cat]:
+                news = db["data"][cat]
+                choice = st.selectbox("اختر المقال:", range(len(news)), format_func=lambda x: f"[{news[x]['source']}] {news[x]['title']}", key=f"sb_{i}")
+                
+                c1, c2 = st.columns(2)
+                with c1: tone = st.selectbox("النبرة:", ["إخباري رصين", "تحليلي عميق", "تفاعلي سريع"], key=f"tn_{i}")
+                with c2: instr = st.text_input("الكلمة المفتاحية (SEO):", key=f"kw_{i}")
+
+                if st.button("🚀 هندسة وصياغة المقال", key=f"go_{i}"):
+                    with st.status("🏗️ جاري المعالجة...", expanded=True):
+                        raw = trafilatura.fetch_url(news[choice]['link'])
+                        txt = trafilatura.extract(raw)
+                        if txt:
+                            final = rewrite_mega_pro(txt, tone, instr)
+                            st.markdown("### ✅ المقال النهائي")
+                            st.markdown(f"<div class='article-output'>{final}</div>", unsafe_allow_html=True)
+                            st.text_area("نسخة للنسخ المباشر:", final, height=400)
+                        else: st.error("المصدر محمي.")
+            else:
+                st.info("اضغط تحديث لجلب الأخبار.")
+
+    st.markdown("---")
+    st.markdown("<p style='text-align:center; color:#666;'>وكيل يقين الصحفي - إصدار V15.0 محصن - تطوير وحلول الماندجر</p>", unsafe_allow_html=True)RSS_SOURCES = {
     "الصحافة الوطنية 🇲🇦": {
         "هسبريس": "https://www.hespress.com/feed",
         "شوف تيفي": "https://chouftv.ma/feed",
