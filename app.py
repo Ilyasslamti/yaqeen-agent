@@ -16,7 +16,7 @@ except ImportError:
     st.stop()
 
 # ==========================================
-# 0. الإعدادات والتحصين (Manager Tech V27.6)
+# 0. الإعدادات والتحصين (Manager Tech V27.7)
 # ==========================================
 ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
@@ -66,7 +66,13 @@ def run_samba_writer(text, keyword):
             temperature=0.4,
             top_p=0.9
         )
-        return response.choices[0].message.content
+        
+        raw_article = response.choices[0].message.content
+        
+        # --- الفلتر السيادي: إزالة "هاشمي بريس:" من بداية المقال ---
+        clean_article = raw_article.replace("هاشمي بريس:", "").replace("هاشمي بريس :", "").strip()
+        return clean_article
+
     except Exception as e:
         return f"❌ خطأ تقني في المحرك: {str(e)}"
 
@@ -101,7 +107,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("🛡️ الماندجر تك | الرادار الصحفي الشامل")
-st.caption(f"الإصدار V27.6 - إدارة هاشمي بريس بـ 200 مصدر و26 محركاً دواراً")
+st.caption("الإصدار V27.7 - إدارة هاشمي بريس بـ 200 مصدر و26 محركاً دواراً")
 
 # تحميل قاعدة البيانات المحلية
 if os.path.exists(DB_FILE):
@@ -117,9 +123,8 @@ tabs = st.tabs(list(RSS_DATABASE.keys()))
 
 for i, cat in enumerate(list(RSS_DATABASE.keys())):
     with tabs[i]:
-        # زر التحديث المتوازي (خفة الريشة)
         if st.button(f"🔄 تحديث شامل لـ {cat}", key=f"up_{i}"):
-            with st.spinner(f"جاري مسح {len(RSS_SOURCES[cat]) if 'RSS_SOURCES' in locals() else 'المصادر'}..."):
+            with st.spinner(f"جاري مسح المصادر..."):
                 all_news = []
                 def fetch_task(name, url):
                     try:
@@ -137,7 +142,6 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
                     json.dump(db, f, ensure_ascii=False)
             st.rerun()
 
-        # عرض الأخبار المجلوبة
         if cat in db["data"] and db["data"][cat]:
             news_list = db["data"][cat]
             selected_idx = st.selectbox(
@@ -147,26 +151,21 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
                 key=f"sel_{i}"
             )
             
-            # الكلمة المفتاحية (تعديل: أصبحت اختيارية تماماً)
-            keyword_input = st.text_input("الكلمة المفتاحية للعنوان (SEO) - اتركها فارغة للافتراضي:", key=f"kw_{i}", placeholder="مثال: تطوان، اقتصاد، عاجل...")
+            keyword_input = st.text_input("الكلمة المفتاحية للعنوان (SEO) - اختياري:", key=f"kw_{i}", placeholder="مثال: تطوان، اقتصاد، عاجل...")
 
             if st.button("🚀 هندسة وصياغة بأسلوب هاشمي بريس", key=f"run_{i}"):
-                # منطق التجاوز الذكي: إذا كانت فارغة نستخدم "هاشمي بريس" كبصمة سيادية
                 final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "هاشمي بريس"
                 
                 with st.spinner("الماندجر يحلل المحتوى ويطبق معايير النخبة..."):
-                    # سحب المحتوى النصي
                     raw_data = trafilatura.fetch_url(news_list[selected_idx]['link'])
                     main_text = trafilatura.extract(raw_data)
                     
                     if main_text:
-                        # تشغيل محرك SambaNova مع تدوير المفاتيح
                         article = run_samba_writer(main_text, final_keyword)
                         
                         st.markdown("### ✅ المقال الاستراتيجي الجاهز")
                         st.markdown(f"<div class='article-output'>{article}</div>", unsafe_allow_html=True)
                         
-                        # محرك البحث البصري
                         new_title = article.split('\n')[0]
                         st.markdown("---")
                         st.markdown("### 🖼️ الصور المقترحة للمقال")
@@ -179,15 +178,12 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
                         
                         st.text_area("نسخة النشر الصافية:", article, height=350)
                     else:
-                        st.error("فشل في استخلاص النص. قد يكون الموقع محمياً أو الرابط غير متاح للسحب.")
+                        st.error("فشل في استخلاص النص.")
         else:
-            st.info("اضغط على 'تحديث شامل' لتفعيل الرادار وجلب آخر الأخبار.")
+            st.info("اضغط على 'تحديث شامل' لتفعيل الرادار.")
 
-# الشريط الجانبي (Sidebar)
 st.sidebar.title("🛠️ لوحة تحكم الماندجر")
-st.sidebar.markdown(f"**النسخة:** {SYSTEM_VERSION if 'SYSTEM_VERSION' in locals() else 'V27.6'}")
 st.sidebar.success("الحالة: متصل بـ 26 مفتاحاً")
-st.sidebar.divider()
 if st.sidebar.button("تسجيل الخروج"):
     st.session_state["authenticated"] = False
     st.rerun()
