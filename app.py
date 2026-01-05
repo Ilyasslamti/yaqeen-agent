@@ -187,6 +187,149 @@ if check_password():
 # ==========================================
 # 2. محرك الصياغة الهندسي (SEO MASTER)
 # ==========================================
+def rewrite_seo_architect(text, tone, keyword):
+    try:
+        if "GROQ_API_KEY" in st.secrets:
+            client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+        else:
+            return "خطأ: مفتاح GROQ_API_KEY غير موجود في Secrets"
+            
+        prompt = f"""
+        أنت رئيس تحرير خبير في Yoast SEO. صغ مقالاً صحفياً احترافياً بناءً على النص الأصلي.
+        الكلمة المفتاحية: {keyword}
+        
+        قواعد الـ SEO الصارمة:
+        1. طول الجملة: ممنوع تجاوز 18 كلمة للجملة. استخدم النقطة (.) فوراً لكسر الجمل الطويلة.
+        2. العنوان: عنوان قوي يبدأ بالكلمة المفتاحية (بدون رموز نهائياً ولا تذكر كلمة مغناطيسي).
+        3. كلمات الانتقال: استخدم روابط متنوعة (بالموازاة مع ذلك، وفي غضون ذلك، علاوة على، ومن جهة أخرى).
+        4. المبني للمعلوم: اجعل الفاعل بطل الجملة دائماً (مثل: كشف المخرج، أكدت المصادر).
+        5. التنسيق: عناوين فرعية نصية، فقرات لا تتجاوز 3 أسطر، بدون رموز Markdown.
+        
+        الأسلوب: {tone}.
+        النص الأصلي: {text[:3800]}
+        """
+        res = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile", 
+            temperature=0.4
+        )
+        return res.choices[0].message.content
+    except Exception as e:
+        return f"خطأ تقني: {str(e)}"
+
+# ==========================================
+# 3. تشغيل النظام (Main Logic)
+# ==========================================
+if check_password():
+    # القائمة الكاملة دون نقصان
+    RSS_SOURCES = {
+        "الصحافة الوطنية 🇲🇦": {
+            "هسبريس": "https://www.hespress.com/feed",
+            "شوف تيفي": "https://chouftv.ma/feed",
+            "العمق المغربي": "https://al3omk.com/feed",
+            "زنقة 20": "https://www.rue20.com/feed",
+            "هبة بريس": "https://ar.hibapress.com/feed",
+            "اليوم 24": "https://alyaoum24.com/feed",
+            "كود": "https://www.goud.ma/feed",
+            "تليكسبريس": "https://telexpresse.com/feed",
+            "Le360 عربي": "https://ar.le360.ma/rss",
+            "فبراير": "https://www.febrayer.com/feed",
+            "آشكاين": "https://achkayen.com/feed",
+        },
+        "أخبار الشمال والجهات 🌊": {
+            "شمال بوست": "https://chamalpost.net/feed",
+            "بريس تطوان": "https://presstetouan.com/feed",
+            "طنجة 24": "https://tanja24.com/feed",
+            "تطوان بريس": "https://tetouanpress.ma/feed",
+            "طنجة نيوز": "https://tanjanews.com/feed",
+            "كاب 24": "https://cap24.tv/feed",
+            "صدى تطوان": "https://sadatetouan.com/feed",
+            "أكادير 24": "https://agadir24.info/feed",
+        },
+        "أخبار دولية واقتصاد 🌍": {
+            "سكاي نيوز عربية": "https://www.skynewsarabia.com/rss/v1/middle-east.xml",
+            "الجزيرة نت": "https://www.aljazeera.net/alritem/rss/rss.xml",
+            "فرانس 24": "https://www.france24.com/ar/rss",
+            "اقتصادكم": "https://www.economistcom.ma/feed",
+        },
+        "رياضة وفن ⚽": {
+            "البطولة": "https://www.elbotola.com/rss",
+            "هسبريس رياضة": "https://hesport.com/feed",
+            "المنتخب": "https://almountakhab.com/rss",
+            "لالة مولاتي": "https://www.lallamoulati.ma/feed/",
+            "هاي كورة": "https://hihi2.com/feed"
+        }
+    }
+
+    # تنسيق الواجهة
+    st.markdown("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+        html, body, [class*="st-"] { font-family: 'Cairo', sans-serif; text-align: right; }
+        .article-output { white-space: pre-wrap; background-color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #cfd8dc; line-height: 2.1; font-size: 1.15rem; }
+        .stButton>button { background: #1e3a8a; color: white; border-radius: 10px; height: 3.5rem; font-weight: bold; width: 100%; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div style='text-align: center; background: #1e3a8a; color: white; padding: 1rem; border-radius: 10px; margin-bottom: 2rem;'><h1>وكيل يقين الصحفي - كامل المصادر</h1></div>", unsafe_allow_html=True)
+
+    # تحميل قاعدة البيانات
+    if os.path.exists(DB_FILE):
+        try:
+            with open(DB_FILE, 'r', encoding='utf-8') as f: db = json.load(f)
+        except: db = {"data": {}}
+    else:
+        db = {"data": {}}
+
+    tabs = st.tabs(list(RSS_SOURCES.keys()))
+    for i, cat in enumerate(list(RSS_SOURCES.keys())):
+        with tabs[i]:
+            if st.button(f"🔄 تحديث قائمة {cat}", key=f"up_{i}"):
+                with st.spinner("جاري الجلب..."):
+                    all_news = []
+                    def fetch_data(n, u):
+                        try:
+                            d = feedparser.parse(u)
+                            return [{"title": e.title, "link": e.link, "source": n} for e in d.entries[:10]]
+                        except: return []
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=15) as exec:
+                        futures = [exec.submit(fetch_data, name, url) for name, url in RSS_SOURCES[cat].items()]
+                        for f in concurrent.futures.as_completed(futures): all_news.extend(f.result())
+                    db["data"][cat] = all_news
+                    with open(DB_FILE, 'w', encoding='utf-8') as f: json.dump(db, f, ensure_ascii=False)
+                st.rerun()
+
+            if cat in db["data"] and db["data"][cat]:
+                news_list = db["data"][cat]
+                choice = st.selectbox("اختر المقال:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
+                c1, c2 = st.columns(2)
+                with c1: tone = st.selectbox("الأسلوب:", ["تحقيق صحفي", "تقرير سريع", "تحليل SEO"], key=f"tn_{i}")
+                with c2: keyword = st.text_input("الكلمة المفتاحية:", key=f"kw_{i}")
+
+                if st.button("🚀 صياغة المقال", key=f"run_{i}"):
+                    with st.status("🏗️ جاري المعالجة...", expanded=True):
+                        raw = trafilatura.fetch_url(news_list[choice]['link'])
+                        txt = trafilatura.extract(raw)
+                        if txt:
+                            final_content = rewrite_seo_architect(txt, tone, keyword)
+                            st.markdown("### ✅ المقال المطور")
+                            st.markdown(f"<div class='article-output'>{final_content}</div>", unsafe_allow_html=True)
+                            st.text_area("للنسخ:", final_content, height=450)
+                        else: st.error("فشل السحب.")
+            else: st.info("اضغط تحديث.")
+
+    # وضع التذييل داخل نطاق الحماية وبشكل مستقل تماماً
+    st.markdown("---")
+    st.markdown("<p style='text-align:center; color:#666;'>وكيل يقين الصحفي V16.6 - إدارة الماندجر 2026</p>", unsafe_allow_html=True)                    st.session_state["authenticated"] = True
+                    st.rerun()
+                else:
+                    st.error("❌ مفتاح الوصول غير صحيح!")
+        return False
+    return True
+
+# ==========================================
+# 2. محرك الصياغة الهندسي (SEO MASTER)
+# ==========================================
 try:
     if "GROQ_API_KEY" in st.secrets:
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
