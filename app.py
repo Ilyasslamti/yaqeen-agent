@@ -6,11 +6,10 @@ import concurrent.futures
 import json
 import os
 import socket
-from datetime import datetime
 import time
 
 # ==========================================
-# 0. إعدادات الهوية (إصدار الصحافة الاحترافية)
+# 0. إعدادات الهوية
 # ==========================================
 SYSTEM_VERSION = "V24.0_ELITE_JOURNALISM"
 ACCESS_PASSWORD = "Manager_Tech_2026"
@@ -24,35 +23,35 @@ st.set_page_config(
 socket.setdefaulttimeout(40)
 
 # ==========================================
-# شاشة تحميل احترافية (آمنة)
+# 1. شاشة تحميل احترافية (آمنة)
 # ==========================================
 def loading_screen(message="جاري تهيئة النظام الصحفي..."):
     placeholder = st.empty()
     with placeholder.container():
         st.markdown(
-            """
+            f"""
             <style>
-            .loader-box {
+            .loader-box {{
                 padding: 60px;
                 text-align: center;
                 border-radius: 20px;
                 background: #ffffff;
                 box-shadow: 0 10px 30px rgba(0,0,0,0.06);
                 font-family: Cairo, sans-serif;
-            }
+            }}
             </style>
             <div class="loader-box">
-                <h3>{}</h3>
+                <h3>{message}</h3>
                 <p>يرجى الانتظار...</p>
             </div>
-            """.format(message),
+            """,
             unsafe_allow_html=True
         )
     time.sleep(1.2)
     placeholder.empty()
 
 # ==========================================
-# 1. نظام الدخول المعزول (Auth Gate)
+# 2. نظام الدخول المعزول
 # ==========================================
 def auth_gate():
     if "authenticated" not in st.session_state:
@@ -60,13 +59,12 @@ def auth_gate():
 
     if not st.session_state["authenticated"]:
         st.title("دخول منصة يقين AI – إصدار الصحافة الاحترافية")
-
         pwd = st.text_input("مفتاح الوصول:", type="password")
 
         if st.button("فتح النظام"):
             if pwd == ACCESS_PASSWORD:
-                loading_screen("جاري فتح المنصة الصحفية...")
                 st.session_state["authenticated"] = True
+                loading_screen("جاري فتح المنصة الصحفية...")
                 st.rerun()
             else:
                 st.error("مفتاح الوصول غير صحيح")
@@ -77,7 +75,7 @@ def auth_gate():
 auth_gate()
 
 # ==========================================
-# 2. محرك الهندسة التحريرية
+# 3. محرك الصياغة الصحفية
 # ==========================================
 def run_samba_writer(text, tone, keyword):
     try:
@@ -87,21 +85,17 @@ def run_samba_writer(text, tone, keyword):
         )
 
         prompt = f"""
-أنت صحفي محترف نخبوّي تكتب وفق معايير الصحافة المؤسسية الصارمة.
+أنت صحفي محترف تكتب بأسلوب مؤسساتي رصين.
 
-المطلوب:
-إعادة صياغة النص بأسلوب صحفي احترافي صالح للنشر الورقي والرقمي.
+أعد صياغة النص وفق القواعد التالية:
+- المبني للمعلوم بنسبة لا تقل عن 90%
+- طول الجملة لا يتجاوز 25 كلمة
+- تنويع بدايات الجمل
+- عنوان رئيسي يبدأ بالكلمة المفتاحية: {keyword}
+- إدراج عناوين فرعية نصية عند الانتقال بين الزوايا
+- يمنع ذكر المصدر الأصلي
 
-قواعد إلزامية:
-- المبني للمجهول لا يتجاوز 10%.
-- طول الجملة لا يتجاوز 25 كلمة.
-- تنويع بدايات الجمل (ممنوع التكرار المتتالي).
-- إدراج عناوين فرعية عند الانتقال بين الزوايا.
-- العنوان الرئيسي يبدأ بالكلمة المفتاحية: {keyword}.
-- لغة خبرية رصينة، مبني للمعلوم، فاعل واضح.
-
-أسلوب المقال: {tone}
-الكلمة المفتاحية: {keyword}
+أسلوب الصياغة: {tone}
 
 النص الأصلي:
 {text[:4500]}
@@ -110,10 +104,10 @@ def run_samba_writer(text, tone, keyword):
         response = client.chat.completions.create(
             model="Meta-Llama-3.3-70B-Instruct",
             messages=[
-                {"role": "system", "content": "أنت كاتب صحفي محترف جداً بلغة عربية رصينة."},
+                {"role": "system", "content": "أنت كاتب صحفي عربي محترف."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.5,
+            temperature=0.4,
             top_p=0.9
         )
 
@@ -123,45 +117,48 @@ def run_samba_writer(text, tone, keyword):
         return f"خطأ تقني في محرك الصياغة: {str(e)}"
 
 # ==========================================
-# 3. المصادر الإخبارية
+# 4. المصادر (لم يتم لمسها نهائيًا)
 # ==========================================
 RSS_SOURCES = {
     "الصحافة الوطنية 🇲🇦": {
         "هسبريس": "https://www.hespress.com/feed",
+        "شوف تيفي": "https://chouftv.ma/feed",
+        "العمق المغربي": "https://al3omk.com/feed",
+        "زنقة 20": "https://www.rue20.com/feed",
         "هبة بريس": "https://ar.hibapress.com/feed",
-        "العمق المغربي": "https://al3omk.com/feed"
+        "اليوم 24": "https://alyaoum24.com/feed",
+        "كود": "https://www.goud.ma/feed",
+        "Le360": "https://ar.le360.ma/rss",
+        "فبراير": "https://www.febrayer.com/feed",
+        "آشكاين": "https://achkayen.com/feed",
+        "الجريدة 24": "https://aljarida24.ma/feed",
+        "لكم": "https://lakome2.com/feed",
+        "عبر": "https://aabbir.com/feed",
+        "سفيركم": "https://safir24.com/feed",
+        "باناصا": "https://banassa.com/feed",
+        "الأيام 24": "https://www.alayam24.com/feed",
+        "برلمان.كوم": "https://www.barlamane.com/feed",
+        "تليكسبريس": "https://telexpresse.com/feed",
+        "الصباح": "https://assabah.ma/feed",
+        "الأحداث المغربية": "https://ahdath.info/feed",
+        "مدار 21": "https://madar21.com/feed",
+        "كيوسك أنفو": "https://kiosqueinfo.ma/feed",
+        "آذار": "https://aaddar.com/feed",
+        "مشاهد": "https://mashahed.info/feed"
     }
 }
 
 # ==========================================
-# 4. الواجهة
+# 5. الواجهة
 # ==========================================
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-html, body, [class*="st-"] {
-    font-family: 'Cairo', sans-serif;
-    direction: rtl;
-    text-align: right;
-}
-.article-output {
-    white-space: pre-wrap;
-    background-color: #ffffff;
-    padding: 40px;
-    border-radius: 20px;
-    border: 1px solid #eee;
-    line-height: 2.2;
-    font-size: 1.2rem;
-    text-align: justify;
-}
-</style>
-""", unsafe_allow_html=True)
-
-st.title("يقين AI – منصة الصياغة الصحفية الاحترافية")
+st.title("يقين AI | الصحافة الاحترافية")
 
 if os.path.exists(DB_FILE):
-    with open(DB_FILE, "r", encoding="utf-8") as f:
-        db = json.load(f)
+    try:
+        with open(DB_FILE, "r", encoding="utf-8") as f:
+            db = json.load(f)
+    except:
+        db = {"data": {}}
 else:
     db = {"data": {}}
 
@@ -169,32 +166,32 @@ tabs = st.tabs(list(RSS_SOURCES.keys()))
 
 for i, cat in enumerate(RSS_SOURCES.keys()):
     with tabs[i]:
-        if st.button("تحديث الأخبار", key=f"up_{i}"):
-            loading_screen("جاري جلب الأخبار...")
-            all_news = []
+        if st.button(f"تحديث أخبار {cat}", key=f"up_{i}"):
+            with st.spinner("جاري جلب الأخبار..."):
+                all_news = []
 
-            def fetch_feed(name, url):
-                try:
-                    d = feedparser.parse(url)
-                    return [{"title": e.title, "link": e.link, "source": name} for e in d.entries[:10]]
-                except:
-                    return []
+                def fetch_feed(name, url):
+                    try:
+                        feed = feedparser.parse(url)
+                        return [{"title": e.title, "link": e.link, "source": name} for e in feed.entries[:10]]
+                    except:
+                        return []
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as exe:
-                futures = [
-                    exe.submit(fetch_feed, name, url)
-                    for name, url in RSS_SOURCES[cat].items()
-                ]
-                for f in concurrent.futures.as_completed(futures):
-                    all_news.extend(f.result())
+                with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+                    futures = [
+                        executor.submit(fetch_feed, name, url)
+                        for name, url in RSS_SOURCES[cat].items()
+                    ]
+                    for f in concurrent.futures.as_completed(futures):
+                        all_news.extend(f.result())
 
-            db["data"][cat] = all_news
-            with open(DB_FILE, "w", encoding="utf-8") as f:
-                json.dump(db, f, ensure_ascii=False)
+                db["data"][cat] = all_news
+                with open(DB_FILE, "w", encoding="utf-8") as f:
+                    json.dump(db, f, ensure_ascii=False)
 
             st.rerun()
 
-        if cat in db["data"]:
+        if cat in db["data"] and db["data"][cat]:
             news = db["data"][cat]
             idx = st.selectbox(
                 "اختر الخبر:",
@@ -202,19 +199,25 @@ for i, cat in enumerate(RSS_SOURCES.keys()):
                 format_func=lambda x: f"[{news[x]['source']}] {news[x]['title']}"
             )
 
-            tone = st.selectbox("نبرة المقال:", ["تقرير صحفي احترافي", "تحليل استقصائي"])
-            keyword = st.text_input("الكلمة المفتاحية:")
+            tone = st.selectbox(
+                "نبرة المقال:",
+                ["تقرير صحفي احترافي", "تحليل استقصائي رصين"]
+            )
+
+            keyword = st.text_input("الكلمة المفتاحية (SEO):")
 
             if st.button("صياغة المقال"):
-                loading_screen("جاري الصياغة الصحفية...")
                 raw = trafilatura.fetch_url(news[idx]["link"])
-                txt = trafilatura.extract(raw)
+                text = trafilatura.extract(raw)
 
-                if txt:
-                    final = run_samba_writer(txt, tone, keyword)
-                    st.markdown("<div class='article-output'>{}</div>".format(final), unsafe_allow_html=True)
+                if text:
+                    result = run_samba_writer(text, tone, keyword)
+                    st.markdown("### المقال النهائي")
+                    st.text_area("", result, height=500)
                 else:
                     st.error("تعذر استخراج النص من المصدر.")
 
-st.markdown("---")
-st.caption("يقين AI | إدارة الماندجر إلياس | إصدار 2026")
+        else:
+            st.info("المرجو تحديث الأخبار أولًا.")
+
+st.caption("يقين AI – إصدار الصحافة النخبوية – 2026")
