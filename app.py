@@ -1,40 +1,33 @@
-import streamlit as st
-import feedparser
-import trafilatura
-from groq import Groq
-import concurrent.futures
-import json
-import os
-import socket
-import requests
-from datetime import datetime
-
-# ==========================================
-# 0. إعدادات النظام والهوية
-# ==========================================
-SYSTEM_VERSION = "V16.1_PRO_CLEAN" 
-ACCESS_PASSWORD = "Manager_Tech_2026" 
-
-st.set_page_config(page_title="وكيل يقين الصحفي - Manadger Tech", page_icon="📈", layout="wide")
-socket.setdefaulttimeout(25) 
-DB_FILE = "news_db_v16.json"
-
-# ==========================================
-# 1. نظام الحماية (Login System)
-# ==========================================
-def check_password():
-    if "authenticated" not in st.session_state:
-        st.session_state["authenticated"] = False
+def rewrite_seo_architect(text, tone, keyword):
+    if not client: return "خطأ في الاتصال"
     
-    if not st.session_state["authenticated"]:
-        st.markdown("<div style='text-align: center; background: #1e3a8a; color: white; padding: 2rem; border-radius: 15px;'><h1>🔐 وكيل يقين الصحفي</h1><p>من مجموعة منادجر للتطوير وحلول الويب</p></div>", unsafe_allow_html=True)
-        
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            password_input = st.text_input("أدخل مفتاح الوصول:", type="password")
-            if st.button("دخول للنظام"):
-                if password_input == ACCESS_PASSWORD:
-                    st.session_state["authenticated"] = True
+    prompt = f"""
+    أنت رئيس تحرير جريدة مشهورة وخبير في تحسين محركات البحث (SEO). 
+    حول النص "الجامد" التالي إلى مقال صحفي "نابض بالحياة" يثير حماس القراء.
+    
+    الكلمة المفتاحية: {keyword}
+    
+    القواعد الذهبية (التزام صارم):
+    1. العنوان: صغ عنواناً "انفجارياً" يحبس الأنفاس، يتضمن الكلمة المفتاحية، ويعد القارئ بكشف أسرار. (بدون رموز Markdown).
+    2. الأسلوب القصصي: لا تسرد حقائق فقط، بل اصنع قصة. استخدم أفعالاً قوية (يفجر، يكشف، يزلزل، يقود).
+    3. كلمات الانتقال الذكية: نوع في روابط الجمل (بالموازاة مع ذلك، وفي غمرة هذا النجاح، ولم يقف الأمر عند هذا الحد، بل تجاوزه إلى..).
+    4. معايير Yoast SEO: 
+       - جمل قصيرة ورشيقة.
+       - مبني للمعلوم (اجعل الفنانين هم الأبطال في الجمل).
+       - الكلمة المفتاحية في أول المقال وفي العناوين الفرعية.
+    5. التنسيق: عناوين فرعية مثيرة بدون رموز.
+    
+    الأسلوب: {tone}. الكلمة المفتاحية: {keyword}.
+    النص الأصلي: {text}
+    """
+    try:
+        res = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile", 
+            temperature=0.6 # رفع الحرارة قليلاً لزيادة الإبداع اللغوي
+        )
+        return res.choices[0].message.content
+    except Exception as e: return str(e)                    st.session_state["authenticated"] = True
                     st.rerun()
                 else:
                     st.error("❌ المفتاح غير صحيح")
