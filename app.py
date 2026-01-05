@@ -10,10 +10,10 @@ import requests
 from datetime import datetime
 
 # ==========================================
-# 0. إعدادات النظام (V10.0 - SEO Readiness)
+# 0. إعدادات النظام (V11.0 - Professional Article Architect)
 # ==========================================
-SYSTEM_VERSION = "V10.0_SEO_STRICT" 
-st.set_page_config(page_title="يقين AI - المحرر الاحترافي", page_icon="🦅", layout="wide")
+SYSTEM_VERSION = "V11.0_PRO_ARCHITECT" 
+st.set_page_config(page_title="يقين AI - معمار المقالات", page_icon="✍️", layout="wide")
 socket.setdefaulttimeout(15) 
 DB_FILE = "news_db_v8.json"
 
@@ -31,10 +31,133 @@ def auto_purge_at_3am():
 
 auto_purge_at_3am()
 
-if "sys_version" not in st.session_state:
-    st.session_state["sys_version"] = SYSTEM_VERSION
-    st.cache_data.clear()
+# ==========================================
+# 2. المصادر (نفس القائمة الضخمة)
+# ==========================================
+RSS_SOURCES = {
+    "أخبار الشمال 🌊": {
+        "شمال بوست": "https://chamalpost.net/feed", "بريس تطوان": "https://presstetouan.com/feed",
+        "طنجة 24": "https://tanja24.com/feed", "تطوان بريس": "https://tetouanpress.ma/feed",
+    },
+    "الصحافة الوطنية 🇲🇦": {
+        "هسبريس": "https://www.hespress.com/feed", "شوف تيفي": "https://chouftv.ma/feed",
+        "العمق": "https://al3omk.com/feed", "زنقة 20": "https://www.rue20.com/feed",
+    },
+    "الرياضة ⚽": {
+        "البطولة": "https://www.elbotola.com/rss", "هسبريس رياضة": "https://hesport.com/feed",
+    }
+}
 
+# ==========================================
+# 3. CSS (تنسيق واجهة المحرر)
+# ==========================================
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+    html, body, [class*="st-"] { font-family: 'Cairo', sans-serif; text-align: right; }
+    .brand-header {
+        text-align: center; background: #1e3a8a; color: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem;
+    }
+    .article-output {
+        background-color: #ffffff; color: #1a1a1a; padding: 25px; border-radius: 10px;
+        border: 1px solid #e0e0e0; line-height: 1.8; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .stButton>button { background-color: #1e3a8a; color: white; font-weight: 800; height: 3.5rem; }
+</style>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# 4. محرك صياغة المقالات الاحترافي (The Architect)
+# ==========================================
+try:
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+except: client = None
+
+def rewrite_article_architect(text, tone, instr):
+    if not client: return "خطأ: المفتاح مفقود"
+    
+    prompt = f"""
+    أنت رئيس تحرير محترف وخبير SEO. مهمتك هي تحويل النص الخام إلى "مقال صحفي متكامل" وليس مجرد نصوص متفرقة.
+    
+    الهيكل المطلوب للمقال (التزام صارم):
+    1. **العنوان الرئيسي (H1):** عنوان مثير، قوي، ومباشر يحتوي على الكلمة المفتاحية.
+    2. **المقدمة (Lead):** فقرة واحدة مكثفة (حوالي 30-40 كلمة) تلخص الخبر وتجذب القارئ، مع استخدام المبني للمعلوم.
+    3. **العناوين الفرعية (H2):** أضف عنوانين فرعيين على الأقل لتنظيم الأفكار.
+    4. **الجسم (Body):** فقرات متسلسلة ومنطقية. كل فقرة لا تتجاوز 3 أسطر.
+    5. **قواعد Yoast SEO الصارمة:**
+       - حوّل كل جمل المبني للمجهول إلى مبني للمعلوم (أقل من 10% مبني للمجهول).
+       - الجمل قصيرة جداً (أقل من 20 كلمة للجملة).
+       - ربط الفقرات بكلمات انتقال (علاوة على ذلك، ومن جهة أخرى، وفي هذا السياق).
+    
+    الأسلوب: {tone}. ملاحظات إضافية: {instr}.
+    
+    النص الأصلي:
+    {text[:3500]}
+    """
+    
+    try:
+        res = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile", temperature=0.4 # حرارة منخفضة لضمان الالتزام بالهيكل
+        )
+        return res.choices[0].message.content
+    except Exception as e: return f"خطأ: {str(e)}"
+
+# ==========================================
+# 5. الواجهة الأمامية
+# ==========================================
+st.markdown("<div class='brand-header'><h1>يقين AI - معمار المقالات الاحترافية</h1><p>توليد مقالات صحفية متكاملة متوافقة مع Yoast SEO</p></div>", unsafe_allow_html=True)
+
+# دالات جلب وتحميل البيانات (نفس الدوال السابقة)
+def fetch_feed_items(source_name, url):
+    items = []
+    try:
+        d = feedparser.parse(url)
+        for e in d.entries[:8]: items.append({"title": e.title, "link": e.link, "source": source_name})
+    except: pass
+    return items
+
+def update_category_data(category):
+    all_items = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(fetch_feed_items, src, url) for src, url in RSS_SOURCES[category].items()]
+        for f in concurrent.futures.as_completed(futures): all_items.extend(f.result())
+    return all_items
+
+# إدارة قاعدة البيانات
+if os.path.exists(DB_FILE):
+    with open(DB_FILE, 'r', encoding='utf-8') as f: db = json.load(f)
+else: db = {"data": {}}
+
+tabs = st.tabs(list(RSS_SOURCES.keys()))
+for i, cat_name in enumerate(list(RSS_SOURCES.keys())):
+    with tabs[i]:
+        if cat_name in db["data"]:
+            news_list = db["data"][cat_name]
+            idx = st.selectbox("اختر الخبر الأساسي:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"s_{i}")
+            
+            c1, c2 = st.columns(2)
+            with c1: tone = st.selectbox("نبرة المقال:", ["تحقيق صحفي رصين", "تقرير إخباري سريع", "مقال رأي تحليلي"], key=f"t_{i}")
+            with c2: instr = st.text_input("كلمات مفتاحية مستهدفة:", key=f"i_{i}")
+
+            if st.button("🚀 توليد المقال الاحترافي", key=f"g_{i}"):
+                with st.status("🏗️ جاري هندسة المقال وتنسيق الفقرات...", expanded=True):
+                    raw = trafilatura.fetch_url(news_list[idx]['link'])
+                    txt = trafilatura.extract(raw)
+                    if txt:
+                        final_article = rewrite_article_architect(txt, tone, instr)
+                        st.markdown("### ✅ المقال النهائي الجاهز")
+                        st.markdown(f"<div class='article-output'>{final_article}</div>", unsafe_allow_html=True)
+                        st.text_area("نسخة الخام (للووردبريس):", final_article, height=300)
+                    else: st.error("فشل في سحب النص")
+        else:
+            if st.button(f"جلب أخبار {cat_name}"):
+                db["data"][cat_name] = update_category_data(cat_name)
+                with open(DB_FILE, 'w', encoding='utf-8') as f: json.dump(db, f, ensure_ascii=False)
+                st.rerun()
+
+st.markdown("---")
+st.caption("نظام 'يقين' - الإصدار الاحترافي V11.0 - إدارة الماندجر")
 # ==========================================
 # 2. المصادر الضخمة المحدثة
 # ==========================================
