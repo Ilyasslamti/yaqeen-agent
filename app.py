@@ -127,7 +127,7 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
             selected_idx = st.selectbox("اختر الخبر:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
             keyword_input = st.text_input("الكلمة المفتاحية (SEO):", key=f"kw_{i}", placeholder="مثال: تطوان، عاجل...")
 
-            if st.button("🚀 صياغة بأسلوب هاشمي بريس", key=f"run_{i}"):
+            if st.button("🚀 صياغة بأسلوب احترافي", key=f"run_{i}"):
                 final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "هاشمي بريس"
                 with st.spinner("جاري هندسة المقال..."):
                     raw_data = trafilatura.fetch_url(news_list[selected_idx]['link'])
