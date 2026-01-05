@@ -10,31 +10,163 @@ import requests
 from datetime import datetime
 
 # ==========================================
-# 0. إعدادات النظام والهوية (Manadger Tech)
+# 0. إعدادات النظام والهوية
 # ==========================================
-SYSTEM_VERSION = "V16.2_PRO_FINAL" 
+SYSTEM_VERSION = "V16.4_FULL_SOURCES" 
 ACCESS_PASSWORD = "Manager_Tech_2026" 
 
-st.set_page_config(page_title="وكيل يقين الصحفي - Manadger Tech", page_icon="📈", layout="wide")
-socket.setdefaulttimeout(25) 
+st.set_page_config(page_title="وكيل يقين الصحفي - المصادر الكاملة", page_icon="📰", layout="wide")
+socket.setdefaulttimeout(30) 
 DB_FILE = "news_db_v16.json"
 
 # ==========================================
-# 1. نظام الحماية (المحصن)
+# 1. نظام الحماية
 # ==========================================
 def check_password():
     if "authenticated" not in st.session_state:
         st.session_state["authenticated"] = False
-    
     if not st.session_state["authenticated"]:
-        st.markdown("<div style='text-align: center; background: #1e3a8a; color: white; padding: 2rem; border-radius: 15px;'><h1>🔐 وكيل يقين الصحفي</h1><p>من مجموعة منادجر للتطوير وحلول الويب</p></div>", unsafe_allow_html=True)
-        
+        st.markdown("<div style='text-align: center; background: #1e3a8a; color: white; padding: 2rem; border-radius: 15px;'><h1>🔐 وكيل يقين الصحفي</h1><p>إدارة الماندجر - نظام السحب الشامل</p></div>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            password_input = st.text_input("أدخل مفتاح الوصول الخاص بك:", type="password")
+            password_input = st.text_input("أدخل مفتاح الوصول:", type="password")
             if st.button("دخول للنظام"):
                 if password_input == ACCESS_PASSWORD:
                     st.session_state["authenticated"] = True
+                    st.rerun()
+                else: st.error("❌ المفتاح غير صحيح")
+        return False
+    return True
+
+# ==========================================
+# 2. محرك الصياغة (السيو القوي والجمل القصيرة)
+# ==========================================
+try:
+    if "GROQ_API_KEY" in st.secrets:
+        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+    else: client = None
+except: client = None
+
+def rewrite_seo_architect(text, tone, keyword):
+    if not client: return "خطأ: مفتاح API مفقود"
+    prompt = f"""
+    بصفتك خبير Yoast SEO، أعد صياغة النص بجمل قصيرة جداً (أقل من 18 كلمة لكل جملة).
+    الكلمة المفتاحية: {keyword}
+    
+    الضوابط:
+    1. انهِ الجملة بنقطة فور اكتمال الفكرة البسيطة. 
+    2. استخدم المبني للمعلوم حصراً.
+    3. العناوين الفرعية نصية خالية من الرموز تماماً.
+    4. نوع في روابط الجمل (لذلك، ومن جهة، وبالتوازي).
+    
+    الأسلوب: {tone}.
+    النص: {text[:3800]}
+    """
+    try:
+        res = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile", temperature=0.3
+        )
+        return res.choices[0].message.content
+    except Exception as e: return f"خطأ: {str(e)}"
+
+# ==========================================
+# 3. تشغيل النظام والمصادر الكاملة
+# ==========================================
+if check_password():
+    
+    # القائمة الكاملة كما طلبت
+    RSS_SOURCES = {
+        "الصحافة الوطنية 🇲🇦": {
+            "هسبريس": "https://www.hespress.com/feed",
+            "شوف تيفي": "https://chouftv.ma/feed",
+            "العمق المغربي": "https://al3omk.com/feed",
+            "زنقة 20": "https://www.rue20.com/feed",
+            "هبة بريس": "https://ar.hibapress.com/feed",
+            "اليوم 24": "https://alyaoum24.com/feed",
+            "Le360 عربي": "https://ar.le360.ma/rss",
+            "فبراير": "https://www.febrayer.com/feed",
+            "آشكاين": "https://achkayen.com/feed",
+            "الجريدة 24": "https://aljarida24.ma/feed"
+        },
+        "أخبار الشمال والجهات 🌊": {
+            "شمال بوست": "https://chamalpost.net/feed",
+            "بريس تطوان": "https://presstetouan.com/feed",
+            "طنجة 24": "https://tanja24.com/feed",
+            "تطوان بريس": "https://tetouanpress.ma/feed",
+            "طنجة نيوز": "https://tanjanews.com/feed",
+            "كاب 24": "https://cap24.tv/feed",
+            "صدى تطوان": "https://sadatetouan.com/feed"
+        },
+        "أخبار دولية واقتصاد 🌍": {
+            "سكاي نيوز عربية": "https://www.skynewsarabia.com/rss/v1/middle-east.xml",
+            "الجزيرة نت": "https://www.aljazeera.net/alritem/rss/rss.xml",
+            "فرانس 24": "https://www.france24.com/ar/rss",
+            "BBC عربي": "https://www.bbc.com/arabic/index.xml",
+            "اقتصادكم": "https://www.economistcom.ma/feed"
+        },
+        "فن، مشاهير ورياضة ⚽": {
+            "البطولة": "https://www.elbotola.com/rss",
+            "هسبريس رياضة": "https://hesport.com/feed",
+            "المنتخب": "https://almountakhab.com/rss",
+            "لالة مولاتي": "https://www.lallamoulati.ma/feed/",
+            "سلطانة": "https://soltana.ma/feed",
+            "هاي كورة": "https://hihi2.com/feed"
+        }
+    }
+
+    st.markdown("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+        html, body, [class*="st-"] { font-family: 'Cairo', sans-serif; text-align: right; }
+        .article-output { white-space: pre-wrap; background-color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #cfd8dc; line-height: 2.1; font-size: 1.15rem; }
+        .stButton>button { background: #1e3a8a; color: white; border-radius: 10px; height: 3.5rem; font-weight: bold; width: 100%; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    if os.path.exists(DB_FILE):
+        with open(DB_FILE, 'r', encoding='utf-8') as f: db = json.load(f)
+    else: db = {"data": {}}
+
+    tabs = st.tabs(list(RSS_SOURCES.keys()))
+    for i, cat in enumerate(list(RSS_SOURCES.keys())):
+        with tabs[i]:
+            if st.button(f"🔄 تحديث أخبار {cat}", key=f"up_{i}"):
+                with st.spinner("جاري جلب البيانات من كافة المصادر..."):
+                    all_news = []
+                    def fetch(n, u):
+                        try:
+                            d = feedparser.parse(u)
+                            return [{"title": e.title, "link": e.link, "source": n} for e in d.entries[:10]]
+                        except: return []
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=15) as exec:
+                        futures = [exec.submit(fetch, name, url) for name, url in RSS_SOURCES[cat].items()]
+                        for f in concurrent.futures.as_completed(futures): all_news.extend(f.result())
+                    db["data"][cat] = all_news
+                    with open(DB_FILE, 'w', encoding='utf-8') as f: json.dump(db, f, ensure_ascii=False)
+                st.rerun()
+
+            if cat in db["data"] and db["data"][cat]:
+                news = db["data"][cat]
+                choice = st.selectbox("اختر المقال:", range(len(news)), format_func=lambda x: f"[{news[x]['source']}] {news[x]['title']}", key=f"s_{i}")
+                c1, c2 = st.columns(2)
+                with c1: tone = st.selectbox("الأسلوب:", ["تقرير صحفي قصير", "تحقيق مثير", "تحليل SEO"], key=f"t_{i}")
+                with c2: keyword = st.text_input("الكلمة المفتاحية:", key=f"k_{i}")
+
+                if st.button("🚀 صياغة المقال الآن", key=f"r_{i}"):
+                    with st.status("🏗️ جاري المعالجة...", expanded=True):
+                        raw = trafilatura.fetch_url(news[choice]['link'])
+                        txt = trafilatura.extract(raw)
+                        if txt:
+                            final = rewrite_seo_architect(txt, tone, keyword)
+                            st.markdown("### ✅ المقال المطور")
+                            st.markdown(f"<div class='article-output'>{final}</div>", unsafe_allow_html=True)
+                            st.text_area("للنسخ المباشر:", final, height=400)
+                        else: st.error("المصدر محمي.")
+            else: st.info("اضغط تحديث.")
+
+    st.markdown("---")
+    st.markdown("<p style='text-align:center; color:#666;'>وكيل يقين الصحفي V16.4 - إدارة الماندجر</p>", unsafe_allow_html=True)                    st.session_state["authenticated"] = True
                     st.rerun()
                 else:
                     st.error("❌ مفتاح الوصول غير صحيح!")
