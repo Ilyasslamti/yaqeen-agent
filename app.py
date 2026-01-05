@@ -10,17 +10,16 @@ import requests
 from datetime import datetime
 
 # ==========================================
-# 0. إعدادات النظام (تحديث قسري)
+# 0. إعدادات النظام (V10.0 - SEO Readiness)
 # ==========================================
-SYSTEM_VERSION = "V9.0_SEO_MASTER" 
-st.set_page_config(page_title="يقين - Manadger Tech", page_icon="🦅", layout="wide")
+SYSTEM_VERSION = "V10.0_SEO_STRICT" 
+st.set_page_config(page_title="يقين AI - المحرر الاحترافي", page_icon="🦅", layout="wide")
 socket.setdefaulttimeout(15) 
 DB_FILE = "news_db_v8.json"
 
 # ==========================================
-# 1. نظام التنظيف الذكي والدورة اليومية
+# 1. نظام التنظيف الذكي (3 صباحاً)
 # ==========================================
-# وظيفة لمسح البيانات في الساعة 3 صباحاً لبدء دورة جديدة
 def auto_purge_at_3am():
     now = datetime.now()
     if now.hour == 3:
@@ -37,7 +36,7 @@ if "sys_version" not in st.session_state:
     st.cache_data.clear()
 
 # ==========================================
-# 2. المصادر (القائمة الضخمة)
+# 2. المصادر الضخمة المحدثة
 # ==========================================
 RSS_SOURCES = {
     "أخبار الشمال 🌊": {
@@ -49,7 +48,7 @@ RSS_SOURCES = {
         "طنجة نيوز": "https://tanjanews.com/feed",
         "صدى تطوان": "https://sadatetouan.com/feed",
     },
-    "الصحافة الوطنية (شامل) 🇲🇦": {
+    "الصحافة الوطنية 🇲🇦": {
         "هسبريس": "https://www.hespress.com/feed",
         "شوف تيفي": "https://chouftv.ma/feed",
         "برلمان.كوم": "https://www.barlamane.com/feed",
@@ -64,38 +63,18 @@ RSS_SOURCES = {
         "الأحداث المغربية": "https://ahdath.info/feed",
         "آشكاين": "https://achkayen.com/feed",
         "الأيام 24": "https://www.alayam24.com/feed",
-        "لكم": "https://lakome2.com/feed",
-        "أنفاس بريس": "https://anfaspress.com/feed",
-        "باناصا": "https://banassa.com/feed",
-        "عبر": "https://aabbir.com/feed",
         "Le360 (عربي)": "https://ar.le360.ma/rss",
-        "المصدر ميديا": "https://almasdar.ma/feed",
-        "تليكسبريس": "https://telexpresse.com/feed",
-        "سفيركم": "https://safir24.com/feed",
-        "بديل": "https://badil.info/feed",
-        "الجريدة 24": "https://aljarida24.ma/feed",
-        "كواليس": "https://kawalis.ma/feed",
-    },
-    "فن ومشاهير 🎭": {
-        "لالة مولاتي": "http://www.lallamoulati.ma/feed/",
-        "سلطانة": "https://soltana.ma/feed",
-        "غالية": "https://ghalia.ma/feed",
-        "هسبريس فن": "https://www.hespress.com/art-et-culture/feed",
-        "سيدتي": "https://www.sayidaty.net/rss/3",
-        "اليوم 24 فن": "https://alyaoum24.com/category/%D9%81%D9%86/feed",
-        "شوف تيفي فن": "https://chouftv.ma/category/%D9%81%D9%86-%D9%88-%D9%85%D8%B4%D8%A7%D9%87%D9%8A%D8%B1/feed",
     },
     "الرياضة ⚽": {
         "البطولة": "https://www.elbotola.com/rss",
         "هسبريس رياضة": "https://hesport.com/feed",
         "المنتخب": "https://almountakhab.com/rss",
         "هاي كورة": "https://hihi2.com/feed",
-        "360 سبورت": "https://sport.le360.ma/rss",
     }
 }
 
 # ==========================================
-# 3. CSS (تحسين العرض)
+# 3. CSS (تنسيق العرض الاحترافي)
 # ==========================================
 st.markdown("""
 <style>
@@ -104,24 +83,22 @@ st.markdown("""
         font-family: 'Cairo', sans-serif; text-align: right;
     }
     .brand-header {
-        text-align: center; background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
-        padding: 20px; border-radius: 15px; border-bottom: 4px solid #1e3a8a; margin-bottom: 20px;
+        text-align: center; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        padding: 30px; border-radius: 15px; color: white; margin-bottom: 25px;
     }
-    .main-title { color: #1e3a8a; font-size: 2.2rem; font-weight: 800; margin: 0; }
-    .company-badge { background-color: #1e3a8a; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; display: inline-block; margin-bottom: 5px; }
     .comparison-box {
         height: 500px; overflow-y: auto; padding: 15px; border-radius: 8px;
         border: 1px solid #ddd; direction: rtl; text-align: right; font-size: 0.95rem; line-height: 1.8;
     }
-    .original-text { background-color: #f8f9fa; border-right: 4px solid #6c757d; }
+    .original-text { background-color: #f9fafb; border-right: 4px solid #9ca3af; }
     .new-text { background-color: #f0fdf4; border-right: 4px solid #22c55e; font-weight: 500; }
-    .stButton>button { width: 100%; border-radius: 8px; height: 50px; font-weight: 700; font-size: 16px; }
-    #MainMenu {visibility: visible;} footer {visibility: hidden;}
+    .stButton>button { width: 100%; border-radius: 8px; height: 50px; font-weight: 700; background-color: #1e3a8a; color: white; }
+    footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. المنطق الخلفي
+# 4. المنطق الخلفي (محرك الذكاء الاصطناعي الصارم)
 # ==========================================
 try:
     if "GROQ_API_KEY" in st.secrets:
@@ -131,18 +108,14 @@ except: client = None
 
 def fetch_feed_items(source_name, url):
     items = []
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124 Safari/537.36'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/110.0.0.0 Safari/537.36'}
     try:
         d = feedparser.parse(url)
         if not d.entries:
             resp = requests.get(url, headers=headers, timeout=10)
             d = feedparser.parse(resp.content)
-            
         for e in d.entries[:8]:
-            items.append({
-                "title": e.title, "link": e.link, "source": source_name,
-                "published": e.get("published", "")
-            })
+            items.append({"title": e.title, "link": e.link, "source": source_name})
     except: pass
     return items
 
@@ -170,49 +143,38 @@ def save_db(data):
     with open(DB_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False)
 
-def get_text(url):
-    try:
-        d = trafilatura.fetch_url(url)
-        return trafilatura.extract(d) if d else None
-    except: return None
-
-# دالة الصياغة الاحترافية المحسنة لـ SEO
-def rewrite_pro(text, tone, instr):
+def rewrite_strict_seo(text, tone, instr):
     if not client: return "خطأ: المفتاح مفقود"
     
     prompt = f"""
-    أنت خبير محتوى رقمي وSEO محترف. أعد صياغة الخبر التالي بقوة واحترافية لتصدر محركات البحث.
+    أنت خبير صياغة محتوى رقمي محترف. أعد صياغة الخبر التالي بأسلوب {tone} مع الالتزام الصارم بمعايير Yoast SEO للقراءة:
     
-    المعايير المطلوبة (تذكر Yoast SEO):
-    1. العنوان: صغ عنواناً (H1) جذاباً جداً، فريداً، ويحتوي الكلمة المفتاحية الرئيسية.
-    2. الهيكل: مقدمة قوية، فقرات منظمة بذكاء، وخاتمة شاملة.
-    3. الكلمات المفتاحية: ادمج كلمات مفتاحية قوية وذات صلة بشكل طبيعي لرفع ترتيب المقال.
-    4. الجودة: لغة عربية متينة وقوية، مع تجنب الحشو.
+    1. **قوة الفعل (المبني للمعلوم):** استبدل كل صيغ المبني للمجهول (مثل: تم، يُذكر، قيل) بصيغ مبني للمعلوم مباشرة (مثل: قرر، ذكر المحللون، أكدت المصادر). يجب أن يكون النص حيوياً ومباشراً.
+    2. **قصر الجمل:** ممنوع استخدام جمل طويلة. يجب ألا تتجاوز أي جملة 20 كلمة. استخدم النقطة باستمرار لتقسيم الأفكار.
+    3. **العنوان وجذب الانتباه:** صغ عنواناً قوياً (H1) يحتوي الكلمة المفتاحية في أوله.
+    4. **التنسيق:** فقرات قصيرة جداً (سطرين إلى ثلاثة فقط للفقرة).
+    5. **توجيهات SEO إضافية:** {instr}.
     
-    الأسلوب المطلوب: {tone}.
-    ملاحظات إضافية: {instr}.
-    
-    النص الأصلي:
-    {text[:3500]}
+    النص الأصلي للتحويل:
+    {text[:3800]}
     """
     
     try:
         res = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile", temperature=0.6
+            model="llama-3.3-70b-versatile", 
+            temperature=0.5 # تقليل الحرارة لضمان الدقة في طول الجمل
         )
         return res.choices[0].message.content
-    except Exception as e: return str(e)
+    except Exception as e: return f"خطأ في الصياغة: {str(e)}"
 
 # ==========================================
 # 5. الواجهة الأمامية
 # ==========================================
-
 st.markdown("""
 <div class='brand-header'>
-    <span class='company-badge'>Manadger Tech</span>
-    <h1 class='main-title'>وكيل يقين AI</h1>
-    <p style='color:#6c757d; margin-top:5px'>غرفة التحرير الاحترافية (SEO Optimized)</p>
+    <h1>وكيل يقين AI - المحرر الذكي</h1>
+    <p>صياغة احترافية متوافقة 100% مع معايير Yoast SEO</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -229,7 +191,7 @@ for i, cat_name in enumerate(cats):
             with c1: st.success(f"متاح {len(news_list)} مقال في {cat_name}")
             with c2:
                 if st.button("🔄 تحديث القائمة", key=f"up_{i}"):
-                    with st.spinner("جاري جلب المصادر..."):
+                    with st.spinner("جاري المسح..."):
                         if "data" not in db: db["data"] = {}
                         db["data"][cat_name] = update_category_data(cat_name)
                         save_db(db)
@@ -238,34 +200,32 @@ for i, cat_name in enumerate(cats):
             opts = [f"{n['source']} | {n['title']}" for n in news_list]
             idx = st.selectbox("اختر المقال:", range(len(opts)), format_func=lambda x: opts[x], key=f"sel_{i}")
 
-            with st.expander("⚙️ إعدادات المحرر"):
-                tone = st.select_slider("الأسلوب", ["رسمي", "تحليلي", "تفاعلي"], key=f"tn_{i}")
-                ins = st.text_input("توجيهات SEO إضافية", key=f"in_{i}")
+            with st.expander("⚙️ إعدادات الصياغة الصارمة"):
+                tone = st.select_slider("الأسلوب", ["إخباري", "تحليلي", "تفاعلي"], key=f"tn_{i}")
+                ins = st.text_input("الكلمة المفتاحية المستهدفة", key=f"in_{i}")
 
-            if st.button("🚀 صياغة احترافية تصدر البحث", type="primary", key=f"go_{i}"):
+            if st.button("✨ صياغة وتصحيح لغوي (SEO)", type="primary", key=f"go_{i}"):
                 sel = news_list[idx]
-                with st.status("🏗️ جاري بناء المقال وفق معايير SEO...", expanded=True) as status:
-                    txt = get_text(sel['link'])
+                with st.status("🏗️ جاري الصياغة مع معالجة طول الجمل والمبني للمعلوم...", expanded=True) as status:
+                    raw_html = trafilatura.fetch_url(sel['link'])
+                    txt = trafilatura.extract(raw_html)
                     if txt:
-                        res = rewrite_pro(txt, tone, ins)
+                        res = rewrite_strict_seo(txt, tone, ins)
                         status.update(label="تمت الصياغة بنجاح!", state="complete", expanded=False)
                         
                         st.markdown("---")
-                        st.subheader("🏁 المقال النهائي")
-                        st.text_area("جاهز للنسخ (Yoast SEO):", res, height=400)
+                        st.subheader("🏁 المقال الجاهز للنشر")
+                        st.text_area("انسخ المحتوى لـ Yoast SEO:", res, height=450)
                         
                         comp_c1, comp_c2 = st.columns(2)
                         with comp_c1:
                             st.info("النص الأصلي")
                             st.markdown(f"<div class='comparison-box original-text'>{txt[:2000]}...</div>", unsafe_allow_html=True)
                         with comp_c2:
-                            st.success("صياغة يقين AI")
+                            st.success("صياغة يقين المحدثة")
                             st.markdown(f"<div class='comparison-box new-text'>{res}</div>", unsafe_allow_html=True)
-                        
-                        st.download_button("📥 تحميل النص", res, "article_seo.txt", key=f"dl_{i}")
                     else:
-                        status.update(label="فشل سحب المحتوى", state="error")
-                        st.error("الموقع محمي أو الرابط غير صالح")
+                        st.error("الموقع محمي")
         else:
             st.warning(f"لا توجد مقالات في {cat_name}")
             if st.button(f"📥 جلب مقالات {cat_name} الآن", type="primary", key=f"init_{i}"):
@@ -274,3 +234,6 @@ for i, cat_name in enumerate(cats):
                     db["data"][cat_name] = update_category_data(cat_name)
                     save_db(db)
                 st.rerun()
+
+st.markdown("---")
+st.caption("تم التطوير بواسطة 'الماندجر' لضمان أعلى جودة في صياغة المحتوى الرقمي.")
