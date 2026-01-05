@@ -10,12 +10,12 @@ import requests
 from datetime import datetime
 
 # ==========================================
-# 0. إعدادات النظام (V13.0 - Mega Sources Edition)
+# 0. إعدادات النظام والهوية (النسخة النهائية)
 # ==========================================
-SYSTEM_VERSION = "V13.0_MEGA_CLEAN" 
-st.set_page_config(page_title="يقين AI - المنصة الشاملة", page_icon="🗞️", layout="wide")
-socket.setdefaulttimeout(20) # زيادة المهلة بسبب عدد المصادر
-DB_FILE = "news_db_v13.json"
+SYSTEM_VERSION = "V14.0_FINAL_SEO" 
+st.set_page_config(page_title="وكيل يقين الصحفي - Manadger Tech", page_icon="🗞️", layout="wide")
+socket.setdefaulttimeout(20) 
+DB_FILE = "news_db_v14.json"
 
 # ==========================================
 # 1. نظام التنظيف الذكي (3 صباحاً)
@@ -32,7 +32,7 @@ def auto_purge_at_3am():
 auto_purge_at_3am()
 
 # ==========================================
-# 2. المصادر (القائمة الموسعة - +20 مصدر جديد)
+# 2. القائمة العملاقة للمصادر (45+ مصدر)
 # ==========================================
 RSS_SOURCES = {
     "الصحافة الوطنية 🇲🇦": {
@@ -50,7 +50,6 @@ RSS_SOURCES = {
         "Le360": "https://ar.le360.ma/rss",
         "فبراير": "https://www.febrayer.com/feed",
         "آشكاين": "https://achkayen.com/feed",
-        "مملكتنا": "https://mamlakatuna.ma/feed",
         "الجريدة 24": "https://aljarida24.ma/feed",
         "لكم": "https://lakome2.com/feed",
         "عبر": "https://aabbir.com/feed",
@@ -67,7 +66,7 @@ RSS_SOURCES = {
         "صدى تطوان": "https://sadatetouan.com/feed",
         "أكادير 24": "https://agadir24.info/feed",
         "مراكش الآن": "https://www.marrakechalaan.com/feed",
-        "هسبريس جهات": "https://www.hespress.com/regions/feed"
+        "الجهة 24": "https://aljahia24.ma/feed"
     },
     "أخبار دولية واقتصاد 🌍": {
         "سكاي نيوز عربية": "https://www.skynewsarabia.com/rss/v1/middle-east.xml",
@@ -76,7 +75,7 @@ RSS_SOURCES = {
         "BBC عربي": "https://www.bbc.com/arabic/index.xml",
         "اقتصادكم": "https://www.economistcom.ma/feed",
         "المصدر ميديا": "https://almasdar.ma/feed",
-        "Investing (اقتصاد)": "https://sa.investing.com/rss/news.rss"
+        "انفستنغ": "https://sa.investing.com/rss/news.rss"
     },
     "فن، مشاهير ورياضة ⚽": {
         "البطولة": "https://www.elbotola.com/rss",
@@ -98,41 +97,45 @@ st.markdown("""
     html, body, [class*="st-"] { font-family: 'Cairo', sans-serif; text-align: right; }
     .brand-header {
         text-align: center; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-        color: white; padding: 2.5rem; border-radius: 15px; margin-bottom: 2rem;
+        color: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; border-bottom: 5px solid #3b82f6;
     }
     .article-output {
         white-space: pre-wrap; background-color: #ffffff; color: #111; padding: 30px; 
         border-radius: 12px; border: 1px solid #cfd8dc; line-height: 2; font-size: 1.15rem;
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
-    .stButton>button { background: #1e3a8a; color: white; border-radius: 10px; height: 3.5rem; width: 100%; font-weight: bold;}
+    .stButton>button { background: #1e3a8a; color: white; border-radius: 10px; height: 3.5rem; width: 100%; font-weight: bold; font-size: 18px; border: none; }
+    .stButton>button:hover { background: #3b82f6; border: none; }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. محرك الصياغة النظيفة (Strict SEO & No Markdown)
+# 4. محرك الصياغة الذكي (يقين SEO Engine)
 # ==========================================
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 except: client = None
 
 def rewrite_mega_pro(text, tone, instr):
-    if not client: return "خطأ: مفتاح GROQ مفقود في Secrets"
+    if not client: return "خطأ: يرجى إعداد مفتاح GROQ في ملف الأسرار (Secrets)"
     
     prompt = f"""
-    أنت رئيس تحرير خبير في SEO. حوّل النص التالي إلى مقال صحفي متكامل.
+    أنت خبير صياغة عناوين ومحتوى رقمي متصدر (SEO Specialist). حوّل النص التالي إلى مقال صحفي احترافي.
     
-    القيود الفنية واللغوية (هام جداً):
-    1. ممنوع استخدام رموز Markdown نهائياً (لا تستخدم ## أو ** أو * أو -).
-    2. التنسيق: اكتب العناوين في أسطر مستقلة بدون رموز، واستخدم سطر فارغ بين الفقرات.
-    3. القواعد (Yoast SEO): 
-       - استخدم "المبني للمعلوم" (Active Voice) بنسبة 95%. (مثال: 'قررت الشركة' بدلاً من 'تم القرار').
+    1. هندسة العنوان (الأولوية القصوى):
+       - صغ عنواناً نصياً (بدون رموز نهائياً) يكون "مغناطيسياً" ويحفز على النقر بشكل كبير.
+       - ضع الكلمة المفتاحية المستهدفة في بداية العنوان.
+       - استخدم أسلوب العناوين المتصدرة (مثال: 'قرار مفاجئ يغير..', 'كل ما تريد معرفته عن..', 'تحذير عاجل بخصوص..').
+
+    2. القيود الفنية واللغوية للمقال (Yoast SEO):
+       - ممنوع استخدام رموز Markdown نهائياً (لا تستخدم ## أو ** أو * أو -).
+       - التنسيق: العناوين الفرعية نصية واضحة في أسطر مستقلة.
        - الجمل قصيرة جداً (لا تتجاوز 18 كلمة لكل جملة).
-       - الفقرات قصيرة (لا تزيد عن 3 أسطر).
-       - ادمج كلمات انتقال قوية (علاوة على ذلك، في المقابل، ومن هذا المنطلق).
-    
-    الهيكل: عنوان المقال، ثم مقدمة قوية، ثم فقرات مقسمة بعناوين نصية عادية.
-    الأسلوب: {tone}. الكلمة المفتاحية: {instr}.
+       - استخدم "المبني للمعلوم" (Active Voice) وتجنب "المبني للمجهول".
+       - الفقرات قصيرة جداً (3 أسطر بحد أقصى).
+       - استخدم كلمات انتقال قوية (بالإضافة إلى، من جهة أخرى، وفي ذات السياق).
+
+    الأسلوب: {tone}. الكلمة المفتاحية المستهدفة: {instr}.
     
     النص الأصلي:
     {text[:3800]}
@@ -141,15 +144,15 @@ def rewrite_mega_pro(text, tone, instr):
     try:
         res = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile", temperature=0.3
+            model="llama-3.3-70b-versatile", temperature=0.4
         )
         return res.choices[0].message.content
     except Exception as e: return f"خطأ تقني: {str(e)}"
 
 # ==========================================
-# 5. الواجهة والمنطق
+# 5. الواجهة والمنطق (يقين الصحفي)
 # ==========================================
-st.markdown("<div class='brand-header'><h1>يقين AI - المحرر الملياردي</h1><p>أكثر من 45 مصدراً إخبارياً وصياغة احترافية بنقرة واحدة</p></div>", unsafe_allow_html=True)
+st.markdown("<div class='brand-header'><h1>وكيل يقين الصحفي</h1><p>من مجموعة منادجر للتطوير وحلول الويب</p></div>", unsafe_allow_html=True)
 
 def fetch_items(name, url):
     try:
@@ -178,24 +181,24 @@ for i, cat in enumerate(list(RSS_SOURCES.keys())):
 
         if cat in db["data"] and db["data"][cat]:
             news = db["data"][cat]
-            choice = st.selectbox("اختر المقال:", range(len(news)), format_func=lambda x: f"[{news[x]['source']}] {news[x]['title']}", key=f"sb_{i}")
+            choice = st.selectbox("اختر المقال المراد إعادة صياغته:", range(len(news)), format_func=lambda x: f"[{news[x]['source']}] {news[x]['title']}", key=f"sb_{i}")
             
             c1, c2 = st.columns(2)
-            with c1: tone = st.selectbox("النبرة:", ["إخباري رصين", "تحليلي عميق", "تفاعلي سريع"], key=f"tn_{i}")
-            with c2: instr = st.text_input("الكلمة المفتاحية (SEO):", key=f"kw_{i}")
+            with c1: tone = st.selectbox("نبرة المقال:", ["تقرير إخباري رصين", "تحليل صحفي عميق", "تغطية تفاعلية سريعة"], key=f"tn_{i}")
+            with c2: instr = st.text_input("الكلمة المفتاحية المستهدفة (SEO):", key=f"kw_{i}")
 
-            if st.button("🚀 هندسة المقال الاحترافي", key=f"go_{i}"):
-                with st.status("🏗️ جاري سحب النص ومعالجته لغوياً...", expanded=True):
+            if st.button("🚀 هندسة وصياغة المقال", key=f"go_{i}"):
+                with st.status("🏗️ جاري معالجة العنوان والمحتوى بمعايير SEO...", expanded=True):
                     raw = trafilatura.fetch_url(news[choice]['link'])
                     txt = trafilatura.extract(raw)
                     if txt:
                         final = rewrite_mega_pro(txt, tone, instr)
                         st.markdown("### ✅ المقال النهائي المنسق")
                         st.markdown(f"<div class='article-output'>{final}</div>", unsafe_allow_html=True)
-                        st.text_area("نص جاهز للنسخ المباشر:", final, height=400)
-                    else: st.error("عذراً، هذا المصدر يمنع سحب المحتوى آلياً.")
+                        st.text_area("نسخة النسخ المباشر لووردبريس:", final, height=400)
+                    else: st.error("عذراً، هذا المصدر يمنع سحب المحتوى حالياً.")
         else:
-            st.info("الرجاء الضغط على زر التحديث لجلب الأخبار.")
+            st.info("اضغط على زر التحديث لجلب آخر المقالات.")
 
 st.markdown("---")
-st.caption("نظام يقين V13.0 - إدارة الماندجر 2026 - قوة الذكاء الاصطناعي في خدمة الصحافة.")
+st.markdown("<p style='text-align:center; color:#666;'>وكيل يقين الصحفي - إصدار V14.0 - تطوير وحلول الماندجر</p>", unsafe_allow_html=True)
