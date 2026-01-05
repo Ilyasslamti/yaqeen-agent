@@ -1,8 +1,6 @@
 streamlit
+openai
 feedparser
 trafilatura
-groq>=0.18.0
-beautifulsoup4
-lxml_html_clean
-concurrent-futures; python_version < "3.8"
 requests
+lxml_html_clean
