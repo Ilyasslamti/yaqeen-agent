@@ -10,12 +10,12 @@ import requests
 from datetime import datetime
 
 # ==========================================
-# 0. إعدادات النظام والهوية (SEO MASTER)
+# 0. إعدادات النظام والهوية
 # ==========================================
-SYSTEM_VERSION = "V16.0_SEO_MASTER" 
+SYSTEM_VERSION = "V16.1_PRO_CLEAN" 
 ACCESS_PASSWORD = "Manager_Tech_2026" 
 
-st.set_page_config(page_title="وكيل يقين الصحفي - SEO Edition", page_icon="📈", layout="wide")
+st.set_page_config(page_title="وكيل يقين الصحفي - Manadger Tech", page_icon="📈", layout="wide")
 socket.setdefaulttimeout(25) 
 DB_FILE = "news_db_v16.json"
 
@@ -56,23 +56,25 @@ def rewrite_seo_architect(text, tone, keyword):
     if not client: 
         return "خطأ: تأكد من إضافة مفتاح API في Secrets باسم GROQ_API_KEY"
     
+    # تحسين الـ Prompt لمنع الكلمات الواصفة مثل "مغناطيسياً"
     prompt = f"""
     بصفتك خبير محتوى رقمي ومتخصص في Yoast SEO، أعد صياغة النص التالي لتحويله إلى مقال صحفي احترافي متكامل.
     الكلمة المفتاحية المستهدفة: {keyword}
     
     الخطة الهندسية للمقال:
-    1. العنوان الرئيسي: صغ عنواناً نصياً (بدون رموز نهائياً) "مغناطيسياً" يبدأ بالكلمة المفتاحية.
+    1. العنوان الرئيسي: صغ عنواناً قوياً ومثيراً للاهتمام يتصدر نتائج البحث ويبدأ بالكلمة المفتاحية. 
+       (مهم: لا تكتب كلمات واصفة مثل 'مغناطيسياً' أو 'جذاب' في العنوان، فقط صغ العنوان بأسلوب قوي).
     2. المقدمة: فقرة افتتاحية مكثفة تحتوي الكلمة المفتاحية وتلخص الحدث بقوة.
-    3. العناوين الفرعية: قسّم المقال بعناوين نصية واضحة في أسطر مستقلة بدون رموز.
+    3. العناوين الفرعية: قسّم المقال بعناوين نصية واضحة في أسطر مستقلة بدون رموز Markdown.
     4. معايير Yoast SEO للقراءة: 
-       - استخدم كلمات انتقال بكثافة (علاوة على ذلك، في المقابل، ومن جهة أخرى).
+       - استخدم كلمات انتقال بكثافة (علاوة على ذلك، ومن جهة أخرى، وفي سياق متصل).
        - الجمل قصيرة جداً (أقل من 18 كلمة لكل جملة).
-       - استخدم المبني للمعلوم (Active Voice) وتجنب "تم" وأخواتها.
+       - استخدم المبني للمعلوم (Active Voice) وتجنب 'تم' وأخواتها.
        - الفقرات قصيرة (3 أسطر بحد أقصى).
     
-    الأسلوب: {tone}.
-    الكلمة المفتاحية: {keyword}.
-    النص الأصلي: {text[:3800]}
+    الأسلوب المطلوب: {tone}.
+    النص الأصلي للمعالجة:
+    {text[:3800]}
     """
     try:
         res = client.chat.completions.create(
@@ -85,7 +87,7 @@ def rewrite_seo_architect(text, tone, keyword):
         return f"خطأ تقني: {str(e)}"
 
 # ==========================================
-# 3. تشغيل السكربت بعد التحقق من الهوية
+# 3. تشغيل السكربت بعد التحقق
 # ==========================================
 if check_password():
     
@@ -112,7 +114,6 @@ if check_password():
         "فن ورياضة ⚽": {
             "البطولة": "https://www.elbotola.com/rss",
             "هسبريس رياضة": "https://hesport.com/feed",
-            "المنتخب": "https://almountakhab.com/rss",
             "لالة مولاتي": "https://www.lallamoulati.ma/feed/"
         }
     }
@@ -123,8 +124,8 @@ if check_password():
         html, body, [class*="st-"] { font-family: 'Cairo', sans-serif; text-align: right; }
         .article-output {
             white-space: pre-wrap; background-color: #ffffff; color: #111; padding: 35px; 
-            border-radius: 12px; border: 1px solid #cfd8dc; line-height: 2.1; font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 12px; border: 1px solid #cfd8dc; line-height: 2.2; font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         .stButton>button { background: #1e3a8a; color: white; border-radius: 10px; height: 3.5rem; font-weight: bold; }
     </style>
@@ -141,7 +142,7 @@ if check_password():
     tabs = st.tabs(list(RSS_SOURCES.keys()))
     for i, cat in enumerate(list(RSS_SOURCES.keys())):
         with tabs[i]:
-            if st.button(f"🔄 تحديث قائمة {cat}", key=f"up_{i}"):
+            if st.button(f"🔄 تحديث {cat}", key=f"up_{i}"):
                 with st.spinner("جاري جلب آخر الأخبار..."):
                     all_news = []
                     def fetch(n, u):
@@ -159,13 +160,13 @@ if check_password():
 
             if cat in db["data"] and db["data"][cat]:
                 news_list = db["data"][cat]
-                choice = st.selectbox("اختر المقال المراد هندسته:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
+                choice = st.selectbox("اختر المقال:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
                 
                 c1, c2 = st.columns(2)
                 with c1:
                     tone = st.selectbox("الأسلوب:", ["تحقيق صحفي رصين", "تقرير إخباري سريع", "تحليل تفاعلي"], key=f"tn_{i}")
                 with c2:
-                    keyword = st.text_input("الكلمة المفتاحية (SEO):", key=f"kw_{i}")
+                    keyword = st.text_input("الكلمة المفتاحية المستهدفة (SEO):", key=f"kw_{i}")
 
                 if st.button("🚀 توليد مقال احترافي متصدر", key=f"run_{i}"):
                     with st.status("🏗️ جاري بناء المقال وفق معايير Yoast SEO...", expanded=True):
@@ -182,4 +183,4 @@ if check_password():
                 st.info("اضغط تحديث لجلب البيانات.")
 
     st.markdown("---")
-    st.markdown("<p style='text-align:center; color:#666;'>وكيل يقين الصحفي V16.0 - تطوير وحلول الماندجر</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#666;'>وكيل يقين الصحفي V16.1 - تطوير وحلول الماندجر</p>", unsafe_allow_html=True)
