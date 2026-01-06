@@ -23,7 +23,7 @@ ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
 socket.setdefaulttimeout(40)
 
-st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="منادجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
 
 # دالة الشعار
 def get_base64_logo():
@@ -165,7 +165,7 @@ st.markdown("""
 # 1. محرك الصور (Yoast SEO)
 # ==========================================
 def get_yoast_seo_images(keyword, headline):
-    if keyword and len(keyword) > 2 and "هاشمي" not in keyword:
+    if keyword and len(keyword) > 2 and "منادجر" not in keyword:
         query = keyword
     else:
         query = " ".join(headline.split()[:5])
@@ -196,14 +196,14 @@ def run_samba_writer(text, keyword):
         response = client.chat.completions.create(
             model='Meta-Llama-3.3-70B-Instruct', 
             messages=[
-                {"role": "system", "content": "محرر صحفي نخبوي - الماندجر تك"},
+                {"role": "system", "content": "محرر صحفي شامل - منادجر تك"},
                 {"role": "user", "content": formatted_prompt}
             ],
             temperature=0.4
         )
         
         raw_article = response.choices[0].message.content
-        clean_article = raw_article.replace("هاشمي بريس:", "").replace("هاشمي بريس :", "").replace("العنوان:", "").strip()
+        clean_article = raw_article.replace("منادجر تك:", "").replace("سكريبت ناشر :", "").replace("العنوان:", "").strip()
         return clean_article
 
     except Exception as e: return f"❌ خطأ: {str(e)}"
@@ -220,7 +220,7 @@ if not st.session_state["authenticated"]:
             {logo_html}
             <h1 class="hero-title">MANAGER TECH</h1>
             <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.3</h3>
-            <p style="color: #94a3b8; font-size: 1.1rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
+            <p style="color: #94a3b8; font-size: 1.1rem;">سكريبت بـ 200 مصدر • 26 محرك ذكاء اصطناعي • توافق كامل مع السيو</p>
         </div>
     """, unsafe_allow_html=True)
 
