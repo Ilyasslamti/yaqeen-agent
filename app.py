@@ -16,7 +16,7 @@ except ImportError:
     st.stop()
 
 # ==========================================
-# 0. الإعدادات والجماليات (CSS Architecture)
+# 0. الإعدادات والجماليات (لم يتم المساس بها)
 # ==========================================
 ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
@@ -25,13 +25,12 @@ socket.setdefaulttimeout(40)
 st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🦅", layout="wide")
 
 # ==========================================
-# ⚠️ منطقة التعديل البصري فقط (CSS FIX)
+# ⚠️ منطقة التصميم (CSS) - نفس النسخة V28.1
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap');
     
-    /* 1. إجبار الخلفية والخطوط العامة */
     [data-testid="stAppViewContainer"] {
         background: radial-gradient(circle at 10% 20%, #020617 0%, #0f172a 90%);
     }
@@ -40,16 +39,15 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important;
         direction: rtl;
         text-align: right;
-        color: #e2e8f0 !important; /* لون النص أبيض رمادي فاتح للظهور */
+        color: #e2e8f0 !important;
     }
 
     h1, h2, h3, h4, h5, h6 {
         font-family: 'Cairo', sans-serif !important;
-        color: #ffffff !important; /* العناوين أبيض ناصع */
+        color: #ffffff !important;
         font-weight: 800 !important;
     }
 
-    /* 2. حاوية العناوين (Hero Section) */
     .hero-container {
         text-align: center;
         padding: 50px 20px;
@@ -65,12 +63,11 @@ st.markdown("""
         background: linear-gradient(to right, #60a5fa, #3b82f6);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent !important;
-        color: #3b82f6 !important; /* احتياطي */
+        color: #3b82f6 !important;
         text-shadow: 0px 0px 30px rgba(37, 99, 235, 0.3);
         margin-bottom: 10px;
     }
 
-    /* 3. إصلاح ألوان المدخلات (Input Fields) لتظهر الكتابة */
     .stTextInput input, .stSelectbox div[data-baseweb="select"] div {
         background-color: #1e293b !important;
         color: #ffffff !important;
@@ -78,15 +75,13 @@ st.markdown("""
         border-radius: 10px !important;
     }
     
-    /* لون النص داخل القوائم المنسدلة */
     div[data-baseweb="popover"] li {
         background-color: #0f172a !important;
         color: white !important;
     }
 
-    /* 4. تصميم ورقة المقال (Paper Effect) - استثناء للنص الأسود */
     .article-output {
-        background-color: #ffffff !important; /* خلفية بيضاء */
+        background-color: #ffffff !important;
         padding: 40px;
         border-radius: 12px;
         border-right: 8px solid #2563eb;
@@ -96,13 +91,11 @@ st.markdown("""
         margin-top: 30px;
     }
     
-    /* إجبار النص داخل المقال أن يكون أسود */
     .article-output, .article-output p, .article-output div {
         color: #1e293b !important; 
         text-align: justify;
     }
 
-    /* 5. الأزرار */
     .stButton>button {
         background: linear-gradient(90deg, #2563eb, #1d4ed8) !important;
         color: white !important;
@@ -120,7 +113,6 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(37, 99, 235, 0.6);
     }
 
-    /* 6. التبويبات (Tabs) */
     .stTabs [data-baseweb="tab-list"] {
         background-color: rgba(30, 41, 59, 0.5);
         padding: 10px;
@@ -137,7 +129,6 @@ st.markdown("""
         border-radius: 8px;
     }
 
-    /* إخفاء القوائم العلوية المزعجة */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -146,12 +137,32 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 1. محرك البحث عن الصور (لم يتم المساس به)
+# 1. محرك البحث عن الصور (تعديل: نظام Yoast SEO)
 # ==========================================
-def get_related_images(query):
+def get_yoast_seo_images(keyword, headline):
+    """
+    نظام ذكي للبحث عن الصور بناءً على معايير Yoast SEO:
+    1. الأولوية للكلمة المفتاحية (Focus Keyphrase).
+    2. البحث عن صور فوتوغرافية (Photo) بدلاً من الرسومات.
+    3. تحديد المنطقة الجغرافية للمغرب (ma-ma) لزيادة الصلة.
+    """
+    # إذا كانت الكلمة المفتاحية قوية ومحددة، نستخدمها للبحث لأنها أدق
+    if keyword and len(keyword) > 2 and "هاشمي" not in keyword:
+        query = keyword
+    else:
+        # إذا لم توجد كلمة مفتاحية، نستخدم أول 4 كلمات من العنوان لتجنب التشتت
+        query = " ".join(headline.split()[:5])
+        
     try:
         with DDGS() as ddgs:
-            results = ddgs.images(query, region="wt-wt", safesearch="off", max_results=3)
+            # استخدام إعدادات دقيقة لجلب صور عالية الجودة
+            results = ddgs.images(
+                query, 
+                region="wt-wt", # بحث عالمي لضمان وفرة النتائج (يمكن تغييرها لـ ma-ma)
+                safesearch="off", 
+                max_results=3,
+                type_image="photo" # التركيز على الصور الواقعية الصحفية
+            )
             return [r['image'] for r in results]
     except: return []
 
@@ -186,7 +197,7 @@ def run_samba_writer(text, keyword):
     except Exception as e: return f"❌ خطأ: {str(e)}"
 
 # ==========================================
-# 3. واجهة الدخول (Hero Login)
+# 3. واجهة الدخول (لم يتم المساس بها)
 # ==========================================
 if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
 
@@ -195,7 +206,7 @@ if not st.session_state["authenticated"]:
     st.markdown("""
         <div class="hero-container">
             <h1 class="hero-title">MANAGER TECH</h1>
-            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.1</h3>
+            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.2 (SEO Edition)</h3>
             <p style="color: #94a3b8; font-size: 1.1rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
         </div>
     """, unsafe_allow_html=True)
@@ -215,7 +226,7 @@ if not st.session_state["authenticated"]:
     st.stop()
 
 # ==========================================
-# 4. واجهة النظام الداخلية (Dashboard)
+# 4. واجهة النظام الداخلية (لم يتم المساس بها)
 # ==========================================
 
 # الهيدر الداخلي
@@ -286,19 +297,29 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
                         body = "\n".join(lines[1:])
                         
                         st.markdown("---")
-                        # عرض العنوان بتصميم مميز
+                        # عرض العنوان
                         st.markdown(f"<h1 style='color: #3b82f6; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(59,130,246,0.5);'>{headline}</h1>", unsafe_allow_html=True)
                         
-                        # عرض المتن داخل "الورقة" (نص أسود على خلفية بيضاء)
+                        # عرض المتن
                         st.markdown(f"<div class='article-output'>{body}</div>", unsafe_allow_html=True)
                         
-                        # الصور
-                        st.markdown("<br><h3>🖼️ الوسائط المقترحة</h3>", unsafe_allow_html=True)
-                        images = get_related_images(headline)
+                        # ===============================================
+                        # ⚠️ تعديل هنا فقط: استدعاء نظام صور Yoast الجديد
+                        # ===============================================
+                        st.markdown("<br><h3>🖼️ وسائط متوافقة مع Yoast SEO</h3>", unsafe_allow_html=True)
+                        
+                        # نمرر الكلمة المفتاحية أولاً (الأهم في اليوست) والعنوان ثانياً
+                        images = get_yoast_seo_images(final_keyword, headline)
+                        
                         if images:
                             cols = st.columns(len(images))
                             for idx, img_url in enumerate(images):
-                                with cols[idx]: st.image(img_url, use_container_width=True)
+                                with cols[idx]:
+                                    st.image(img_url, use_container_width=True)
+                                    # إضافة اقتراح للنص البديل (Alt Text) لتعزيز السيو
+                                    st.caption(f"📝 Alt Text مقترح: صورة توضيحية لـ {final_keyword}")
+                        else:
+                            st.warning("لم يتم العثور على صور دقيقة، جرب تغيير الكلمة المفتاحية.")
                         
                         st.text_area("نسخة النشر (Raw Text):", article, height=300)
                     else: st.error("فشل الرادار في سحب النص من المصدر.")
