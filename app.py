@@ -24,118 +24,129 @@ socket.setdefaulttimeout(40)
 
 st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🦅", layout="wide")
 
-# حقن كود التصميم الاحترافي (Landing Page Style)
+# ==========================================
+# ⚠️ منطقة التعديل البصري فقط (CSS FIX)
+# ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap');
     
-    /* 1. الخلفية العامة: تدرج أزرق ملكي داكن */
-    .stApp {
-        background: radial-gradient(circle at 10% 20%, #0f172a 0%, #1e293b 90%);
-        font-family: 'Cairo', sans-serif;
+    /* 1. إجبار الخلفية والخطوط العامة */
+    [data-testid="stAppViewContainer"] {
+        background: radial-gradient(circle at 10% 20%, #020617 0%, #0f172a 90%);
     }
-
-    /* 2. تحسين النصوص */
-    h1, h2, h3, p, div, span {
+    
+    html, body, p, div, span, label {
         font-family: 'Cairo', sans-serif !important;
         direction: rtl;
         text-align: right;
+        color: #e2e8f0 !important; /* لون النص أبيض رمادي فاتح للظهور */
     }
 
-    /* 3. حاوية العناوين (Hero Section) */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Cairo', sans-serif !important;
+        color: #ffffff !important; /* العناوين أبيض ناصع */
+        font-weight: 800 !important;
+    }
+
+    /* 2. حاوية العناوين (Hero Section) */
     .hero-container {
         text-align: center;
-        padding: 40px 20px;
-        background: rgba(255, 255, 255, 0.03);
+        padding: 50px 20px;
+        background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
         border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        margin-bottom: 30px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+        margin-bottom: 40px;
     }
     
     .hero-title {
-        font-size: 3.5rem;
-        font-weight: 900;
+        font-size: 4rem !important;
         background: linear-gradient(to right, #60a5fa, #3b82f6);
         -webkit-background-clip: text;
-        color: transparent;
-        text-shadow: 0px 0px 20px rgba(59, 130, 246, 0.3);
+        -webkit-text-fill-color: transparent !important;
+        color: #3b82f6 !important; /* احتياطي */
+        text-shadow: 0px 0px 30px rgba(37, 99, 235, 0.3);
+        margin-bottom: 10px;
+    }
+
+    /* 3. إصلاح ألوان المدخلات (Input Fields) لتظهر الكتابة */
+    .stTextInput input, .stSelectbox div[data-baseweb="select"] div {
+        background-color: #1e293b !important;
+        color: #ffffff !important;
+        border: 1px solid #475569 !important;
+        border-radius: 10px !important;
     }
     
-    .hero-subtitle {
-        color: #cbd5e1;
-        font-size: 1.2rem;
-        font-weight: 300;
-        margin-top: -10px;
+    /* لون النص داخل القوائم المنسدلة */
+    div[data-baseweb="popover"] li {
+        background-color: #0f172a !important;
+        color: white !important;
     }
 
-    /* 4. تصميم ورقة المقال (Paper Effect) */
+    /* 4. تصميم ورقة المقال (Paper Effect) - استثناء للنص الأسود */
     .article-output {
-        background-color: #f8fafc;
-        color: #1e293b;
+        background-color: #ffffff !important; /* خلفية بيضاء */
         padding: 40px;
         border-radius: 12px;
-        border-right: 6px solid #2563eb;
+        border-right: 8px solid #2563eb;
         line-height: 2.4;
-        font-size: 1.25rem;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-        margin-top: 20px;
+        font-size: 1.3rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        margin-top: 30px;
+    }
+    
+    /* إجبار النص داخل المقال أن يكون أسود */
+    .article-output, .article-output p, .article-output div {
+        color: #1e293b !important; 
+        text-align: justify;
     }
 
-    /* 5. الأزرار الاحترافية */
+    /* 5. الأزرار */
     .stButton>button {
-        background: linear-gradient(90deg, #2563eb, #1d4ed8);
-        color: white;
+        background: linear-gradient(90deg, #2563eb, #1d4ed8) !important;
+        color: white !important;
         border: none;
-        padding: 0.6rem 2rem;
-        font-size: 1.1rem;
-        font-weight: 700;
+        padding: 0.8rem 2rem;
+        font-size: 1.2rem !important;
         border-radius: 12px;
         width: 100%;
-        height: 3.8rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        height: 4rem;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
     }
     
     .stButton>button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.5);
+        transform: scale(1.02);
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.6);
     }
 
-    /* 6. المدخلات والقوائم */
-    .stTextInput>div>div>input, .stSelectbox>div>div>div {
-        background-color: rgba(255, 255, 255, 0.05);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
-    }
-    
-    /* 7. التبويبات */
+    /* 6. التبويبات (Tabs) */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-        background-color: rgba(0,0,0,0.2);
+        background-color: rgba(30, 41, 59, 0.5);
         padding: 10px;
         border-radius: 15px;
+        gap: 10px;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: transparent;
-        border-radius: 10px;
-        color: #94a3b8;
-        font-weight: 700;
+        color: #94a3b8 !important;
+        font-weight: bold;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #2563eb;
-        color: white;
+        background-color: #2563eb !important;
+        color: white !important;
+        border-radius: 8px;
     }
+
+    /* إخفاء القوائم العلوية المزعجة */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
 
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 1. محرك البحث عن الصور (نفس المنطق)
+# 1. محرك البحث عن الصور (لم يتم المساس به)
 # ==========================================
 def get_related_images(query):
     try:
@@ -145,7 +156,7 @@ def get_related_images(query):
     except: return []
 
 # ==========================================
-# 2. محرك الصياغة النخبوية (نفس المنطق)
+# 2. محرك الصياغة النخبوية (لم يتم المساس به)
 # ==========================================
 def run_samba_writer(text, keyword):
     api_key = get_safe_key()
@@ -180,19 +191,19 @@ def run_samba_writer(text, keyword):
 if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
-    # تصميم صفحة الهبوط قبل الدخول
+    # تصميم صفحة الهبوط
     st.markdown("""
         <div class="hero-container">
             <h1 class="hero-title">MANAGER TECH</h1>
-            <p class="hero-subtitle">نظام السيادة المعلوماتية المتكامل | الإصدار V27.8</p>
-            <p style="color: #64748b; font-size: 0.9rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
+            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.1</h3>
+            <p style="color: #94a3b8; font-size: 1.1rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
         </div>
     """, unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         with st.form("login_form"):
-            st.markdown("<h3 style='text-align: center; color: white;'>🔐 بوابة الوصول</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center; color: #60a5fa;'>🔐 بوابة الوصول</h3>", unsafe_allow_html=True)
             pwd = st.text_input("مفتاح الترسانة:", type="password")
             submitted = st.form_submit_button("اقتحام النظام 🚀")
             if submitted:
@@ -209,9 +220,9 @@ if not st.session_state["authenticated"]:
 
 # الهيدر الداخلي
 st.markdown("""
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
         <h2 style="color: #60a5fa; margin: 0;">🦅 رادار الماندجر تك</h2>
-        <span style="background: #2563eb; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;">متصل وآمن</span>
+        <span style="background: #2563eb; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">ONLINE</span>
     </div>
 """, unsafe_allow_html=True)
 
@@ -248,7 +259,7 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
 
         if cat in db["data"] and db["data"][cat]:
             news_list = db["data"][cat]
-            st.markdown(f"##### 📑 تم رصد {len(news_list)} خبراً في هذا القطاع")
+            st.markdown(f"<h4 style='color: #cbd5e1;'>📑 تم رصد {len(news_list)} خبراً في هذا القطاع</h4>", unsafe_allow_html=True)
             
             selected_idx = st.selectbox(
                 "حدد الهدف للمعالجة:", 
@@ -276,9 +287,9 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
                         
                         st.markdown("---")
                         # عرض العنوان بتصميم مميز
-                        st.markdown(f"<h1 style='color: #1d4ed8; text-align: center; margin-bottom: 20px;'>{headline}</h1>", unsafe_allow_html=True)
+                        st.markdown(f"<h1 style='color: #3b82f6; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(59,130,246,0.5);'>{headline}</h1>", unsafe_allow_html=True)
                         
-                        # عرض المتن داخل "الورقة"
+                        # عرض المتن داخل "الورقة" (نص أسود على خلفية بيضاء)
                         st.markdown(f"<div class='article-output'>{body}</div>", unsafe_allow_html=True)
                         
                         # الصور
@@ -295,4 +306,4 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
             st.info("الرادار خامل. اضغط زر التحديث لتشغيل المجسات.")
 
 # التذييل
-st.markdown("<div style='text-align: center; color: #64748b; margin-top: 50px;'>Developed by Manadger Tech © 2026</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #475569; margin-top: 50px; border-top: 1px solid #1e293b; padding-top: 20px;'>Developed by Manadger Tech © 2026</div>", unsafe_allow_html=True)
