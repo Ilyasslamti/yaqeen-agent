@@ -23,7 +23,7 @@ ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
 socket.setdefaulttimeout(40)
 
-st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="منادجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
 
 # دالة الشعار (تعديل: إضافة كود التمركز الصارم HTML)
 def get_base64_logo():
@@ -259,7 +259,7 @@ def run_samba_writer(text, keyword):
         response = client.chat.completions.create(
             model='Meta-Llama-3.3-70B-Instruct', 
             messages=[
-                {"role": "system", "content": "محرر صحفي نخبوي - الماندجر تك"},
+                {"role": "system", "content": "محرر صحفي نخبوي - منادجر تك"},
                 {"role": "user", "content": formatted_prompt}
             ],
             temperature=0.4
@@ -283,7 +283,7 @@ if not st.session_state["authenticated"]:
             {logo_html}
             <h1 class="hero-title">MANAGER TECH</h1>
             <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.7</h3>
-            <p style="color: #94a3b8; font-size: 1.1rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
+            <p style="color: #94a3b8; font-size: 1.1rem;">محرك بـ 200 مصدر • 26 محرك ذكاء اصطناعي • متوافق مع السيو</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -311,7 +311,7 @@ st.markdown(f"""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
         <div style="display: flex; align-items: center; gap: 15px;">
             {mini_logo}
-            <h2 style="color: #60a5fa; margin: 0;">رادار الماندجر تك</h2>
+            <h2 style="color: #60a5fa; margin: 0;">رادار منادجر تك</h2>
         </div>
         <span style="background: #2563eb; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">ONLINE</span>
     </div>
@@ -360,10 +360,10 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
             
             keyword_input = st.text_input("الكلمة المفتاحية (SEO Strategy):", key=f"kw_{i}", placeholder="اتركها فارغة للتلقائي...")
 
-            if st.button("🚀 هندسة المقال بأسلوب هاشمي بريس", key=f"run_{i}"):
-                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "هاشمي بريس"
+            if st.button("🚀 هندسة المقال بأسلوب صحفي شامل", key=f"run_{i}"):
+                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "منادجر تك"
                 
-                with st.spinner("الماندجر يحلل البيانات ويصيغ التحفة..."):
+                with st.spinner("منادجر يحلل البيانات ويصيغ التحفة..."):
                     raw_data = trafilatura.fetch_url(news_list[selected_idx]['link'])
                     main_text = trafilatura.extract(raw_data)
                     
