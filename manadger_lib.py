@@ -2,6 +2,17 @@
 # manadger_lib.py - مستودع أسلحة الماندجر تك
 # الإصدار السيادي V27.8 - 2026
 # ==========================================
+# قاعدة بيانات المستخدمين (يمكنك إضافة الـ 100 مستخدم هنا)
+USERS_CREDENTIALS = {
+    "ilyasslamti@gmail.com": "tito5326",
+    "hashemi@press.ma": "Hashemi_Secure_77",
+    "guest@test.com": "123456"
+}
+
+def verify_login(email, password):
+    if email in USERS_CREDENTIALS and USERS_CREDENTIALS[email] == password:
+        return True
+    return False
 
 import random
 import streamlit as st
