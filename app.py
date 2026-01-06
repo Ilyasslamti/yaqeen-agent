@@ -22,7 +22,7 @@ ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
 socket.setdefaulttimeout(40)
 
-st.set_page_config(page_title="الماندجر تك | رادار السيادة", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="منادجر تك | سكربت ناشر للكتاب و الصحفين", page_icon="🛡️", layout="wide")
 
 # ==========================================
 # 1. محرك البحث عن الصور
