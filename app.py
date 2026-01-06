@@ -25,20 +25,20 @@ socket.setdefaulttimeout(40)
 
 st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
 
-# دالة الشعار
+# دالة الشعار (تعديل طفيف لضمان التوسيط)
 def get_base64_logo():
     if os.path.exists("logo.png"):
         with open("logo.png", "rb") as f:
             data = f.read()
         encoded = base64.b64encode(data).decode()
-        # جعل عرض الشعار مرناً (Max-width) ليتجاوب مع الهاتف
-        return f'<img src="data:image/png;base64,{encoded}" style="max-width: 180px; width: 100%; margin-bottom: 20px; border-radius: 10px;">'
+        # إضافة display: block و margin: auto لضمان التوسيط الصارم
+        return f'<img src="data:image/png;base64,{encoded}" style="max-width: 180px; width: 100%; margin-bottom: 20px; border-radius: 10px; display: block; margin-left: auto; margin-right: auto;">'
     return ""
 
 logo_html = get_base64_logo()
 
 # ==========================================
-# ⚠️ منطقة التصميم (CSS) - محدثة للجوال
+# ⚠️ منطقة التصميم (CSS) - إصلاح التشتت في الجوال
 # ==========================================
 st.markdown("""
 <style>
@@ -61,7 +61,7 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
-    /* === تنسيق الهيرو (متجاوب) === */
+    /* === تنسيق الهيرو (الحاوية الرئيسية) === */
     .hero-container {
         display: flex !important;
         flex-direction: column !important;
@@ -75,6 +75,9 @@ st.markdown("""
         border: 1px solid rgba(59, 130, 246, 0.2);
         box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
         margin-bottom: 40px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
     }
     
     .hero-title {
@@ -86,11 +89,14 @@ st.markdown("""
         color: #3b82f6 !important;
         text-shadow: 0px 0px 30px rgba(37, 99, 235, 0.3);
         margin-bottom: 10px;
+        line-height: 1.2 !important;
     }
     
     .hero-container h3, .hero-container p {
         text-align: center !important;
         width: 100%;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     /* === تنسيق المدخلات === */
@@ -147,6 +153,7 @@ st.markdown("""
         padding: 10px;
         border-radius: 15px;
         gap: 10px;
+        flex-wrap: wrap; /* للسماح للتبويبات بالنزول للأسفل في الجوال */
     }
     .stTabs [data-baseweb="tab"] {
         color: #94a3b8 !important;
@@ -159,27 +166,36 @@ st.markdown("""
     }
 
     /* ============================================================
-       📱 قواعد الجوال (Mobile Media Queries) - الإضافة الجديدة
+       📱 إصلاح التشتت في الجوال (Mobile Fixes)
        ============================================================ */
     @media only screen and (max-width: 768px) {
         
-        /* تصغير عنوان الهيرو */
-        .hero-title {
-            font-size: 2.5rem !important;
-            margin-bottom: 5px;
-        }
-        
-        /* تقليل هوامش الحاوية */
+        /* 1. ضبط الحاوية الرئيسية للهيرو */
         .hero-container {
-            padding: 20px 10px !important;
+            padding: 30px 15px !important;
             margin-bottom: 20px !important;
+            width: 100% !important;
+            display: block !important; /* لضمان عدم تداخل الفليكس */
         }
         
-        /* تصغير الخطوط الفرعية */
-        .hero-container h3 { font-size: 1.2rem !important; }
-        .hero-container p { font-size: 0.9rem !important; }
+        /* 2. تصغير العنوان بشكل كبير لمنع التشتت */
+        .hero-title {
+            font-size: 2.2rem !important;
+            margin-bottom: 15px !important;
+            white-space: normal !important; /* السماح بالنزول للسطر */
+        }
+        
+        /* 3. ضبط النصوص الفرعية */
+        .hero-container h3 { 
+            font-size: 1.1rem !important; 
+            margin-bottom: 5px !important;
+        }
+        .hero-container p { 
+            font-size: 0.9rem !important; 
+            line-height: 1.5 !important;
+        }
 
-        /* تنسيق ورقة المقال للجوال */
+        /* 4. تنسيق ورقة المقال للجوال */
         .article-output {
             padding: 20px !important;
             font-size: 1.1rem !important;
@@ -187,18 +203,19 @@ st.markdown("""
             line-height: 1.8 !important;
         }
 
-        /* جعل الأزرار أصغر قليلاً */
+        /* 5. الأزرار */
         .stButton>button {
             height: 3.5rem !important;
             font-size: 1rem !important;
         }
-
-        /* العناوين العامة */
-        h1 { font-size: 1.8rem !important; }
-        h2 { font-size: 1.5rem !important; }
         
-        /* تحسين عرض الصور */
-        img { max-width: 100% !important; height: auto !important; }
+        /* 6. إجبار الصور والشعارات على التوسط */
+        img { 
+            max-width: 100% !important; 
+            height: auto !important; 
+            margin: 0 auto !important;
+            display: block !important;
+        }
     }
 
     #MainMenu {visibility: hidden;}
@@ -265,7 +282,7 @@ if not st.session_state["authenticated"]:
         <div class="hero-container">
             {logo_html}
             <h1 class="hero-title">MANAGER TECH</h1>
-            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.5</h3>
+            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.6</h3>
             <p style="color: #94a3b8; font-size: 1.1rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
         </div>
     """, unsafe_allow_html=True)
