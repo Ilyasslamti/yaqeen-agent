@@ -25,20 +25,20 @@ socket.setdefaulttimeout(40)
 
 st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
 
-# دالة الشعار (تعديل طفيف لضمان التوسيط)
+# دالة الشعار (تعديل: إضافة كود التمركز الصارم HTML)
 def get_base64_logo():
     if os.path.exists("logo.png"):
         with open("logo.png", "rb") as f:
             data = f.read()
         encoded = base64.b64encode(data).decode()
-        # إضافة display: block و margin: auto لضمان التوسيط الصارم
-        return f'<img src="data:image/png;base64,{encoded}" style="max-width: 180px; width: 100%; margin-bottom: 20px; border-radius: 10px; display: block; margin-left: auto; margin-right: auto;">'
+        # التغيير هنا: display: block و margin: 0 auto يجبران الصورة على التوسط
+        return f'<img src="data:image/png;base64,{encoded}" style="width: 150px; max-width: 100%; display: block; margin: 0 auto 15px auto; border-radius: 10px;">'
     return ""
 
 logo_html = get_base64_logo()
 
 # ==========================================
-# ⚠️ منطقة التصميم (CSS) - إصلاح التشتت في الجوال
+# ⚠️ منطقة التصميم (CSS) - إصلاح التجاوب الجذري
 # ==========================================
 st.markdown("""
 <style>
@@ -61,20 +61,21 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
-    /* === تنسيق الهيرو (الحاوية الرئيسية) === */
+    /* === حاوية الهيرو: فرض الترتيب العمودي والتوسط === */
     .hero-container {
         display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
+        flex-direction: column !important; /* العناصر فوق بعضها */
+        align-items: center !important;     /* توسيط أفقي */
+        justify-content: center !important; /* توسيط عمودي */
+        text-align: center !important;      /* توسيط النصوص */
         
-        padding: 50px 20px;
+        padding: 40px 20px;
         background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
         border-radius: 20px;
         border: 1px solid rgba(59, 130, 246, 0.2);
         box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
-        margin-bottom: 40px;
+        margin-bottom: 30px;
+        width: 100% !important;
         max-width: 800px;
         margin-left: auto;
         margin-right: auto;
@@ -82,7 +83,7 @@ st.markdown("""
     
     .hero-title {
         text-align: center !important;
-        font-size: 4rem !important;
+        font-size: 3.5rem !important; /* حجم للكمبيوتر */
         background: linear-gradient(to right, #60a5fa, #3b82f6);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent !important;
@@ -90,16 +91,17 @@ st.markdown("""
         text-shadow: 0px 0px 30px rgba(37, 99, 235, 0.3);
         margin-bottom: 10px;
         line-height: 1.2 !important;
+        width: 100%;
     }
     
     .hero-container h3, .hero-container p {
         text-align: center !important;
         width: 100%;
-        margin-left: auto;
-        margin-right: auto;
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
 
-    /* === تنسيق المدخلات === */
+    /* === التنسيقات العامة الأخرى === */
     .stTextInput input, .stSelectbox div[data-baseweb="select"] div {
         background-color: #1e293b !important;
         color: #ffffff !important;
@@ -112,7 +114,6 @@ st.markdown("""
         color: white !important;
     }
 
-    /* === تنسيق ورقة المقال === */
     .article-output {
         background-color: #ffffff !important;
         padding: 40px;
@@ -129,7 +130,6 @@ st.markdown("""
         text-align: justify;
     }
 
-    /* === تنسيق الأزرار === */
     .stButton>button {
         background: linear-gradient(90deg, #2563eb, #1d4ed8) !important;
         color: white !important;
@@ -147,13 +147,13 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(37, 99, 235, 0.6);
     }
 
-    /* === تنسيق التبويبات === */
     .stTabs [data-baseweb="tab-list"] {
         background-color: rgba(30, 41, 59, 0.5);
         padding: 10px;
         border-radius: 15px;
         gap: 10px;
-        flex-wrap: wrap; /* للسماح للتبويبات بالنزول للأسفل في الجوال */
+        justify-content: center; /* توسيط التبويبات */
+        flex-wrap: wrap;
     }
     .stTabs [data-baseweb="tab"] {
         color: #94a3b8 !important;
@@ -166,41 +166,33 @@ st.markdown("""
     }
 
     /* ============================================================
-       📱 إصلاح التشتت في الجوال (Mobile Fixes)
+       📱 قواعد الجوال الصارمة (Mobile Strict Rules)
        ============================================================ */
-    @media only screen and (max-width: 768px) {
+    @media only screen and (max-width: 600px) {
         
-        /* 1. ضبط الحاوية الرئيسية للهيرو */
+        /* 1. إجبار حاوية الهيرو على الاحتواء الكامل */
         .hero-container {
-            padding: 30px 15px !important;
-            margin-bottom: 20px !important;
-            width: 100% !important;
-            display: block !important; /* لضمان عدم تداخل الفليكس */
+            padding: 20px 10px !important;
+            margin: 0 auto 20px auto !important;
+            width: 95% !important;
         }
         
-        /* 2. تصغير العنوان بشكل كبير لمنع التشتت */
+        /* 2. تصغير العنوان ليتناسب مع عرض الهاتف */
         .hero-title {
-            font-size: 2.2rem !important;
-            margin-bottom: 15px !important;
-            white-space: normal !important; /* السماح بالنزول للسطر */
+            font-size: 8vw !important; /* حجم نسبي للعرض */
+            margin-bottom: 10px !important;
         }
         
-        /* 3. ضبط النصوص الفرعية */
-        .hero-container h3 { 
-            font-size: 1.1rem !important; 
-            margin-bottom: 5px !important;
-        }
-        .hero-container p { 
-            font-size: 0.9rem !important; 
-            line-height: 1.5 !important;
-        }
+        /* 3. النصوص الفرعية */
+        .hero-container h3 { font-size: 1.1rem !important; }
+        .hero-container p { font-size: 0.8rem !important; }
 
-        /* 4. تنسيق ورقة المقال للجوال */
+        /* 4. تنسيق المقال للقراءة على الهاتف */
         .article-output {
-            padding: 20px !important;
-            font-size: 1.1rem !important;
-            border-right: 4px solid #2563eb !important;
-            line-height: 1.8 !important;
+            padding: 15px !important;
+            font-size: 1rem !important;
+            border-right: 3px solid #2563eb !important;
+            line-height: 1.6 !important;
         }
 
         /* 5. الأزرار */
@@ -208,13 +200,20 @@ st.markdown("""
             height: 3.5rem !important;
             font-size: 1rem !important;
         }
-        
-        /* 6. إجبار الصور والشعارات على التوسط */
+
+        /* 6. منع الصور من الخروج عن الشاشة */
         img { 
             max-width: 100% !important; 
             height: auto !important; 
-            margin: 0 auto !important;
+            margin: 0 auto !important; /* توسيط الصور */
             display: block !important;
+        }
+        
+        /* 7. تقليل هوامش الصفحة العامة */
+        .block-container {
+            padding-top: 2rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
         }
     }
 
@@ -278,11 +277,12 @@ def run_samba_writer(text, keyword):
 if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
+    # نستخدم f-string لدمج الشعار (logo_html) داخل واجهة الهيرو
     st.markdown(f"""
         <div class="hero-container">
             {logo_html}
             <h1 class="hero-title">MANAGER TECH</h1>
-            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.6</h3>
+            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.7</h3>
             <p style="color: #94a3b8; font-size: 1.1rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
         </div>
     """, unsafe_allow_html=True)
@@ -304,10 +304,13 @@ if not st.session_state["authenticated"]:
 # ==========================================
 # 4. واجهة النظام الداخلية
 # ==========================================
+# نستخدم replace لتصغير الشعار في الهيدر الداخلي
+mini_logo = logo_html.replace('150px', '50px').replace('display: block;', 'display: inline-block;').replace('margin: 0 auto 15px auto;', 'margin: 0;')
+
 st.markdown(f"""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
         <div style="display: flex; align-items: center; gap: 15px;">
-            {logo_html.replace('180px', '50px').replace('margin-bottom: 20px;', 'margin-bottom: 0;')}
+            {mini_logo}
             <h2 style="color: #60a5fa; margin: 0;">رادار الماندجر تك</h2>
         </div>
         <span style="background: #2563eb; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">ONLINE</span>
@@ -394,7 +397,7 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
 
 st.markdown(f"""
     <div style='text-align: center; color: #475569; margin-top: 50px; border-top: 1px solid #1e293b; padding-top: 20px;'>
-        {logo_html.replace('180px', '40px').replace('margin-bottom: 20px;', 'margin-bottom: 10px;')}
+        {mini_logo.replace('50px', '30px')}
         <br>Developed by Manadger Tech © 2026
     </div>
 """, unsafe_allow_html=True)
