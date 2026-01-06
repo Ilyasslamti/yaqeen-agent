@@ -5,6 +5,7 @@ import json
 import os
 import socket
 import concurrent.futures
+import base64  # مكتبة معالجة الصور
 from openai import OpenAI
 from duckduckgo_search import DDGS
 
@@ -22,7 +23,19 @@ ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
 socket.setdefaulttimeout(40)
 
-st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🦅", layout="wide")
+st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
+
+# دالة لتحويل الشعار إلى كود لدمجه في التصميم
+def get_base64_logo():
+    if os.path.exists("logo.png"):
+        with open("logo.png", "rb") as f:
+            data = f.read()
+        encoded = base64.b64encode(data).decode()
+        # تنسيق الشعار: عرض 180 بكسل وتوسطه
+        return f'<img src="data:image/png;base64,{encoded}" style="width: 180px; margin-bottom: 20px; border-radius: 10px;">'
+    return "" # إذا لم توجد الصورة لا يظهر شيء
+
+logo_html = get_base64_logo()
 
 # ==========================================
 # ⚠️ منطقة التصميم (CSS) - نفس النسخة V28.1
@@ -137,31 +150,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 1. محرك البحث عن الصور (تعديل: نظام Yoast SEO)
+# 1. محرك البحث عن الصور (نظام Yoast SEO)
 # ==========================================
 def get_yoast_seo_images(keyword, headline):
-    """
-    نظام ذكي للبحث عن الصور بناءً على معايير Yoast SEO:
-    1. الأولوية للكلمة المفتاحية (Focus Keyphrase).
-    2. البحث عن صور فوتوغرافية (Photo) بدلاً من الرسومات.
-    3. تحديد المنطقة الجغرافية للمغرب (ma-ma) لزيادة الصلة.
-    """
-    # إذا كانت الكلمة المفتاحية قوية ومحددة، نستخدمها للبحث لأنها أدق
     if keyword and len(keyword) > 2 and "هاشمي" not in keyword:
         query = keyword
     else:
-        # إذا لم توجد كلمة مفتاحية، نستخدم أول 4 كلمات من العنوان لتجنب التشتت
         query = " ".join(headline.split()[:5])
         
     try:
         with DDGS() as ddgs:
-            # استخدام إعدادات دقيقة لجلب صور عالية الجودة
             results = ddgs.images(
                 query, 
-                region="wt-wt", # بحث عالمي لضمان وفرة النتائج (يمكن تغييرها لـ ma-ma)
+                region="wt-wt",
                 safesearch="off", 
                 max_results=3,
-                type_image="photo" # التركيز على الصور الواقعية الصحفية
+                type_image="photo"
             )
             return [r['image'] for r in results]
     except: return []
@@ -176,7 +180,6 @@ def run_samba_writer(text, keyword):
     try:
         client = OpenAI(api_key=api_key, base_url="https://api.sambanova.ai/v1")
         
-        # هندسة البرومبت
         formatted_prompt = ELITE_PROMPT.format(keyword=keyword) + f"\n\n{text[:4500]}"
         
         response = client.chat.completions.create(
@@ -190,23 +193,23 @@ def run_samba_writer(text, keyword):
         
         raw_article = response.choices[0].message.content
         
-        # الفلتر السيادي
         clean_article = raw_article.replace("هاشمي بريس:", "").replace("هاشمي بريس :", "").replace("العنوان:", "").strip()
         return clean_article
 
     except Exception as e: return f"❌ خطأ: {str(e)}"
 
 # ==========================================
-# 3. واجهة الدخول (لم يتم المساس بها)
+# 3. واجهة الدخول (Hero Login) - مع الشعار
 # ==========================================
 if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
     # تصميم صفحة الهبوط
-    st.markdown("""
+    st.markdown(f"""
         <div class="hero-container">
+            {logo_html}
             <h1 class="hero-title">MANAGER TECH</h1>
-            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.2 (SEO Edition)</h3>
+            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.3</h3>
             <p style="color: #94a3b8; font-size: 1.1rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
         </div>
     """, unsafe_allow_html=True)
@@ -226,13 +229,16 @@ if not st.session_state["authenticated"]:
     st.stop()
 
 # ==========================================
-# 4. واجهة النظام الداخلية (لم يتم المساس بها)
+# 4. واجهة النظام الداخلية (Dashboard) - مع الشعار المصغر
 # ==========================================
 
 # الهيدر الداخلي
-st.markdown("""
+st.markdown(f"""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
-        <h2 style="color: #60a5fa; margin: 0;">🦅 رادار الماندجر تك</h2>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            {logo_html.replace('180px', '50px').replace('margin-bottom: 20px;', 'margin-bottom: 0;')}
+            <h2 style="color: #60a5fa; margin: 0;">رادار الماندجر تك</h2>
+        </div>
         <span style="background: #2563eb; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">ONLINE</span>
     </div>
 """, unsafe_allow_html=True)
@@ -291,24 +297,15 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
                     if main_text:
                         article = run_samba_writer(main_text, final_keyword)
                         
-                        # معالجة النص للعرض
                         lines = article.split('\n')
                         headline = lines[0]
                         body = "\n".join(lines[1:])
                         
                         st.markdown("---")
-                        # عرض العنوان
                         st.markdown(f"<h1 style='color: #3b82f6; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(59,130,246,0.5);'>{headline}</h1>", unsafe_allow_html=True)
-                        
-                        # عرض المتن
                         st.markdown(f"<div class='article-output'>{body}</div>", unsafe_allow_html=True)
                         
-                        # ===============================================
-                        # ⚠️ تعديل هنا فقط: استدعاء نظام صور Yoast الجديد
-                        # ===============================================
                         st.markdown("<br><h3>🖼️ وسائط متوافقة مع Yoast SEO</h3>", unsafe_allow_html=True)
-                        
-                        # نمرر الكلمة المفتاحية أولاً (الأهم في اليوست) والعنوان ثانياً
                         images = get_yoast_seo_images(final_keyword, headline)
                         
                         if images:
@@ -316,10 +313,9 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
                             for idx, img_url in enumerate(images):
                                 with cols[idx]:
                                     st.image(img_url, use_container_width=True)
-                                    # إضافة اقتراح للنص البديل (Alt Text) لتعزيز السيو
-                                    st.caption(f"📝 Alt Text مقترح: صورة توضيحية لـ {final_keyword}")
+                                    st.caption(f"📝 Alt Text: {final_keyword}")
                         else:
-                            st.warning("لم يتم العثور على صور دقيقة، جرب تغيير الكلمة المفتاحية.")
+                            st.warning("لم يتم العثور على صور دقيقة.")
                         
                         st.text_area("نسخة النشر (Raw Text):", article, height=300)
                     else: st.error("فشل الرادار في سحب النص من المصدر.")
@@ -327,4 +323,9 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
             st.info("الرادار خامل. اضغط زر التحديث لتشغيل المجسات.")
 
 # التذييل
-st.markdown("<div style='text-align: center; color: #475569; margin-top: 50px; border-top: 1px solid #1e293b; padding-top: 20px;'>Developed by Manadger Tech © 2026</div>", unsafe_allow_html=True)
+st.markdown(f"""
+    <div style='text-align: center; color: #475569; margin-top: 50px; border-top: 1px solid #1e293b; padding-top: 20px;'>
+        {logo_html.replace('180px', '40px').replace('margin-bottom: 20px;', 'margin-bottom: 10px;')}
+        <br>Developed by Manadger Tech © 2026
+    </div>
+""", unsafe_allow_html=True)
