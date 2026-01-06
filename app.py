@@ -5,11 +5,11 @@ import json
 import os
 import socket
 import concurrent.futures
-import base64  # مكتبة معالجة الصور
+import base64
 from openai import OpenAI
 from duckduckgo_search import DDGS
 
-# استيراد الترسانة من المكتبة
+# استيراد الترسانة
 try:
     from manadger_lib import RSS_DATABASE, get_safe_key, ELITE_PROMPT
 except ImportError:
@@ -17,7 +17,7 @@ except ImportError:
     st.stop()
 
 # ==========================================
-# 0. الإعدادات والجماليات (لم يتم المساس بها)
+# 0. الإعدادات والجماليات
 # ==========================================
 ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
@@ -25,20 +25,19 @@ socket.setdefaulttimeout(40)
 
 st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
 
-# دالة لتحويل الشعار إلى كود لدمجه في التصميم
+# دالة الشعار
 def get_base64_logo():
     if os.path.exists("logo.png"):
         with open("logo.png", "rb") as f:
             data = f.read()
         encoded = base64.b64encode(data).decode()
-        # تنسيق الشعار: عرض 180 بكسل وتوسطه
         return f'<img src="data:image/png;base64,{encoded}" style="width: 180px; margin-bottom: 20px; border-radius: 10px;">'
-    return "" # إذا لم توجد الصورة لا يظهر شيء
+    return ""
 
 logo_html = get_base64_logo()
 
 # ==========================================
-# ⚠️ منطقة التصميم (CSS) - نفس النسخة V28.1
+# ⚠️ منطقة التصميم (CSS) - تعديل التوسيط فقط
 # ==========================================
 st.markdown("""
 <style>
@@ -61,8 +60,14 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
+    /* === تعديل التوسيط هنا === */
     .hero-container {
-        text-align: center;
+        display: flex !important;           /* تفعيل نظام المرونة */
+        flex-direction: column !important;  /* ترتيب عمودي */
+        align-items: center !important;     /* توسيط العناصر أفقياً */
+        justify-content: center !important; /* توسيط العناصر عمودياً */
+        text-align: center !important;      /* توسيط النصوص */
+        
         padding: 50px 20px;
         background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
         border-radius: 20px;
@@ -72,6 +77,7 @@ st.markdown("""
     }
     
     .hero-title {
+        text-align: center !important; /* إجبار توسيط العنوان */
         font-size: 4rem !important;
         background: linear-gradient(to right, #60a5fa, #3b82f6);
         -webkit-background-clip: text;
@@ -79,6 +85,12 @@ st.markdown("""
         color: #3b82f6 !important;
         text-shadow: 0px 0px 30px rgba(37, 99, 235, 0.3);
         margin-bottom: 10px;
+    }
+    
+    /* إجبار النصوص الفرعية داخل الهيرو على التوسط */
+    .hero-container h3, .hero-container p {
+        text-align: center !important;
+        width: 100%;
     }
 
     .stTextInput input, .stSelectbox div[data-baseweb="select"] div {
@@ -150,7 +162,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 1. محرك البحث عن الصور (نظام Yoast SEO)
+# 1. محرك الصور (Yoast SEO)
 # ==========================================
 def get_yoast_seo_images(keyword, headline):
     if keyword and len(keyword) > 2 and "هاشمي" not in keyword:
@@ -171,7 +183,7 @@ def get_yoast_seo_images(keyword, headline):
     except: return []
 
 # ==========================================
-# 2. محرك الصياغة النخبوية (لم يتم المساس به)
+# 2. محرك الصياغة
 # ==========================================
 def run_samba_writer(text, keyword):
     api_key = get_safe_key()
@@ -179,7 +191,6 @@ def run_samba_writer(text, keyword):
 
     try:
         client = OpenAI(api_key=api_key, base_url="https://api.sambanova.ai/v1")
-        
         formatted_prompt = ELITE_PROMPT.format(keyword=keyword) + f"\n\n{text[:4500]}"
         
         response = client.chat.completions.create(
@@ -192,14 +203,13 @@ def run_samba_writer(text, keyword):
         )
         
         raw_article = response.choices[0].message.content
-        
         clean_article = raw_article.replace("هاشمي بريس:", "").replace("هاشمي بريس :", "").replace("العنوان:", "").strip()
         return clean_article
 
     except Exception as e: return f"❌ خطأ: {str(e)}"
 
 # ==========================================
-# 3. واجهة الدخول (Hero Login) - مع الشعار
+# 3. واجهة الدخول (Hero Login)
 # ==========================================
 if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
 
@@ -229,7 +239,7 @@ if not st.session_state["authenticated"]:
     st.stop()
 
 # ==========================================
-# 4. واجهة النظام الداخلية (Dashboard) - مع الشعار المصغر
+# 4. واجهة النظام الداخلية
 # ==========================================
 
 # الهيدر الداخلي
