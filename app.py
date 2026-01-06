@@ -297,8 +297,8 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
             
             keyword_input = st.text_input("الكلمة المفتاحية (SEO Strategy):", key=f"kw_{i}", placeholder="اتركها فارغة للتلقائي...")
 
-            if st.button("🚀 هندسة المقال بأسلوب هاشمي بريس", key=f"run_{i}"):
-                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "هاشمي بريس"
+            if st.button("🚀 هندسة المقال بأسلوب صحفي متوافق مع السيو", key=f"run_{i}"):
+                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "منادجر تك"
                 
                 with st.spinner("الماندجر يحلل البيانات ويصيغ التحفة..."):
                     raw_data = trafilatura.fetch_url(news_list[selected_idx]['link'])
