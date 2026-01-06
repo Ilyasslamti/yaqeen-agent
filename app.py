@@ -17,13 +17,13 @@ except ImportError:
     st.stop()
 
 # ==========================================
-# 0. الإعدادات والجماليات
+# 0. الإعدادات
 # ==========================================
 ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
 socket.setdefaulttimeout(40)
 
-st.set_page_config(page_title="منادجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
 
 # دالة الشعار
 def get_base64_logo():
@@ -31,13 +31,14 @@ def get_base64_logo():
         with open("logo.png", "rb") as f:
             data = f.read()
         encoded = base64.b64encode(data).decode()
-        return f'<img src="data:image/png;base64,{encoded}" style="width: 180px; margin-bottom: 20px; border-radius: 10px;">'
+        # جعل عرض الشعار مرناً (Max-width) ليتجاوب مع الهاتف
+        return f'<img src="data:image/png;base64,{encoded}" style="max-width: 180px; width: 100%; margin-bottom: 20px; border-radius: 10px;">'
     return ""
 
 logo_html = get_base64_logo()
 
 # ==========================================
-# ⚠️ منطقة التصميم (CSS) - تعديل التوسيط فقط
+# ⚠️ منطقة التصميم (CSS) - محدثة للجوال
 # ==========================================
 st.markdown("""
 <style>
@@ -60,13 +61,13 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
-    /* === تعديل التوسيط هنا === */
+    /* === تنسيق الهيرو (متجاوب) === */
     .hero-container {
-        display: flex !important;           /* تفعيل نظام المرونة */
-        flex-direction: column !important;  /* ترتيب عمودي */
-        align-items: center !important;     /* توسيط العناصر أفقياً */
-        justify-content: center !important; /* توسيط العناصر عمودياً */
-        text-align: center !important;      /* توسيط النصوص */
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
         
         padding: 50px 20px;
         background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
@@ -77,7 +78,7 @@ st.markdown("""
     }
     
     .hero-title {
-        text-align: center !important; /* إجبار توسيط العنوان */
+        text-align: center !important;
         font-size: 4rem !important;
         background: linear-gradient(to right, #60a5fa, #3b82f6);
         -webkit-background-clip: text;
@@ -87,12 +88,12 @@ st.markdown("""
         margin-bottom: 10px;
     }
     
-    /* إجبار النصوص الفرعية داخل الهيرو على التوسط */
     .hero-container h3, .hero-container p {
         text-align: center !important;
         width: 100%;
     }
 
+    /* === تنسيق المدخلات === */
     .stTextInput input, .stSelectbox div[data-baseweb="select"] div {
         background-color: #1e293b !important;
         color: #ffffff !important;
@@ -105,6 +106,7 @@ st.markdown("""
         color: white !important;
     }
 
+    /* === تنسيق ورقة المقال === */
     .article-output {
         background-color: #ffffff !important;
         padding: 40px;
@@ -121,6 +123,7 @@ st.markdown("""
         text-align: justify;
     }
 
+    /* === تنسيق الأزرار === */
     .stButton>button {
         background: linear-gradient(90deg, #2563eb, #1d4ed8) !important;
         color: white !important;
@@ -138,6 +141,7 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(37, 99, 235, 0.6);
     }
 
+    /* === تنسيق التبويبات === */
     .stTabs [data-baseweb="tab-list"] {
         background-color: rgba(30, 41, 59, 0.5);
         padding: 10px;
@@ -154,6 +158,49 @@ st.markdown("""
         border-radius: 8px;
     }
 
+    /* ============================================================
+       📱 قواعد الجوال (Mobile Media Queries) - الإضافة الجديدة
+       ============================================================ */
+    @media only screen and (max-width: 768px) {
+        
+        /* تصغير عنوان الهيرو */
+        .hero-title {
+            font-size: 2.5rem !important;
+            margin-bottom: 5px;
+        }
+        
+        /* تقليل هوامش الحاوية */
+        .hero-container {
+            padding: 20px 10px !important;
+            margin-bottom: 20px !important;
+        }
+        
+        /* تصغير الخطوط الفرعية */
+        .hero-container h3 { font-size: 1.2rem !important; }
+        .hero-container p { font-size: 0.9rem !important; }
+
+        /* تنسيق ورقة المقال للجوال */
+        .article-output {
+            padding: 20px !important;
+            font-size: 1.1rem !important;
+            border-right: 4px solid #2563eb !important;
+            line-height: 1.8 !important;
+        }
+
+        /* جعل الأزرار أصغر قليلاً */
+        .stButton>button {
+            height: 3.5rem !important;
+            font-size: 1rem !important;
+        }
+
+        /* العناوين العامة */
+        h1 { font-size: 1.8rem !important; }
+        h2 { font-size: 1.5rem !important; }
+        
+        /* تحسين عرض الصور */
+        img { max-width: 100% !important; height: auto !important; }
+    }
+
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -165,7 +212,7 @@ st.markdown("""
 # 1. محرك الصور (Yoast SEO)
 # ==========================================
 def get_yoast_seo_images(keyword, headline):
-    if keyword and len(keyword) > 2 and "منادجر" not in keyword:
+    if keyword and len(keyword) > 2 and "هاشمي" not in keyword:
         query = keyword
     else:
         query = " ".join(headline.split()[:5])
@@ -196,31 +243,30 @@ def run_samba_writer(text, keyword):
         response = client.chat.completions.create(
             model='Meta-Llama-3.3-70B-Instruct', 
             messages=[
-                {"role": "system", "content": "محرر صحفي شامل - منادجر تك"},
+                {"role": "system", "content": "محرر صحفي نخبوي - الماندجر تك"},
                 {"role": "user", "content": formatted_prompt}
             ],
             temperature=0.4
         )
         
         raw_article = response.choices[0].message.content
-        clean_article = raw_article.replace("منادجر تك:", "").replace("سكريبت ناشر :", "").replace("العنوان:", "").strip()
+        clean_article = raw_article.replace("هاشمي بريس:", "").replace("هاشمي بريس :", "").replace("العنوان:", "").strip()
         return clean_article
 
     except Exception as e: return f"❌ خطأ: {str(e)}"
 
 # ==========================================
-# 3. واجهة الدخول (Hero Login)
+# 3. واجهة الدخول
 # ==========================================
 if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
-    # تصميم صفحة الهبوط
     st.markdown(f"""
         <div class="hero-container">
             {logo_html}
             <h1 class="hero-title">MANAGER TECH</h1>
-            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.3</h3>
-            <p style="color: #94a3b8; font-size: 1.1rem;">سكريبت بـ 200 مصدر • 26 محرك ذكاء اصطناعي • توافق كامل مع السيو</p>
+            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.5</h3>
+            <p style="color: #94a3b8; font-size: 1.1rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -241,8 +287,6 @@ if not st.session_state["authenticated"]:
 # ==========================================
 # 4. واجهة النظام الداخلية
 # ==========================================
-
-# الهيدر الداخلي
 st.markdown(f"""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
         <div style="display: flex; align-items: center; gap: 15px;">
@@ -253,7 +297,6 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# تحميل قاعدة البيانات
 if os.path.exists(DB_FILE):
     try:
         with open(DB_FILE, 'r', encoding='utf-8') as f: db = json.load(f)
@@ -261,7 +304,7 @@ if os.path.exists(DB_FILE):
 else: db = {"data": {}}
 
 # ==========================================
-# 5. التبويبات والتشغيل
+# 5. التشغيل
 # ==========================================
 tabs = st.tabs([f"📡 {k}" for k in RSS_DATABASE.keys()])
 
@@ -297,8 +340,8 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
             
             keyword_input = st.text_input("الكلمة المفتاحية (SEO Strategy):", key=f"kw_{i}", placeholder="اتركها فارغة للتلقائي...")
 
-            if st.button("🚀 هندسة المقال بأسلوب صحفي متوافق مع السيو", key=f"run_{i}"):
-                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "منادجر تك"
+            if st.button("🚀 هندسة المقال بأسلوب هاشمي بريس", key=f"run_{i}"):
+                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "هاشمي بريس"
                 
                 with st.spinner("الماندجر يحلل البيانات ويصيغ التحفة..."):
                     raw_data = trafilatura.fetch_url(news_list[selected_idx]['link'])
@@ -332,7 +375,6 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
         else:
             st.info("الرادار خامل. اضغط زر التحديث لتشغيل المجسات.")
 
-# التذييل
 st.markdown(f"""
     <div style='text-align: center; color: #475569; margin-top: 50px; border-top: 1px solid #1e293b; padding-top: 20px;'>
         {logo_html.replace('180px', '40px').replace('margin-bottom: 20px;', 'margin-bottom: 10px;')}
