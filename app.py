@@ -16,16 +16,126 @@ except ImportError:
     st.stop()
 
 # ==========================================
-# 0. الإعدادات والتحصين
+# 0. الإعدادات والجماليات (CSS Architecture)
 # ==========================================
 ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
 socket.setdefaulttimeout(40)
 
-st.set_page_config(page_title="منادجر تك | سكربت ناشر للكتاب و الصحفين", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🦅", layout="wide")
+
+# حقن كود التصميم الاحترافي (Landing Page Style)
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap');
+    
+    /* 1. الخلفية العامة: تدرج أزرق ملكي داكن */
+    .stApp {
+        background: radial-gradient(circle at 10% 20%, #0f172a 0%, #1e293b 90%);
+        font-family: 'Cairo', sans-serif;
+    }
+
+    /* 2. تحسين النصوص */
+    h1, h2, h3, p, div, span {
+        font-family: 'Cairo', sans-serif !important;
+        direction: rtl;
+        text-align: right;
+    }
+
+    /* 3. حاوية العناوين (Hero Section) */
+    .hero-container {
+        text-align: center;
+        padding: 40px 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        margin-bottom: 30px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        background: linear-gradient(to right, #60a5fa, #3b82f6);
+        -webkit-background-clip: text;
+        color: transparent;
+        text-shadow: 0px 0px 20px rgba(59, 130, 246, 0.3);
+    }
+    
+    .hero-subtitle {
+        color: #cbd5e1;
+        font-size: 1.2rem;
+        font-weight: 300;
+        margin-top: -10px;
+    }
+
+    /* 4. تصميم ورقة المقال (Paper Effect) */
+    .article-output {
+        background-color: #f8fafc;
+        color: #1e293b;
+        padding: 40px;
+        border-radius: 12px;
+        border-right: 6px solid #2563eb;
+        line-height: 2.4;
+        font-size: 1.25rem;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        margin-top: 20px;
+    }
+
+    /* 5. الأزرار الاحترافية */
+    .stButton>button {
+        background: linear-gradient(90deg, #2563eb, #1d4ed8);
+        color: white;
+        border: none;
+        padding: 0.6rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 12px;
+        width: 100%;
+        height: 3.8rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.5);
+    }
+
+    /* 6. المدخلات والقوائم */
+    .stTextInput>div>div>input, .stSelectbox>div>div>div {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+    }
+    
+    /* 7. التبويبات */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        background-color: rgba(0,0,0,0.2);
+        padding: 10px;
+        border-radius: 15px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: transparent;
+        border-radius: 10px;
+        color: #94a3b8;
+        font-weight: 700;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #2563eb;
+        color: white;
+    }
+
+</style>
+""", unsafe_allow_html=True)
 
 # ==========================================
-# 1. محرك البحث عن الصور
+# 1. محرك البحث عن الصور (نفس المنطق)
 # ==========================================
 def get_related_images(query):
     try:
@@ -35,7 +145,7 @@ def get_related_images(query):
     except: return []
 
 # ==========================================
-# 2. محرك الصياغة النخبوية
+# 2. محرك الصياغة النخبوية (نفس المنطق)
 # ==========================================
 def run_samba_writer(text, keyword):
     api_key = get_safe_key()
@@ -58,40 +168,52 @@ def run_samba_writer(text, keyword):
         
         raw_article = response.choices[0].message.content
         
-        # الفلتر السيادي: إزالة أي بادئات زائدة مع الحفاظ على العنوان
+        # الفلتر السيادي
         clean_article = raw_article.replace("هاشمي بريس:", "").replace("هاشمي بريس :", "").replace("العنوان:", "").strip()
         return clean_article
 
     except Exception as e: return f"❌ خطأ: {str(e)}"
 
 # ==========================================
-# 3. نظام الدخول والحماية
+# 3. واجهة الدخول (Hero Login)
 # ==========================================
 if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
-    st.markdown("<h2 style='text-align:center;'>🔐 الماندجر تك | دخول الترسانة</h2>", unsafe_allow_html=True)
-    pwd = st.text_input("مفتاح الوصول:", type="password")
-    if st.button("فتح النظام"):
-        if pwd == ACCESS_PASSWORD:
-            st.session_state["authenticated"] = True
-            st.rerun()
-        else: st.error("المفتاح خاطئ")
+    # تصميم صفحة الهبوط قبل الدخول
+    st.markdown("""
+        <div class="hero-container">
+            <h1 class="hero-title">MANAGER TECH</h1>
+            <p class="hero-subtitle">نظام السيادة المعلوماتية المتكامل | الإصدار V27.8</p>
+            <p style="color: #64748b; font-size: 0.9rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        with st.form("login_form"):
+            st.markdown("<h3 style='text-align: center; color: white;'>🔐 بوابة الوصول</h3>", unsafe_allow_html=True)
+            pwd = st.text_input("مفتاح الترسانة:", type="password")
+            submitted = st.form_submit_button("اقتحام النظام 🚀")
+            if submitted:
+                if pwd == ACCESS_PASSWORD:
+                    st.session_state["authenticated"] = True
+                    st.rerun()
+                else:
+                    st.error("⛔ مفتاح الوصول غير صحيح.")
     st.stop()
 
 # ==========================================
-# 4. التنسيق والواجهة (Premium UI)
+# 4. واجهة النظام الداخلية (Dashboard)
 # ==========================================
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-    html, body, [class*="st-"] { font-family: 'Cairo', sans-serif; text-align: right; direction: rtl; }
-    .article-output { white-space: pre-wrap; background-color: white; padding: 30px; border-radius: 12px; border: 1px solid #ddd; line-height: 2.1; font-size: 1.2rem; }
-    .stButton>button { background: linear-gradient(90deg, #0f172a, #1e3a8a); color: white; border-radius: 10px; font-weight: 700; width: 100%; border: none; height: 3.5rem; }
-</style>
-""", unsafe_allow_html=True)
 
-st.title("🛡️ الماندجر تك | رادار السيادة الشامل")
+# الهيدر الداخلي
+st.markdown("""
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="color: #60a5fa; margin: 0;">🦅 رادار الماندجر تك</h2>
+        <span style="background: #2563eb; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;">متصل وآمن</span>
+    </div>
+""", unsafe_allow_html=True)
 
 # تحميل قاعدة البيانات
 if os.path.exists(DB_FILE):
@@ -103,53 +225,74 @@ else: db = {"data": {}}
 # ==========================================
 # 5. التبويبات والتشغيل
 # ==========================================
-tabs = st.tabs(list(RSS_DATABASE.keys()))
+tabs = st.tabs([f"📡 {k}" for k in RSS_DATABASE.keys()])
 
 for i, cat in enumerate(list(RSS_DATABASE.keys())):
     with tabs[i]:
-        if st.button(f"🔄 تحديث ترسانة {cat}", key=f"up_{i}"):
-            with st.spinner("جاري المسح المتوازي..."):
-                all_news = []
-                def fetch_task(name, url):
-                    try:
-                        feed = feedparser.parse(url)
-                        return [{"title": e.title, "link": e.link, "source": name} for e in feed.entries[:10]]
-                    except: return []
-                with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
-                    futures = [executor.submit(fetch_task, n, u) for n, u in RSS_DATABASE[cat].items()]
-                    for f in concurrent.futures.as_completed(futures): all_news.extend(f.result())
-                db["data"][cat] = all_news
-                with open(DB_FILE, 'w', encoding='utf-8') as f: json.dump(db, f, ensure_ascii=False)
-            st.rerun()
+        col_act1, col_act2 = st.columns([3, 1])
+        with col_act2:
+            if st.button(f"🔄 تحديث الرادار", key=f"up_{i}"):
+                with st.spinner(f"جاري مسح {cat} بتقنية التوازي..."):
+                    all_news = []
+                    def fetch_task(name, url):
+                        try:
+                            feed = feedparser.parse(url)
+                            return [{"title": e.title, "link": e.link, "source": name} for e in feed.entries[:10]]
+                        except: return []
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+                        futures = [executor.submit(fetch_task, n, u) for n, u in RSS_DATABASE[cat].items()]
+                        for f in concurrent.futures.as_completed(futures): all_news.extend(f.result())
+                    db["data"][cat] = all_news
+                    with open(DB_FILE, 'w', encoding='utf-8') as f: json.dump(db, f, ensure_ascii=False)
+                st.rerun()
 
         if cat in db["data"] and db["data"][cat]:
             news_list = db["data"][cat]
-            selected_idx = st.selectbox("اختر الخبر:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
-            keyword_input = st.text_input("الكلمة المفتاحية (SEO):", key=f"kw_{i}", placeholder="مثال: تطوان، عاجل...")
+            st.markdown(f"##### 📑 تم رصد {len(news_list)} خبراً في هذا القطاع")
+            
+            selected_idx = st.selectbox(
+                "حدد الهدف للمعالجة:", 
+                range(len(news_list)), 
+                format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}",
+                key=f"sel_{i}"
+            )
+            
+            keyword_input = st.text_input("الكلمة المفتاحية (SEO Strategy):", key=f"kw_{i}", placeholder="اتركها فارغة للتلقائي...")
 
-            if st.button("🚀 صياغة بأسلوب احترافي", key=f"run_{i}"):
+            if st.button("🚀 هندسة المقال بأسلوب هاشمي بريس", key=f"run_{i}"):
                 final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "هاشمي بريس"
-                with st.spinner("جاري هندسة المقال..."):
+                
+                with st.spinner("الماندجر يحلل البيانات ويصيغ التحفة..."):
                     raw_data = trafilatura.fetch_url(news_list[selected_idx]['link'])
                     main_text = trafilatura.extract(raw_data)
+                    
                     if main_text:
                         article = run_samba_writer(main_text, final_keyword)
                         
-                        # تمييز العنوان عن المتن
+                        # معالجة النص للعرض
                         lines = article.split('\n')
                         headline = lines[0]
                         body = "\n".join(lines[1:])
                         
-                        st.markdown(f"<h2 style='color: #1e3a8a; text-align: center;'>{headline}</h2>", unsafe_allow_html=True)
+                        st.markdown("---")
+                        # عرض العنوان بتصميم مميز
+                        st.markdown(f"<h1 style='color: #1d4ed8; text-align: center; margin-bottom: 20px;'>{headline}</h1>", unsafe_allow_html=True)
+                        
+                        # عرض المتن داخل "الورقة"
                         st.markdown(f"<div class='article-output'>{body}</div>", unsafe_allow_html=True)
                         
-                        # جلب الصور بناءً على العنوان
-                        st.markdown("### 🖼️ الصور المقترحة")
+                        # الصور
+                        st.markdown("<br><h3>🖼️ الوسائط المقترحة</h3>", unsafe_allow_html=True)
                         images = get_related_images(headline)
                         if images:
                             cols = st.columns(len(images))
                             for idx, img_url in enumerate(images):
                                 with cols[idx]: st.image(img_url, use_container_width=True)
                         
-                        st.text_area("نسخة النشر الصافية:", article, height=300)
-                    else: st.error("فشل في سحب النص.")
+                        st.text_area("نسخة النشر (Raw Text):", article, height=300)
+                    else: st.error("فشل الرادار في سحب النص من المصدر.")
+        else:
+            st.info("الرادار خامل. اضغط زر التحديث لتشغيل المجسات.")
+
+# التذييل
+st.markdown("<div style='text-align: center; color: #64748b; margin-top: 50px;'>Developed by Manadger Tech © 2026</div>", unsafe_allow_html=True)
