@@ -1,12 +1,12 @@
 # ==========================================
 # manadger_lib.py - مستودع أسلحة الماندجر تك
-# الإصدار السيادي V27.9 - ترسانة الـ 200
+# الإصدار: V30.1 (الإيجاز والسرعة)
 # ==========================================
 
 import random
 import streamlit as st
 
-# 1. نظام تدوير المفاتيح الـ 26
+# 1. نظام تدوير المفاتيح
 def get_safe_key():
     try:
         keys = st.secrets["API_KEYS"]
@@ -14,33 +14,41 @@ def get_safe_key():
     except:
         return None
 
-# 2. برومبت السيادة اللغوية
+# 2. برومبت السيادة اللغوية (المعدل حسب طلبك)
 ELITE_PROMPT = """
-بصفتك رئيس تحرير مخضرم في مدرسة الصحافة المغربية النخبوية (أسلوب هسبريس والمساء):
-أعد هندسة المحتوى التالي بصرامة واحترافية وفق الهيكل التالي:
+بصفتك رئيس تحرير لموقع إخباري سريع الانتشار، أعد صياغة النص التالي بأسلوب حديث، مباشر، وسهل القراءة، مع الالتزام الصارم بالقواعد التالية:
 
-1. السطر الأول حصراً: ضع عنواناً انفجارياً يبدأ بـ {keyword}، يكون رصيناً، طويلاً، وواصفاً بدقة لجوهر الحدث (Headline).
-2. السطر الثاني: اترك سطرًا فارغاً تماماً.
-3. من السطر الثالث: ابدأ بكتابة المقال بلغة عربية جزلة، جمل مركبة وعميقة، مع الالتزام بـ:
-   - روابط لغوية قوية (بالموازاة مع، في أعقاب، استطرد قائلاً، على خلفية).
-   - مبني للمعلوم دائماً (أكدت، باشرت، قررت) ومنع المبني للمجهول (تم، جرى).
-   - ابدأ بمقدمة تضع الخبر في سياقه الوطني أو الدولي بعيداً عن الركاكة.
-   - الخاتمة يجب أن تكون تحليلية أو استشرافية تعكس عمق هاشمي بريس.
+1. **قصر الجمل والفقرات (Short & Punchy):**
+   - اكتب جملاً قصيرة جداً وموجزة (أقل من 20 كلمة غالباً).
+   - اجعل الفقرات قصيرة (من سطرين إلى 3 أسطر فقط).
+   - **هام جداً:** بمجرد انتهاء الفقرة، انتقل فوراً للسطر التالي (New Line) لترك مساحة بيضاء مريحة للعين.
 
-4. الممنوعات القاطعة:
-   - يمنع استخدام عبارات الأطفال (يعتبر، يوجد، في هذا المقال).
-   - يمنع استخدام النجوم (*)، الهاشتاغات، أو عبارة "هاشمي بريس:" في بداية النص.
+2. **الربط الذكي:**
+   - استخدم بذكاء الكلمات الانتقالية التالية لربط الأفكار: "لذلك"، "بالإضافة إلى"، "من جهة أخرى"، "في المقابل".
+
+3. **الصياغة النشطة:**
+   - تجنب المبني للمجهول قدر الإمكان (لا تقل "تم اتخاذ القرار"، بل قل "اتخذت الإدارة قراراً"). الفاعل يجب أن يكون واضحاً.
+
+4. **التنسيق:**
+   - استخدم القوائم النقطية (-) عندما يكون هناك تعداد أو تفاصيل، لتسهيل القراءة.
+
+5. **الهيكلة المطلوبة:**
+   - السطر الأول: عنوان قوي يبدأ بـ {keyword}.
+   - السطر الثاني: فارغ.
+   - السطر الثالث: ابدأ المتن مباشرة مطبقاً القواعد أعلاه.
+
+ممنوع استخدام: "هاشمي بريس:" في البداية، أو كلمات مثل "يعتبر/يعد".
 
 الكلمة المفتاحية: {keyword}
-المحتوى المراد معالجته:
+النص الخام:
 """
 
-# 3. ترسانة الـ 200 مصدر (شاملة ومفحوصة)
+# 3. ترسانة الـ 200 مصدر
 RSS_DATABASE = {
-    "الصحافة السيادية والوطنية (60 مصدر)": {
+    "الصحافة السيادية والوطنية": {
         "هاشمي بريس": "https://hashemipress.com/feed/",
         "هسبريس": "https://www.hespress.com/feed",
-        "MAP وكالة الأنباء": "https://www.mapnews.ma/ar/rss.xml",
+        "وكالة المغرب العربي": "https://www.mapnews.ma/ar/rss.xml",
         "لوسيت أنفو": "https://ar.lesiteinfo.com/feed",
         "زنقة 20": "https://www.rue20.com/feed",
         "هبة بريس": "https://ar.hibapress.com/feed",
@@ -53,7 +61,7 @@ RSS_DATABASE = {
         "آشكاين": "https://achkayen.com/feed",
         "فبراير": "https://www.febrayer.com/feed",
         "الجريدة 24": "https://aljarida24.ma/feed",
-        "لكم 2": "https://lakome2.com/feed",
+        "لكم": "https://lakome2.com/feed",
         "سفيركم": "https://safir24.com/feed",
         "بناصا": "https://banassa.com/feed",
         "منارة": "https://www.menara.ma/ar/rss",
@@ -64,18 +72,19 @@ RSS_DATABASE = {
         "بلادنا 24": "https://www.beladna24.ma/feed",
         "آذار": "https://aaddar.com/feed",
         "مشاهد": "https://mashahed.info/feed",
-        "دوزيم 2M": "https://2m.ma/ar/news/rss.xml",
-        "ميد رادي": "https://medradio.ma/feed",
+        "دوزيم": "https://2m.ma/ar/news/rss.xml",
+        "ميد راديو": "https://medradio.ma/feed",
         "لوديسك": "https://ledesk.ma/ar/feed",
         "عبر": "https://aabbir.com/feed",
         "صوت المغرب": "https://saoutalmaghrib.ma/feed",
         "مغرب أنباء": "https://maghrebanbaa.ma/feed",
-        "كاب 24": "https://cap24.tv/feed",
+        "أكادير 24": "https://agadir24.info/feed",
+        "كشـ 24": "https://kech24.com/feed",
         "الأيام 24": "https://www.alayam24.com/feed",
         "نون بريس": "https://www.noonpresse.com/feed",
         "سياسي": "https://www.siyasi.com/feed",
-        "الأسبوع الصحفي": "https://alaousboue.ma/feed",
-        "أنفاس بريس": "https://anfasspress.com/feed",
+        "الأسبوع": "https://alaousboue.ma/feed",
+        "أنفاس": "https://anfasspress.com/feed",
         "فلاش بريس": "https://www.flashpresse.ma/feed",
         "آخر خبر": "https://akharkhabar.ma/feed",
         "ماب تيفي": "https://maptv.ma/feed",
@@ -84,7 +93,6 @@ RSS_DATABASE = {
         "المغرب 24": "https://almaghrib24.com/feed",
         "الأنباء": "https://anbaa.ma/feed",
         "الأخبار": "https://alakhbar.press.ma/feed",
-        "لاراكس": "https://larax.ma/feed",
         "المجلة": "https://almajalla.com/feed",
         "كازاوي": "https://casaoui.ma/feed",
         "بديل": "https://badil.info/feed",
@@ -93,12 +101,10 @@ RSS_DATABASE = {
         "الأول": "https://alaoual.com/feed",
         "مراكش بوست": "https://marrakechpost.com/feed",
         "طنجة الأدبية": "https://aladabia.net/feed",
-        "هسبريس سياسة": "https://www.hespress.com/politique/feed",
-        "هسبريس مجتمع": "https://www.hespress.com/societe/feed",
         "الحدث 24": "https://alhadath24.ma/feed",
         "مغرب تايمز": "https://maghrebtimes.ma/feed"
     },
-    "رادار الشمال والريف (50 مصدر)": {
+    "رادار الشمال والريف": {
         "بريس تطوان": "https://presstetouan.com/feed",
         "طنجة 24": "https://tanja24.com/feed",
         "شمال بوست": "https://chamalpost.net/feed",
@@ -147,12 +153,9 @@ RSS_DATABASE = {
         "شفشاون 24": "https://chefchaouen24.com/feed",
         "الريف بريس": "https://rifpress.ma/feed",
         "ناظور أوبزيرفر": "https://nadorobserver.com/feed",
-        "تطوان اليوم": "https://tetouantoday.com/feed",
-        "طنجة الآن": "https://tangerwala.com/feed"
+        "تطوان اليوم": "https://tetouantoday.com/feed"
     },
-    "الجهات والشرق والجنوب (50 مصدر)": {
-        "كشـ 24": "https://kech24.com/feed",
-        "أكادير 24": "https://agadir24.info/feed",
+    "الجهات والشرق والجنوب": {
         "وجدة سيتي": "https://www.oujdacity.net/feed",
         "مراكش الآن": "https://www.marrakechalaan.com/feed",
         "الداخلة نيوز": "https://dakhlanews.com/feed",
@@ -202,7 +205,7 @@ RSS_DATABASE = {
         "سيدي إفني 24": "https://sidiifni24.com/feed",
         "أكادير تيفي": "https://agadirtv.ma/feed"
     },
-    "رياضة واقتصاد ودولية (40 مصدر)": {
+    "رياضة واقتصاد ودولية": {
         "هسبريس رياضة": "https://hesport.com/feed",
         "البطولة": "https://www.elbotola.com/rss",
         "المنتخب": "https://almountakhab.com/rss",
@@ -215,32 +218,29 @@ RSS_DATABASE = {
         "بورس نيوز": "https://boursenews.ma/feed",
         "ميديا 24": "https://www.medias24.com/ar/feed/",
         "رويترز": "https://www.reutersagency.com/feed/",
-        "بي بي سي عربي": "https://www.bbc.com/arabic/index.xml",
-        "الشرق للأخبار": "https://asharq.com/feed/",
-        "سي إن بي سي عربية": "https://www.cnbcarabia.com/rss.xml",
+        "بي بي سي": "https://www.bbc.com/arabic/index.xml",
+        "الشرق": "https://asharq.com/feed/",
+        "CNBC عربية": "https://www.cnbcarabia.com/rss.xml",
         "كووورة": "https://www.kooora.com/rss.xml",
         "هاي كورة": "https://hihi2.com/feed",
         "في الجول": "https://www.filgoal.com/rss",
         "هبة سبور": "https://hibasport.com/feed",
         "شوف سبور": "https://choufsport.com/feed",
         "كورة بريس": "https://koorapress.com/feed",
-        "موروكو وورلد نيوز": "https://www.moroccoworldnews.com/feed",
         "الأخبار الاقتصادية": "https://economie.ma/feed",
         "المال": "https://almal.ma/feed",
         "تشالنج": "https://challenge.ma/feed",
         "ليكونوميست": "https://www.leconomiste.com/rss.xml",
-        "إم إف إم": "https://mfm.ma/feed",
         "راديو مارس": "https://radiomars.ma/feed",
         "أصوات": "https://aswat.ma/feed",
         "القدس العربي": "https://www.alquds.co.uk/feed",
         "عربي 21": "https://arabi21.com/rss",
         "روسيا اليوم": "https://arabic.rt.com/rss",
         "الحرة": "https://www.alhurra.com/rss",
-        "اندبندنت عربية": "https://www.independentarabia.com/rss",
+        "اندبندنت": "https://www.independentarabia.com/rss",
         "دويتشه فيله": "https://rss.dw.com/xml/rss-ar-all",
         "رأي اليوم": "https://www.raialyoum.com/feed",
-        "الجزيرة نت": "https://www.aljazeera.net/rss",
-        "سي ان ان بالعربية": "https://arabic.cnn.com/rss",
+        "CNN بالعربية": "https://arabic.cnn.com/rss",
         "يورونيوز": "https://arabic.euronews.com/rss",
         "سبوتنيك": "https://sputnikarabic.ae/export/rss2/archive/index.xml"
     }
