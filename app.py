@@ -6,6 +6,7 @@ import os
 import socket
 import concurrent.futures
 import base64
+import urllib.parse
 from openai import OpenAI
 from duckduckgo_search import DDGS
 
@@ -23,200 +24,185 @@ ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
 socket.setdefaulttimeout(40)
 
-st.set_page_config(page_title="منادجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
 
-# دالة الشعار (تعديل: إضافة كود التمركز الصارم HTML)
+# دالة الشعار
 def get_base64_logo():
     if os.path.exists("logo.png"):
         with open("logo.png", "rb") as f:
             data = f.read()
         encoded = base64.b64encode(data).decode()
-        # التغيير هنا: display: block و margin: 0 auto يجبران الصورة على التوسط
-        return f'<img src="data:image/png;base64,{encoded}" style="width: 150px; max-width: 100%; display: block; margin: 0 auto 15px auto; border-radius: 10px;">'
+        # الشعار يأخذ كلاس CSS ليتم التحكم فيه بدقة
+        return f'<img src="data:image/png;base64,{encoded}" class="responsive-logo">'
     return ""
 
 logo_html = get_base64_logo()
 
 # ==========================================
-# ⚠️ منطقة التصميم (CSS) - إصلاح التجاوب الجذري
+# ⚠️ منطقة التصميم (CSS) - نظام الفصل التام
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap');
     
+    /* 1. إعدادات عامة (مشتركة) */
     [data-testid="stAppViewContainer"] {
         background: radial-gradient(circle at 10% 20%, #020617 0%, #0f172a 90%);
     }
-    
     html, body, p, div, span, label {
         font-family: 'Cairo', sans-serif !important;
         direction: rtl;
         text-align: right;
         color: #e2e8f0 !important;
     }
-
-    h1, h2, h3, h4, h5, h6 {
-        font-family: 'Cairo', sans-serif !important;
-        color: #ffffff !important;
-        font-weight: 800 !important;
-    }
-
-    /* === حاوية الهيرو: فرض الترتيب العمودي والتوسط === */
-    .hero-container {
-        display: flex !important;
-        flex-direction: column !important; /* العناصر فوق بعضها */
-        align-items: center !important;     /* توسيط أفقي */
-        justify-content: center !important; /* توسيط عمودي */
-        text-align: center !important;      /* توسيط النصوص */
-        
-        padding: 40px 20px;
-        background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
-        border-radius: 20px;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+    
+    /* ============================================================
+       🖥️ تنسيق الحاسوب (Desktop - Default) - الفخامة والعرض
+       ============================================================ */
+    
+    /* الشعار في الحاسوب */
+    .responsive-logo {
+        width: 220px; /* كبير وواضح */
         margin-bottom: 30px;
-        width: 100% !important;
-        max-width: 800px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        transition: transform 0.3s;
+    }
+    .responsive-logo:hover { transform: scale(1.05); }
+
+    /* حاوية الهيرو للحاسوب (عريضة ومريحة) */
+    .hero-container {
+        padding: 80px 40px;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+        border-radius: 30px;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        margin-bottom: 50px;
+        max-width: 1000px; /* عرض مثالي للشاشات الكبيرة */
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+    }
+    
+    /* عناوين الحاسوب */
+    .hero-title {
+        font-size: 5rem !important;
+        font-weight: 900 !important;
+        background: linear-gradient(to right, #60a5fa, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent !important;
+        margin-bottom: 20px;
+        letter-spacing: -2px;
+    }
+    
+    /* ورقة المقال للحاسوب (تشبه A4) */
+    .article-output {
+        background-color: #ffffff !important;
+        padding: 60px; /* حواشي كبيرة للقراءة المريحة */
+        border-radius: 20px;
+        border-right: 10px solid #2563eb;
+        line-height: 2.6;
+        font-size: 1.4rem; /* خط كبير ومريح */
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        margin-top: 40px;
+        max-width: 900px;
         margin-left: auto;
         margin-right: auto;
     }
     
-    .hero-title {
-        text-align: center !important;
-        font-size: 3.5rem !important; /* حجم للكمبيوتر */
-        background: linear-gradient(to right, #60a5fa, #3b82f6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent !important;
-        color: #3b82f6 !important;
-        text-shadow: 0px 0px 30px rgba(37, 99, 235, 0.3);
-        margin-bottom: 10px;
-        line-height: 1.2 !important;
-        width: 100%;
+    /* الأزرار في الحاسوب */
+    .stButton>button {
+        height: 4.5rem;
+        font-size: 1.3rem !important;
+        border-radius: 15px;
+        background: linear-gradient(90deg, #2563eb, #1d4ed8) !important;
+        color: white !important;
+        border: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    
-    .hero-container h3, .hero-container p {
-        text-align: center !important;
-        width: 100%;
-        margin-left: auto !important;
-        margin-right: auto !important;
+    .stButton>button:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4);
     }
 
-    /* === التنسيقات العامة الأخرى === */
+    /* ============================================================
+       📱 تنسيق الجوال (Mobile Only) - التراص والسرعة
+       ============================================================ */
+    @media only screen and (max-width: 768px) {
+        
+        /* الشعار في الجوال */
+        .responsive-logo {
+            width: 140px; /* أصغر لعدم أخذ مساحة */
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* حاوية الهيرو للجوال (مضغوطة) */
+        .hero-container {
+            padding: 30px 15px;
+            margin-bottom: 20px;
+            width: 100% !important;
+            border-radius: 15px;
+            background: rgba(30, 41, 59, 0.8); /* خلفية أغمق لتباين أفضل */
+        }
+        
+        /* عناوين الجوال */
+        .hero-title {
+            font-size: 2.5rem !important;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        
+        /* النصوص الفرعية */
+        .hero-container h3 { font-size: 1.1rem !important; }
+        .hero-container p { font-size: 0.9rem !important; }
+
+        /* ورقة المقال للجوال (تستغل كامل العرض) */
+        .article-output {
+            padding: 25px 15px !important; /* حواشي أقل */
+            font-size: 1.1rem !important;
+            border-radius: 10px;
+            border-right: 5px solid #2563eb;
+            line-height: 1.8 !important;
+            width: 100% !important;
+        }
+
+        /* الأزرار للجوال */
+        .stButton>button {
+            height: 3.5rem !important;
+            font-size: 1rem !important;
+            margin-bottom: 10px;
+        }
+        
+        /* الصور */
+        img { 
+            max-width: 100% !important; 
+            height: auto !important; 
+            display: block; 
+            margin: 0 auto; 
+        }
+        
+        /* تصحيح هوامش الصفحة في الجوال */
+        .block-container {
+            padding-top: 1rem !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+    }
+
+    /* إصلاح ألوان المدخلات (مشترك) */
     .stTextInput input, .stSelectbox div[data-baseweb="select"] div {
         background-color: #1e293b !important;
         color: #ffffff !important;
         border: 1px solid #475569 !important;
         border-radius: 10px !important;
     }
-    
-    div[data-baseweb="popover"] li {
-        background-color: #0f172a !important;
-        color: white !important;
-    }
-
-    .article-output {
-        background-color: #ffffff !important;
-        padding: 40px;
-        border-radius: 12px;
-        border-right: 8px solid #2563eb;
-        line-height: 2.4;
-        font-size: 1.3rem;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        margin-top: 30px;
-    }
-    
     .article-output, .article-output p, .article-output div {
         color: #1e293b !important; 
         text-align: justify;
     }
-
-    .stButton>button {
-        background: linear-gradient(90deg, #2563eb, #1d4ed8) !important;
-        color: white !important;
-        border: none;
-        padding: 0.8rem 2rem;
-        font-size: 1.2rem !important;
-        border-radius: 12px;
-        width: 100%;
-        height: 4rem;
-        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-    }
-    
-    .stButton>button:hover {
-        transform: scale(1.02);
-        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.6);
-    }
-
-    .stTabs [data-baseweb="tab-list"] {
-        background-color: rgba(30, 41, 59, 0.5);
-        padding: 10px;
-        border-radius: 15px;
-        gap: 10px;
-        justify-content: center; /* توسيط التبويبات */
-        flex-wrap: wrap;
-    }
-    .stTabs [data-baseweb="tab"] {
-        color: #94a3b8 !important;
-        font-weight: bold;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #2563eb !important;
-        color: white !important;
-        border-radius: 8px;
-    }
-
-    /* ============================================================
-       📱 قواعد الجوال الصارمة (Mobile Strict Rules)
-       ============================================================ */
-    @media only screen and (max-width: 600px) {
-        
-        /* 1. إجبار حاوية الهيرو على الاحتواء الكامل */
-        .hero-container {
-            padding: 20px 10px !important;
-            margin: 0 auto 20px auto !important;
-            width: 95% !important;
-        }
-        
-        /* 2. تصغير العنوان ليتناسب مع عرض الهاتف */
-        .hero-title {
-            font-size: 8vw !important; /* حجم نسبي للعرض */
-            margin-bottom: 10px !important;
-        }
-        
-        /* 3. النصوص الفرعية */
-        .hero-container h3 { font-size: 1.1rem !important; }
-        .hero-container p { font-size: 0.8rem !important; }
-
-        /* 4. تنسيق المقال للقراءة على الهاتف */
-        .article-output {
-            padding: 15px !important;
-            font-size: 1rem !important;
-            border-right: 3px solid #2563eb !important;
-            line-height: 1.6 !important;
-        }
-
-        /* 5. الأزرار */
-        .stButton>button {
-            height: 3.5rem !important;
-            font-size: 1rem !important;
-        }
-
-        /* 6. منع الصور من الخروج عن الشاشة */
-        img { 
-            max-width: 100% !important; 
-            height: auto !important; 
-            margin: 0 auto !important; /* توسيط الصور */
-            display: block !important;
-        }
-        
-        /* 7. تقليل هوامش الصفحة العامة */
-        .block-container {
-            padding-top: 2rem !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
-        }
-    }
-
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -235,13 +221,7 @@ def get_yoast_seo_images(keyword, headline):
         
     try:
         with DDGS() as ddgs:
-            results = ddgs.images(
-                query, 
-                region="wt-wt",
-                safesearch="off", 
-                max_results=3,
-                type_image="photo"
-            )
+            results = ddgs.images(query, region="wt-wt", safesearch="off", max_results=3, type_image="photo")
             return [r['image'] for r in results]
     except: return []
 
@@ -259,14 +239,14 @@ def run_samba_writer(text, keyword):
         response = client.chat.completions.create(
             model='Meta-Llama-3.3-70B-Instruct', 
             messages=[
-                {"role": "system", "content": "محرر صحفي نخبوي - منادجر تك"},
+                {"role": "system", "content": "محرر صحفي نخبوي - الماندجر تك"},
                 {"role": "user", "content": formatted_prompt}
             ],
             temperature=0.4
         )
         
         raw_article = response.choices[0].message.content
-        clean_article = raw_article.replace("منادجر تك:", "").replace("منادجر تك :", "").replace("العنوان:", "").strip()
+        clean_article = raw_article.replace("هاشمي بريس:", "").replace("هاشمي بريس :", "").replace("العنوان:", "").strip()
         return clean_article
 
     except Exception as e: return f"❌ خطأ: {str(e)}"
@@ -277,22 +257,21 @@ def run_samba_writer(text, keyword):
 if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
-    # نستخدم f-string لدمج الشعار (logo_html) داخل واجهة الهيرو
     st.markdown(f"""
         <div class="hero-container">
             {logo_html}
             <h1 class="hero-title">MANAGER TECH</h1>
-            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V28.7</h3>
-            <p style="color: #94a3b8; font-size: 1.1rem;">محرك بـ 200 مصدر • 26 محرك ذكاء اصطناعي • متوافق مع السيو</p>
+            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V34.0</h3>
+            <p style="color: #94a3b8; font-size: 1.2rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
         </div>
     """, unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         with st.form("login_form"):
-            st.markdown("<h3 style='text-align: center; color: #60a5fa;'>🔐 تسجيل الدخول</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center; color: #60a5fa;'>🔐 بوابة الوصول</h3>", unsafe_allow_html=True)
             pwd = st.text_input("مفتاح الترسانة:", type="password")
-            submitted = st.form_submit_button("دخول المنصة 🚀")
+            submitted = st.form_submit_button("اقتحام النظام 🚀")
             if submitted:
                 if pwd == ACCESS_PASSWORD:
                     st.session_state["authenticated"] = True
@@ -304,14 +283,12 @@ if not st.session_state["authenticated"]:
 # ==========================================
 # 4. واجهة النظام الداخلية
 # ==========================================
-# نستخدم replace لتصغير الشعار في الهيدر الداخلي
-mini_logo = logo_html.replace('150px', '50px').replace('display: block;', 'display: inline-block;').replace('margin: 0 auto 15px auto;', 'margin: 0;')
-
+# تصغير الشعار للهيدر الداخلي (يعتمد على CSS للتحكم في الحجم)
 st.markdown(f"""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
         <div style="display: flex; align-items: center; gap: 15px;">
-            {mini_logo}
-            <h2 style="color: #60a5fa; margin: 0;">منادجر تك</h2>
+            {logo_html.replace('class="responsive-logo"', 'style="width: 50px; border-radius: 8px;"')}
+            <h2 style="color: #60a5fa; margin: 0; font-size: 1.5rem;">رادار الماندجر</h2>
         </div>
         <span style="background: #2563eb; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">ONLINE</span>
     </div>
@@ -332,7 +309,7 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
     with tabs[i]:
         col_act1, col_act2 = st.columns([3, 1])
         with col_act2:
-            if st.button(f"🔄 تحديث الأخبار", key=f"up_{i}"):
+            if st.button(f"🔄 تحديث الرادار", key=f"up_{i}"):
                 with st.spinner(f"جاري مسح {cat} بتقنية التوازي..."):
                     all_news = []
                     def fetch_task(name, url):
@@ -351,19 +328,13 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
             news_list = db["data"][cat]
             st.markdown(f"<h4 style='color: #cbd5e1;'>📑 تم رصد {len(news_list)} خبراً في هذا القطاع</h4>", unsafe_allow_html=True)
             
-            selected_idx = st.selectbox(
-                "حدد الهدف للمعالجة:", 
-                range(len(news_list)), 
-                format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}",
-                key=f"sel_{i}"
-            )
-            
-            keyword_input = st.text_input("الكلمة المفتاحية (SEO Strategy):", key=f"kw_{i}", placeholder="اتركها فارغة للتلقائي...")
+            selected_idx = st.selectbox("حدد الهدف:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
+            keyword_input = st.text_input("الكلمة المفتاحية (SEO):", key=f"kw_{i}", placeholder="اتركها فارغة للتلقائي...")
 
-            if st.button("🚀 هندسة المقال بأسلوب صحفي شامل", key=f"run_{i}"):
-                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "منادجر تك"
+            if st.button("🚀 هندسة المقال بأسلوب هاشمي بريس", key=f"run_{i}"):
+                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "هاشمي بريس"
                 
-                with st.spinner("منادجر يحلل البيانات ويصيغ التحفة..."):
+                with st.spinner("الماندجر يحلل البيانات ويصيغ التحفة..."):
                     raw_data = trafilatura.fetch_url(news_list[selected_idx]['link'])
                     main_text = trafilatura.extract(raw_data)
                     
@@ -387,17 +358,33 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
                                 with cols[idx]:
                                     st.image(img_url, use_container_width=True)
                                     st.caption(f"📝 Alt Text: {final_keyword}")
-                        else:
-                            st.warning("لم يتم العثور على صور دقيقة.")
+                        else: st.warning("لم يتم العثور على صور دقيقة.")
                         
-                        st.text_area("نسخة النشر (Raw Text):", article, height=300)
-                    else: st.error("فشل الرادار في سحب النص من المصدر.")
+                        # --- مركز عمليات النشر ---
+                        st.markdown("---")
+                        st.markdown("### 📤 مركز التوزيع الرقمي")
+                        
+                        ac1, ac2, ac3 = st.columns(3)
+                        with ac1:
+                            html_content = f"<h2>{headline}</h2>\n{body.replace(chr(10), '<br>')}"
+                            st.markdown("##### 📝 ووردبريس")
+                            st.code(html_content, language='html')
+                        with ac2:
+                            social_text = f"🔴 {headline}\n\n{body[:500]}...\n\n🔗 لقراءة المزيد: [رابط الموقع]\n#{final_keyword.replace(' ', '_')} #هاشمي_بريس"
+                            st.markdown("##### 📘 فيسبوك")
+                            st.code(social_text, language='text')
+                        with ac3:
+                            whatsapp_msg = urllib.parse.quote(f"🔴 *{headline}*\n\n{body[:200]}...\n\nتابع التفاصيل: [الرابط]")
+                            st.markdown("##### 💬 واتساب")
+                            st.link_button("إرسال عبر WhatsApp 🚀", f"https://wa.me/?text={whatsapp_msg}")
+
+                    else: st.error("فشل الرادار في سحب النص.")
         else:
-            st.info("الرادار خامل. اضغط زر التحديث لتشغيل المجسات.")
+            st.info("الرادار خامل. اضغط زر التحديث.")
 
 st.markdown(f"""
     <div style='text-align: center; color: #475569; margin-top: 50px; border-top: 1px solid #1e293b; padding-top: 20px;'>
-        {mini_logo.replace('50px', '30px')}
+        {logo_html.replace('class="responsive-logo"', 'style="width: 40px; margin-bottom: 5px; border-radius: 5px;"')}
         <br>Developed by Manadger Tech © 2026
     </div>
 """, unsafe_allow_html=True)
