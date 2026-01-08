@@ -266,7 +266,7 @@ def run_samba_writer(text, keyword):
         )
         
         raw_article = response.choices[0].message.content
-        clean_article = raw_article.replace("هاشمي بريس:", "").replace("هاشمي بريس :", "").replace("العنوان:", "").strip()
+        clean_article = raw_article.replace("منادجر تك:", "").replace("منادجر تك :", "").replace("العنوان:", "").strip()
         return clean_article
 
     except Exception as e: return f"❌ خطأ: {str(e)}"
@@ -290,9 +290,9 @@ if not st.session_state["authenticated"]:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         with st.form("login_form"):
-            st.markdown("<h3 style='text-align: center; color: #60a5fa;'>🔐 بوابة الوصول</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center; color: #60a5fa;'>🔐 تسجيل الدخول</h3>", unsafe_allow_html=True)
             pwd = st.text_input("مفتاح الترسانة:", type="password")
-            submitted = st.form_submit_button("اقتحام النظام 🚀")
+            submitted = st.form_submit_button("دخول المنصة 🚀")
             if submitted:
                 if pwd == ACCESS_PASSWORD:
                     st.session_state["authenticated"] = True
@@ -311,7 +311,7 @@ st.markdown(f"""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
         <div style="display: flex; align-items: center; gap: 15px;">
             {mini_logo}
-            <h2 style="color: #60a5fa; margin: 0;">رادار منادجر تك</h2>
+            <h2 style="color: #60a5fa; margin: 0;">منادجر تك</h2>
         </div>
         <span style="background: #2563eb; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">ONLINE</span>
     </div>
@@ -332,7 +332,7 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
     with tabs[i]:
         col_act1, col_act2 = st.columns([3, 1])
         with col_act2:
-            if st.button(f"🔄 تحديث الرادار", key=f"up_{i}"):
+            if st.button(f"🔄 تحديث الأخبار", key=f"up_{i}"):
                 with st.spinner(f"جاري مسح {cat} بتقنية التوازي..."):
                     all_news = []
                     def fetch_task(name, url):
