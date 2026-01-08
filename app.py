@@ -32,20 +32,19 @@ def get_base64_logo():
         with open("logo.png", "rb") as f:
             data = f.read()
         encoded = base64.b64encode(data).decode()
-        # الشعار يأخذ كلاس CSS ليتم التحكم فيه بدقة
         return f'<img src="data:image/png;base64,{encoded}" class="responsive-logo">'
     return ""
 
 logo_html = get_base64_logo()
 
 # ==========================================
-# ⚠️ منطقة التصميم (CSS) - نظام الفصل التام
+# ⚠️ منطقة التصميم (CSS) - إصلاح التوسيط الجذري
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap');
     
-    /* 1. إعدادات عامة (مشتركة) */
+    /* 1. إعدادات عامة */
     [data-testid="stAppViewContainer"] {
         background: radial-gradient(circle at 10% 20%, #020617 0%, #0f172a 90%);
     }
@@ -57,20 +56,21 @@ st.markdown("""
     }
     
     /* ============================================================
-       🖥️ تنسيق الحاسوب (Desktop - Default) - الفخامة والعرض
+       🖥️ تنسيق الحاسوب (Desktop)
        ============================================================ */
     
-    /* الشعار في الحاسوب */
+    /* الشعار */
     .responsive-logo {
-        width: 220px; /* كبير وواضح */
-        margin-bottom: 30px;
+        width: 220px;
+        margin-bottom: 20px;
         border-radius: 15px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        transition: transform 0.3s;
     }
-    .responsive-logo:hover { transform: scale(1.05); }
 
-    /* حاوية الهيرو للحاسوب (عريضة ومريحة) */
+    /* حاوية الهيرو - التوسيط الإجباري */
     .hero-container {
         padding: 80px 40px;
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
@@ -78,31 +78,49 @@ st.markdown("""
         border: 1px solid rgba(59, 130, 246, 0.1);
         box-shadow: 0 20px 60px rgba(0,0,0,0.4);
         margin-bottom: 50px;
-        max-width: 1000px; /* عرض مثالي للشاشات الكبيرة */
-        margin-left: auto;
-        margin-right: auto;
-        text-align: center;
+        max-width: 900px;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        
+        /* خصائص التوسيط الحاسمة */
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
     }
     
-    /* عناوين الحاسوب */
+    /* إجبار النصوص داخل الهيرو على التوسط */
+    .hero-container h1, 
+    .hero-container h3, 
+    .hero-container p,
+    .hero-container div {
+        text-align: center !important;
+        width: 100% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        display: block !important;
+    }
+    
+    /* عنوان الهيرو */
     .hero-title {
         font-size: 5rem !important;
         font-weight: 900 !important;
         background: linear-gradient(to right, #60a5fa, #3b82f6);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent !important;
-        margin-bottom: 20px;
+        margin-bottom: 10px !important;
         letter-spacing: -2px;
     }
     
-    /* ورقة المقال للحاسوب (تشبه A4) */
+    /* ورقة المقال */
     .article-output {
         background-color: #ffffff !important;
-        padding: 60px; /* حواشي كبيرة للقراءة المريحة */
+        padding: 60px;
         border-radius: 20px;
         border-right: 10px solid #2563eb;
         line-height: 2.6;
-        font-size: 1.4rem; /* خط كبير ومريح */
+        font-size: 1.4rem;
         box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         margin-top: 40px;
         max-width: 900px;
@@ -110,7 +128,7 @@ st.markdown("""
         margin-right: auto;
     }
     
-    /* الأزرار في الحاسوب */
+    /* الأزرار */
     .stButton>button {
         height: 4.5rem;
         font-size: 1.3rem !important;
@@ -126,42 +144,41 @@ st.markdown("""
     }
 
     /* ============================================================
-       📱 تنسيق الجوال (Mobile Only) - التراص والسرعة
+       📱 تنسيق الجوال (Mobile)
        ============================================================ */
     @media only screen and (max-width: 768px) {
         
-        /* الشعار في الجوال */
         .responsive-logo {
-            width: 140px; /* أصغر لعدم أخذ مساحة */
+            width: 140px;
             margin-bottom: 15px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
         }
 
-        /* حاوية الهيرو للجوال (مضغوطة) */
         .hero-container {
-            padding: 30px 15px;
+            padding: 40px 15px; /* زيادة المساحة قليلاً للتنفس */
             margin-bottom: 20px;
             width: 100% !important;
             border-radius: 15px;
-            background: rgba(30, 41, 59, 0.8); /* خلفية أغمق لتباين أفضل */
+            background: rgba(30, 41, 59, 0.8);
         }
         
-        /* عناوين الجوال */
         .hero-title {
             font-size: 2.5rem !important;
-            margin-bottom: 10px;
+            margin-bottom: 10px !important;
             line-height: 1.2;
         }
         
-        /* النصوص الفرعية */
-        .hero-container h3 { font-size: 1.1rem !important; }
-        .hero-container p { font-size: 0.9rem !important; }
+        /* إجبار النصوص الفرعية في الجوال على التوسط */
+        .hero-container h3 { 
+            font-size: 1.1rem !important; 
+            margin-bottom: 5px !important;
+        }
+        .hero-container p { 
+            font-size: 0.9rem !important; 
+            line-height: 1.6 !important;
+        }
 
-        /* ورقة المقال للجوال (تستغل كامل العرض) */
         .article-output {
-            padding: 25px 15px !important; /* حواشي أقل */
+            padding: 25px 15px !important;
             font-size: 1.1rem !important;
             border-radius: 10px;
             border-right: 5px solid #2563eb;
@@ -169,22 +186,13 @@ st.markdown("""
             width: 100% !important;
         }
 
-        /* الأزرار للجوال */
         .stButton>button {
             height: 3.5rem !important;
             font-size: 1rem !important;
             margin-bottom: 10px;
         }
         
-        /* الصور */
-        img { 
-            max-width: 100% !important; 
-            height: auto !important; 
-            display: block; 
-            margin: 0 auto; 
-        }
-        
-        /* تصحيح هوامش الصفحة في الجوال */
+        /* ضبط الهوامش العامة للجوال */
         .block-container {
             padding-top: 1rem !important;
             padding-left: 0.5rem !important;
@@ -192,7 +200,7 @@ st.markdown("""
         }
     }
 
-    /* إصلاح ألوان المدخلات (مشترك) */
+    /* إصلاح المدخلات */
     .stTextInput input, .stSelectbox div[data-baseweb="select"] div {
         background-color: #1e293b !important;
         color: #ffffff !important;
@@ -201,7 +209,7 @@ st.markdown("""
     }
     .article-output, .article-output p, .article-output div {
         color: #1e293b !important; 
-        text-align: justify;
+        text-align: justify; /* المقال يبقى مضبوطاً (Justify) للقراءة */
     }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -252,17 +260,18 @@ def run_samba_writer(text, keyword):
     except Exception as e: return f"❌ خطأ: {str(e)}"
 
 # ==========================================
-# 3. واجهة الدخول
+# 3. واجهة الدخول (Hero Login)
 # ==========================================
 if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
+    # نستخدم الحاوية مع النصوص الموجهة للتوسط
     st.markdown(f"""
         <div class="hero-container">
             {logo_html}
             <h1 class="hero-title">MANAGER TECH</h1>
-            <h3 style="color: #e2e8f0;">نظام السيادة المعلوماتية | V34.0</h3>
-            <p style="color: #94a3b8; font-size: 1.2rem;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
+            <h3 style="color: #e2e8f0; margin-bottom: 10px;">نظام السيادة المعلوماتية | V34.1</h3>
+            <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -283,7 +292,6 @@ if not st.session_state["authenticated"]:
 # ==========================================
 # 4. واجهة النظام الداخلية
 # ==========================================
-# تصغير الشعار للهيدر الداخلي (يعتمد على CSS للتحكم في الحجم)
 st.markdown(f"""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
         <div style="display: flex; align-items: center; gap: 15px;">
