@@ -237,7 +237,7 @@ def run_samba_writer(text, keyword):
         )
         
         raw_article = response.choices[0].message.content
-        clean_article = raw_article.replace("هاشمي بريس:", "").replace("هاشمي بريس :", "").replace("العنوان:", "").strip()
+        clean_article = raw_article.replace(":", "").replace(" :", "").replace("العنوان:", "").strip()
         return clean_article
 
     except Exception as e: return f"❌ خطأ: {str(e)}"
@@ -321,8 +321,8 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
             selected_idx = st.selectbox("حدد الهدف:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
             keyword_input = st.text_input("الكلمة المفتاحية (SEO):", key=f"kw_{i}", placeholder="اتركها فارغة للتلقائي...")
 
-            if st.button("🚀 هندسة المقال بأسلوب هاشمي بريس", key=f"run_{i}"):
-                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "هاشمي بريس"
+            if st.button("🚀 هندسة المقال بأسلوب صجفي احترافي", key=f"run_{i}"):
+                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else ""
                 
                 with st.spinner("الماندجر يحلل البيانات ويصيغ التحفة..."):
                     raw_data = trafilatura.fetch_url(news_list[selected_idx]['link'])
