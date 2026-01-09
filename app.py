@@ -8,7 +8,8 @@ import concurrent.futures
 import base64
 import urllib.parse
 from openai import OpenAI
-from duckduckgo_search import DDGS
+# تم إزالة مكتبة البحث عن الصور لأننا لم نعد نحتاجها
+# from duckduckgo_search import DDGS 
 
 # استيراد الترسانة
 try:
@@ -24,7 +25,7 @@ ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
 socket.setdefaulttimeout(40)
 
-st.set_page_config(page_title="منادجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
 
 # دالة الشعار
 def get_base64_logo():
@@ -38,7 +39,7 @@ def get_base64_logo():
 logo_html = get_base64_logo()
 
 # ==========================================
-# ⚠️ منطقة التصميم (CSS) - إصلاح التوسيط الجذري
+# ⚠️ منطقة التصميم (CSS) - نفس النسخة V34.1
 # ==========================================
 st.markdown("""
 <style>
@@ -82,7 +83,6 @@ st.markdown("""
         margin-left: auto !important;
         margin-right: auto !important;
         
-        /* خصائص التوسيط الحاسمة */
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
@@ -154,7 +154,7 @@ st.markdown("""
         }
 
         .hero-container {
-            padding: 40px 15px; /* زيادة المساحة قليلاً للتنفس */
+            padding: 40px 15px;
             margin-bottom: 20px;
             width: 100% !important;
             border-radius: 15px;
@@ -167,7 +167,6 @@ st.markdown("""
             line-height: 1.2;
         }
         
-        /* إجبار النصوص الفرعية في الجوال على التوسط */
         .hero-container h3 { 
             font-size: 1.1rem !important; 
             margin-bottom: 5px !important;
@@ -192,7 +191,6 @@ st.markdown("""
             margin-bottom: 10px;
         }
         
-        /* ضبط الهوامش العامة للجوال */
         .block-container {
             padding-top: 1rem !important;
             padding-left: 0.5rem !important;
@@ -209,7 +207,7 @@ st.markdown("""
     }
     .article-output, .article-output p, .article-output div {
         color: #1e293b !important; 
-        text-align: justify; /* المقال يبقى مضبوطاً (Justify) للقراءة */
+        text-align: justify;
     }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -217,21 +215,6 @@ st.markdown("""
 
 </style>
 """, unsafe_allow_html=True)
-
-# ==========================================
-# 1. محرك الصور (Yoast SEO)
-# ==========================================
-def get_yoast_seo_images(keyword, headline):
-    if keyword and len(keyword) > 2 and "منادجر تك" not in keyword:
-        query = keyword
-    else:
-        query = " ".join(headline.split()[:5])
-        
-    try:
-        with DDGS() as ddgs:
-            results = ddgs.images(query, region="wt-wt", safesearch="off", max_results=3, type_image="photo")
-            return [r['image'] for r in results]
-    except: return []
 
 # ==========================================
 # 2. محرك الصياغة
@@ -247,14 +230,14 @@ def run_samba_writer(text, keyword):
         response = client.chat.completions.create(
             model='Meta-Llama-3.3-70B-Instruct', 
             messages=[
-                {"role": "system", "content": "محرر صحفي نخبوي - منادجر تك"},
+                {"role": "system", "content": "محرر صحفي نخبوي - الماندجر تك"},
                 {"role": "user", "content": formatted_prompt}
             ],
             temperature=0.4
         )
         
         raw_article = response.choices[0].message.content
-        clean_article = raw_article.replace("منادجر تك:", "").replace("منادجر تك :", "").replace("العنوان:", "").strip()
+        clean_article = raw_article.replace("هاشمي بريس:", "").replace("هاشمي بريس :", "").replace("العنوان:", "").strip()
         return clean_article
 
     except Exception as e: return f"❌ خطأ: {str(e)}"
@@ -265,12 +248,11 @@ def run_samba_writer(text, keyword):
 if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
-    # نستخدم الحاوية مع النصوص الموجهة للتوسط
     st.markdown(f"""
         <div class="hero-container">
             {logo_html}
             <h1 class="hero-title">MANAGER TECH</h1>
-            <h3 style="color: #e2e8f0; margin-bottom: 10px;">نظام السيادة المعلوماتية | V34.1</h3>
+            <h3 style="color: #e2e8f0; margin-bottom: 10px;">نظام السيادة المعلوماتية | V35.0</h3>
             <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
         </div>
     """, unsafe_allow_html=True)
@@ -278,7 +260,7 @@ if not st.session_state["authenticated"]:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         with st.form("login_form"):
-            st.markdown("<h3 style='text-align: center; color: #60a5fa;'>🔐 بوابة الوصول</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center; color: #60a5fa;'>🔐 تسجيل الدخول</h3>", unsafe_allow_html=True)
             pwd = st.text_input("مفتاح الترسانة:", type="password")
             submitted = st.form_submit_button("اقتحام النظام 🚀")
             if submitted:
@@ -296,7 +278,7 @@ st.markdown(f"""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
         <div style="display: flex; align-items: center; gap: 15px;">
             {logo_html.replace('class="responsive-logo"', 'style="width: 50px; border-radius: 8px;"')}
-            <h2 style="color: #60a5fa; margin: 0; font-size: 1.5rem;">سكربت ناشر للصحفيين و المراسلين</h2>
+            <h2 style="color: #60a5fa; margin: 0; font-size: 1.5rem;">رادار الماندجر</h2>
         </div>
         <span style="background: #2563eb; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">ONLINE</span>
     </div>
@@ -339,10 +321,10 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
             selected_idx = st.selectbox("حدد الهدف:", range(len(news_list)), format_func=lambda x: f"[{news_list[x]['source']}] {news_list[x]['title']}", key=f"sel_{i}")
             keyword_input = st.text_input("الكلمة المفتاحية (SEO):", key=f"kw_{i}", placeholder="اتركها فارغة للتلقائي...")
 
-            if st.button("🚀 اعادة الصياغة مع تعزيز السيو", key=f"run_{i}"):
-                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "منادجر تك"
+            if st.button("🚀 هندسة المقال بأسلوب هاشمي بريس", key=f"run_{i}"):
+                final_keyword = keyword_input.strip() if keyword_input.strip() != "" else "هاشمي بريس"
                 
-                with st.spinner("منادجر يحلل البيانات ويصيغ التحفة..."):
+                with st.spinner("الماندجر يحلل البيانات ويصيغ التحفة..."):
                     raw_data = trafilatura.fetch_url(news_list[selected_idx]['link'])
                     main_text = trafilatura.extract(raw_data)
                     
@@ -356,17 +338,6 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
                         st.markdown("---")
                         st.markdown(f"<h1 style='color: #3b82f6; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(59,130,246,0.5);'>{headline}</h1>", unsafe_allow_html=True)
                         st.markdown(f"<div class='article-output'>{body}</div>", unsafe_allow_html=True)
-                        
-                        st.markdown("<br><h3>🖼️ وسائط متوافقة مع Yoast SEO</h3>", unsafe_allow_html=True)
-                        images = get_yoast_seo_images(final_keyword, headline)
-                        
-                        if images:
-                            cols = st.columns(len(images))
-                            for idx, img_url in enumerate(images):
-                                with cols[idx]:
-                                    st.image(img_url, use_container_width=True)
-                                    st.caption(f"📝 Alt Text: {final_keyword}")
-                        else: st.warning("لم يتم العثور على صور دقيقة.")
                         
                         # --- مركز عمليات النشر ---
                         st.markdown("---")
