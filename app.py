@@ -25,7 +25,7 @@ ACCESS_PASSWORD = "Manager_Tech_2026"
 DB_FILE = "news_db_v27.json"
 socket.setdefaulttimeout(40)
 
-st.set_page_config(page_title="الماندجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="منادجر تك | منصة السيادة", page_icon="🛡️", layout="wide")
 
 # دالة الشعار
 def get_base64_logo():
@@ -230,7 +230,7 @@ def run_samba_writer(text, keyword):
         response = client.chat.completions.create(
             model='Meta-Llama-3.3-70B-Instruct', 
             messages=[
-                {"role": "system", "content": "محرر صحفي نخبوي - الماندجر تك"},
+                {"role": "system", "content": "محرر صحفي نخبوي - منادجر تك"},
                 {"role": "user", "content": formatted_prompt}
             ],
             temperature=0.4
@@ -251,7 +251,7 @@ if not st.session_state["authenticated"]:
     st.markdown(f"""
         <div class="hero-container">
             {logo_html}
-            <h1 class="hero-title">MANAGER TECH</h1>
+            <h1 class="hero-title">MANADGER TECH</h1>
             <h3 style="color: #e2e8f0; margin-bottom: 10px;">نظام السيادة المعلوماتية | V35.0</h3>
             <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">رادار بـ 200 مصدر • 26 محرك ذكاء اصطناعي • صياغة نخبوية</p>
         </div>
