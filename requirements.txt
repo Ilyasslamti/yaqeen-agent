@@ -1,7 +1,12 @@
 streamlit
-groq
+feedparser
+trafilatura
+openai
+pandas
+streamlit
+openai
 feedparser
 trafilatura
 requests
-beautifulsoup4
 lxml_html_clean
+duckduckgo_search
