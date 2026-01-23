@@ -20,7 +20,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# محاولة استيراد المكتبة الخاصة
+# التحقق من المكتبة
 try:
     from manadger_lib import RSS_DATABASE, get_safe_key, ELITE_PROMPT
 except ImportError:
@@ -35,114 +35,121 @@ socket.setdefaulttimeout(25)
 if 'page' not in st.session_state: st.session_state.page = 'login'
 
 # ==========================================
-# 1. محرك التصميم (CSS Fix) - إصلاح الخطوط والهيدر
+# 1. محرك التصميم (CSS عالي الوضوح)
 # ==========================================
-def inject_newsroom_css():
+def inject_high_contrast_css():
     st.markdown("""
     <style>
-        /* استيراد الخط بقوة */
-        @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&display=swap');
         
-        /* تطبيق الخط على كل عنصر في الصفحة بالقوة الجبرية */
-        html, body, [class*="css"], div, h1, h2, h3, p, span, button, input {
+        /* تطبيق الخط والاتجاه */
+        html, body, [class*="css"], div, h1, h2, h3, h4, p, span, button, input, textarea {
             font-family: 'Almarai', sans-serif !important;
             direction: rtl;
         }
         
-        /* لون الخلفية مثل المواقع الإخبارية */
-        .stApp {
-            background-color: #f0f2f5;
-        }
+        /* خلفية الصفحة */
+        .stApp { background-color: #f4f6f9; }
         
-        /* إخفاء الهيدر الافتراضي المزعج */
+        /* إخفاء هيدر ستريم ليت */
         header { visibility: hidden; }
         
-        /* تصميم الهيدر الجديد (الأزرق الداكن) */
+        /* === 1. تحسين العناوين والنصوص === */
+        /* جعل العناوين الفرعية داكنة جداً وواضحة */
+        h1, h2, h3, .stSubheader {
+            color: #002b50 !important; /* أزرق داكن جداً */
+            font-weight: 900 !important;
+            text-shadow: none !important;
+        }
+        
+        p, div, span, label {
+            color: #111111 !important; /* أسود حالك للنصوص */
+        }
+        
+        /* === 2. الهيدر الأزرق === */
         .news-header {
-            background: linear-gradient(90deg, #003057 0%, #005090 100%);
-            padding: 1.5rem 2rem;
-            color: white;
-            border-bottom: 5px solid #bfa058; /* الخط الذهبي */
+            background: linear-gradient(90deg, #003057 0%, #004070 100%);
+            padding: 1.5rem;
+            color: white !important;
+            border-bottom: 5px solid #bfa058;
             border-radius: 0 0 15px 15px;
             margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
-        /* شريط عاجل (الأحمر) */
+        .news-header h1, .news-header div { color: white !important; }
+
+        /* === 3. شريط عاجل === */
         .breaking-bar {
-            background-color: #d93025;
-            color: white;
-            padding: 12px;
+            background-color: #d32f2f;
+            color: white !important;
+            padding: 10px 15px;
             border-radius: 6px;
             font-weight: bold;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        
-        /* تحسين البطاقات */
-        div[data-testid="stExpander"] {
+        .breaking-bar span { color: white !important; }
+
+        /* === 4. تحسين البطاقات (Cards) === */
+        div[data-testid="stExpander"], div[data-testid="stVerticalBlockBorderWrapper"] {
             background: white;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #d1d5db; /* حدود رمادية واضحة */
             border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
-        /* الأزرار الاحترافية */
+        /* === 5. الأزرار === */
         .stButton>button {
             background-color: #003057;
-            color: white;
+            color: white !important;
+            font-weight: bold;
             border-radius: 6px;
             height: 3rem;
-            font-weight: bold;
             border: none;
-            transition: 0.3s;
+            transition: 0.2s;
         }
         .stButton>button:hover {
             background-color: #bfa058;
-            color: white;
-            transform: translateY(-2px);
+            color: black !important;
         }
 
         /* إصلاحات الموبايل */
         @media only screen and (max-width: 600px) {
-            .news-header { flex-direction: column; text-align: center; gap: 10px; padding: 1rem; }
+            .news-header { flex-direction: column; text-align: center; gap: 10px; }
             .block-container { padding-top: 1rem !important; }
-            h1 { font-size: 1.4rem !important; }
         }
     </style>
     """, unsafe_allow_html=True)
 
-inject_newsroom_css()
+inject_high_contrast_css()
 
 # ==========================================
-# 2. دوال العرض والمنطق
+# 2. دوال النظام
 # ==========================================
 
-# دالة الهيدر (تم إصلاح خطأ الـ div الظاهر)
 def render_header():
     date_str = time.strftime("%A | %d-%m-%Y")
-    
-    html_code = f"""
+    # تم إضافة !important للألوان لضمان ظهورها
+    html = f"""
     <div class="news-header">
         <div style="display: flex; flex-direction: column;">
-            <h1 style="color: white !important; margin: 0; font-size: 2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">يقين بريس</h1>
-            <span style="font-size: 0.9rem; opacity: 0.9; letter-spacing: 1px;">Sovereignty Platform</span>
+            <h1 style="color: white !important; margin: 0; font-size: 1.8rem;">يقين بريس</h1>
+            <span style="font-size: 0.9rem; opacity: 0.9; color: #e0e0e0 !important;">Sovereignty Platform</span>
         </div>
         <div style="text-align: left;">
-            <div style="font-weight: bold; font-size: 1.2rem; color: #bfa058;">{date_str}</div>
-            <div style="background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; display: inline-block; margin-top: 5px; font-size: 0.8rem;">
-                🔴 Live Coverage
+            <div style="font-weight: bold; font-size: 1.1rem; color: #bfa058 !important;">{date_str}</div>
+            <div style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; display: inline-block; margin-top: 5px; color: white !important;">
+                🔴 Live
             </div>
         </div>
     </div>
     """
-    # الحل الجذري هنا: unsafe_allow_html=True
-    st.markdown(html_code, unsafe_allow_html=True)
+    st.markdown(html, unsafe_allow_html=True)
 
 @st.cache_data(ttl=900, show_spinner=False)
 def scan_news_sector(category, sources):
@@ -199,36 +206,29 @@ def smart_editor_ai(link, keyword):
 # 3. واجهة التطبيق
 # ==========================================
 
-# --- صفحة تسجيل الدخول ---
 if st.session_state.page == 'login':
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown("<br><br><h2 style='text-align:center; color:#003057;'>بوابة يقين بريس</h2>", unsafe_allow_html=True)
+        st.markdown("<br><br><h2 style='text-align:center; color:#003057 !important;'>بوابة يقين بريس</h2>", unsafe_allow_html=True)
         with st.form("login_frm"):
             pwd = st.text_input("كود الدخول:", type="password")
             if st.form_submit_button("تسجيل الدخول", use_container_width=True):
-                # يمكنك استبدال هذا لاحقاً بـ st.secrets
                 if pwd == "Manager_Tech_2026":
                     st.session_state.page = 'newsroom'
                     st.rerun()
                 else:
                     st.error("خطأ في الكود")
 
-# --- غرفة الأخبار ---
 elif st.session_state.page == 'newsroom':
-    
-    # 1. عرض الهيدر (بالطريقة الصحيحة)
     render_header()
     
-    # 2. القائمة الجانبية
     with st.sidebar:
-        # إصلاح مشكلة الشعار (استخدام if العادية)
         if os.path.exists("logo.png"):
             st.image("logo.png", width=120)
         else:
             st.markdown("### 🦅 Yaqeen")
         
-        st.markdown("### 🎛️ التحكم")
+        st.markdown("<h3 style='color:#003057; border-bottom: 2px solid #bfa058;'>🎛️ التحكم</h3>", unsafe_allow_html=True)
         selected_cat = st.radio("الأقسام:", list(RSS_DATABASE.keys()))
         st.divider()
         keyword_input = st.text_input("SEO Keyword:", "يقين بريس")
@@ -236,12 +236,10 @@ elif st.session_state.page == 'newsroom':
         if st.button("تحديث 🔄"):
             st.cache_data.clear()
             st.rerun()
-            
         if st.button("خروج 🔒"):
             st.session_state.page = 'login'
             st.rerun()
 
-    # 3. شريط عاجل
     st.markdown(f"""
     <div class="breaking-bar">
         <span style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px; margin-left:10px;">عاجل</span>
@@ -249,26 +247,33 @@ elif st.session_state.page == 'newsroom':
     </div>
     """, unsafe_allow_html=True)
 
-    # 4. المحتوى الرئيسي
-    with st.spinner("جاري الاتصال بالمراسلين (جلب الأخبار)..."):
+    with st.spinner("جاري جلب الأخبار..."):
         news_list = scan_news_sector(selected_cat, RSS_DATABASE[selected_cat])
 
     if news_list:
-        # تقسيم الشاشة
-        col_list, col_editor = st.columns([1, 2])
-        
+        col_list, col_editor = st.columns([1, 2], gap="medium")
         news_map = {f"{item['source']} - {item['title']}": item for item in news_list}
         
-        # العمود الأيمن: القائمة
         with col_list:
-            st.subheader("📌 شريط الأنباء")
+            # عنوان واضح وداكن
+            st.markdown("<h3 style='color: #003057; border-right: 5px solid #003057; padding-right: 10px;'>📌 شريط الأنباء</h3>", unsafe_allow_html=True)
+            
             selected_key = st.selectbox("اختر الخبر:", list(news_map.keys()), label_visibility="collapsed")
             target_news = news_map[selected_key]
             
+            # بطاقة الخبر المحدد (High Visibility)
             with st.container(border=True):
-                st.markdown(f"**{target_news['title']}**")
-                st.caption(f"المصدر: {target_news['source']} | {target_news['published']}")
-                st.markdown(f"[رابط المصدر]({target_news['link']})")
+                # عنوان الخبر باللون الأحمر الداكن للتمييز
+                st.markdown(f"<h4 style='color: #d32f2f; margin-top:0;'>{target_news['title']}</h4>", unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div style='font-size: 0.9rem; margin-top: 10px;'>
+                    <b>المصدر:</b> {target_news['source']}<br>
+                    <b>التوقيت:</b> {target_news['published']}
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"<a href='{target_news['link']}' target='_blank' style='display:block; margin-top:10px; color:#003057; font-weight:bold;'>🔗 قراءة المصدر الأصلي</a>", unsafe_allow_html=True)
                 
             if st.button("✨ تحرير هذا الخبر", use_container_width=True):
                 content, error = smart_editor_ai(target_news['link'], keyword_input)
@@ -277,9 +282,9 @@ elif st.session_state.page == 'newsroom':
                 else:
                     st.session_state['current_article'] = content
 
-        # العمود الأيسر: المحرر
         with col_editor:
-            st.subheader("📝 المحرر الصحفي")
+            # عنوان واضح وداكن
+            st.markdown("<h3 style='color: #003057; border-right: 5px solid #bfa058; padding-right: 10px;'>📝 المحرر الصحفي</h3>", unsafe_allow_html=True)
             
             if 'current_article' in st.session_state:
                 raw_txt = st.session_state['current_article']
@@ -292,7 +297,7 @@ elif st.session_state.page == 'newsroom':
                     st.text_area("نص المقال:", value=final_body, height=600)
                     st.success("جاهز للنشر")
             else:
-                st.info("اختر خبراً من القائمة واضغط 'تحرير' لبدء العمل.")
+                st.info("👈 اختر خبراً من القائمة على اليمين ثم اضغط 'تحرير' لبدء العمل.")
 
     else:
         st.warning("لا توجد أخبار متاحة حالياً.")
