@@ -10,277 +10,305 @@ from openai import OpenAI
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
-# محاولة استيراد المكتبة الخاصة مع حماية النظام
-try:
-    from manadger_lib import RSS_DATABASE, get_safe_key, ELITE_PROMPT
-except ImportError:
-    st.error("❌ ملف الترسانة (manadger_lib.py) مفقود. النظام لا يعمل بدونه.")
-    st.stop()
-
 # ==========================================
-# 0. إعدادات السيادة (Configuration)
+# 0. الإعدادات والتهيئة (Setup)
 # ==========================================
 st.set_page_config(
-    page_title="Yaqeen OS | غرفة العمليات",
-    page_icon="🦅",
+    page_title="Yaqeen Press | غرفة الأخبار",
+    page_icon="📰",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# تهيئة الشبكة
+# التحقق من المكتبة الخاصة
+try:
+    from manadger_lib import RSS_DATABASE, get_safe_key, ELITE_PROMPT
+except ImportError:
+    st.error("❌ ملف manadger_lib.py مفقود.")
+    st.stop()
+
+# إعدادات الشبكة
 ua = UserAgent()
 socket.setdefaulttimeout(25)
 
-# إدارة الحالة (Session State) للتنقل السلس
+# إدارة الحالة
 if 'page' not in st.session_state: st.session_state.page = 'login'
-if 'logs' not in st.session_state: st.session_state.logs = []
 
 # ==========================================
-# 1. المحرك البصري (Advanced CSS)
+# 1. محرك التصميم "الجزيرة ستايل" (Newsroom CSS)
 # ==========================================
-def inject_custom_css():
+def inject_newsroom_css():
     st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap');
         
-        /* الخلفية العامة: تدرج لوني عميق */
+        /* === 1. الهيكل العام والألوان === */
         .stApp {
-            background: radial-gradient(circle at 10% 20%, #0f172a 0%, #020617 90%);
-            font-family: 'Cairo', sans-serif !important;
+            background-color: #f4f6f8; /* رمادي فاتح جداً مريح للعين */
+            font-family: 'Almarai', sans-serif !important;
             direction: rtl;
         }
+        
+        /* === 2. الهيدر (Header) === */
+        header { visibility: hidden; } /* إخفاء هيدر ستريم ليت الافتراضي */
+        
+        .news-header {
+            background: #003057; /* أزرق الجزيرة الداكن */
+            padding: 15px 20px;
+            color: white;
+            border-bottom: 4px solid #bfa058; /* الخط الذهبي المميز */
+            margin-bottom: 20px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify_content: space-between;
+        }
 
-        /* الكروت الزجاجية (Glassmorphism) */
-        .css-1r6slb0, .stMarkdown, .stButton {
-            color: #e2e8f0;
+        /* === 3. شريط عاجل (Breaking News) === */
+        .breaking-news {
+            background-color: #c00; /* أحمر الأخبار العاجلة */
+            color: white;
+            padding: 8px 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .breaking-label {
+            background: rgba(0,0,0,0.2);
+            padding: 2px 8px;
+            margin-left: 10px;
+            border-radius: 3px;
+        }
+
+        /* === 4. بطاقات الأخبار (News Cards) === */
+        div[data-testid="stExpander"] {
+            background-color: #ffffff;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+        }
+        div[data-testid="stExpander"] p {
+            color: #333333;
         }
         
-        div[data-testid="stExpander"] {
-            background: rgba(30, 41, 59, 0.4);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        /* العناوين */
+        /* العناوين داخل التطبيق */
         h1, h2, h3 {
-            background: linear-gradient(to left, #60a5fa, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 900 !important;
+            color: #003057 !important;
+            font-weight: 800 !important;
         }
 
-        /* الأزرار الاحترافية */
+        /* === 5. القائمة الجانبية (Sidebar) === */
+        section[data-testid="stSidebar"] {
+            background-color: #ffffff;
+            border-left: 1px solid #e1e4e8;
+        }
+        
+        /* === 6. الأزرار (Buttons) === */
         .stButton>button {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            border: none;
+            background-color: #004d99; /* أزرق مؤسساتي */
             color: white;
-            padding: 0.6rem 1rem;
-            border-radius: 8px;
+            border: none;
+            border-radius: 4px;
+            height: 45px;
             font-weight: bold;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+            transition: background 0.3s;
         }
         .stButton>button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.23);
+            background-color: #003057;
         }
 
-        /* تحسينات الموبايل الصارمة */
+        /* تحسينات الموبايل */
         @media only screen and (max-width: 600px) {
-            .block-container { padding: 1rem 0.5rem !important; }
-            h1 { font-size: 1.8rem !important; }
-            .stButton>button { width: 100%; height: 3.5rem; font-size: 1.1rem; }
-            /* إخفاء الهوامش الزائدة */
-            div[data-testid="stSidebarUserContent"] { padding-top: 1rem; }
+            .news-header { flex-direction: column; text-align: center; }
+            h1 { font-size: 1.5rem !important; }
         }
     </style>
     """, unsafe_allow_html=True)
 
-inject_custom_css()
+inject_newsroom_css()
 
 # ==========================================
-# 2. الترسانة التقنية (Backend Logic)
+# 2. الترسانة البرمجية (Logic)
 # ==========================================
 
 @st.cache_data(ttl=3600)
-def get_logo_html():
-    """جلب الشعار مع معالجة غيابه بأناقة"""
-    if os.path.exists("logo.png"):
-        with open("logo.png", "rb") as f:
-            encoded = base64.b64encode(f.read()).decode()
-        return f'<img src="data:image/png;base64,{encoded}" style="width: 140px; display: block; margin: 0 auto 20px auto; filter: drop-shadow(0 0 10px rgba(59,130,246,0.5));">'
-    return "<h2 style='text-align:center'>🦅 YAQEEN</h2>"
+def get_header_html():
+    """رأس الصفحة بتصميم القناة الإخبارية"""
+    # يمكنك وضع رابط الشعار الخاص بك هنا مكان النص
+    logo_area = """
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <h2 style="color: white !important; margin: 0; letter-spacing: 1px;">يقين بريس</h2>
+        <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; font-size: 0.8rem; border-radius: 4px;">Live Coverage</span>
+    </div>
+    """
+    
+    return f"""
+    <div class="news-header">
+        {logo_area}
+        <div style="font-size: 0.9rem; opacity: 0.9;">{time.strftime("%A, %d %B %Y")}</div>
+    </div>
+    """
 
 @st.cache_data(ttl=900, show_spinner=False)
-def scan_radar(category, sources):
-    """محرك المسح الراداري المتوازي"""
+def scan_news_sector(category, sources):
     items = []
-    def scan_single(name, url):
+    def fetch(name, url):
         try:
             feed = feedparser.parse(url, agent=ua.random)
             if not feed.entries: return []
             return [{
                 "title": e.title, "link": e.link, "source": name,
-                "published": e.get('published', 'N/A')
+                "published": e.get('published', '')[:16] # تقصير التاريخ
             } for e in feed.entries[:5]]
         except: return []
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as exc:
-        futures = {exc.submit(scan_single, n, u): n for n, u in sources.items()}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as ex:
+        futures = {ex.submit(fetch, n, u): n for n, u in sources.items()}
         for f in concurrent.futures.as_completed(futures):
             res = f.result()
             if res: items.extend(res)
     return items
 
-def ai_engine_core(link, keyword):
-    """نواة الذكاء الاصطناعي مع محاكاة سجل العمليات"""
-    log_container = st.empty()
-    
+def smart_editor_ai(link, keyword):
     try:
-        # 1. الاختراق (Screapping)
-        log_container.code(f"📡 Establishing connection to: {link[:30]}...", language="bash")
-        downloaded = trafilatura.fetch_url(link)
-        if not downloaded: raise Exception("Connection Refused / Protected")
-        
-        # 2. الاستخراج (Extraction)
-        log_container.code("🔓 Decrypting content structure...", language="bash")
-        raw_text = trafilatura.extract(downloaded, include_comments=False)
-        if not raw_text or len(raw_text) < 100: raise Exception("Content Empty")
-        
-        # 3. التنظيف (Sanitization)
-        log_container.code("🧹 Sanitizing noise and ads...", language="bash")
-        soup = BeautifulSoup(raw_text, "html.parser")
-        clean_text = soup.get_text()[:5000]
-        
-        # 4. المعالجة (Processing)
-        log_container.code("🧠 Injecting AI Prompt Vectors...", language="bash")
-        api_key = get_safe_key()
-        if not api_key: raise Exception("API Key Depleted")
-        
-        client = OpenAI(api_key=api_key, base_url="https://api.sambanova.ai/v1")
-        response = client.chat.completions.create(
-            model='Meta-Llama-3.3-70B-Instruct',
-            messages=[
-                {"role": "system", "content": "You are a specialized elite editor for 'Yaqeen Press'."},
-                {"role": "user", "content": ELITE_PROMPT.format(keyword=keyword) + f"\n\nSOURCE:\n{clean_text}"}
-            ],
-            temperature=0.35
-        )
-        
-        log_container.empty() # تنظيف السجلات عند النجاح
-        return response.choices[0].message.content, None
-        
+        # محاكاة التحميل الاحترافي
+        with st.status("جاري الاتصال بغرفة التحرير...", expanded=True) as status:
+            status.write("📡 استقبال إشارة المصدر...")
+            downloaded = trafilatura.fetch_url(link)
+            if not downloaded: raise Exception("المصدر محمي أو غير متاح")
+            
+            status.write("📝 استخراج النص وتنقيحه...")
+            raw = trafilatura.extract(downloaded)
+            if not raw: raise Exception("النص فارغ")
+            
+            soup = BeautifulSoup(raw, "html.parser")
+            clean_text = soup.get_text()[:4000]
+            
+            status.write("🧠 صياغة الخبر بأسلوب يقين بريس...")
+            api_key = get_safe_key()
+            if not api_key: raise Exception("مفتاح API مفقود")
+            
+            client = OpenAI(api_key=api_key, base_url="https://api.sambanova.ai/v1")
+            response = client.chat.completions.create(
+                model='Meta-Llama-3.3-70B-Instruct',
+                messages=[
+                    {"role": "system", "content": "أنت محرر صحفي أول في قناة إخبارية كبرى. اكتب الخبر بمهنية عالية، لغة عربية فصحى قوية، وموضوعية تامة."},
+                    {"role": "user", "content": ELITE_PROMPT.format(keyword=keyword) + f"\n\nالنص:\n{clean_text}"}
+                ],
+                temperature=0.3
+            )
+            status.update(label="✅ تمت العملية بنجاح", state="complete", expanded=False)
+            return response.choices[0].message.content, None
     except Exception as e:
-        log_container.empty()
         return None, str(e)
 
 # ==========================================
-# 3. واجهة التحكم (Flow Control)
+# 3. واجهة المستخدم (The Interface)
 # ==========================================
 
-# --- شاشة تسجيل الدخول ---
+# --- تسجيل الدخول (بسيط وأنيق) ---
 if st.session_state.page == 'login':
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown(get_logo_html(), unsafe_allow_html=True)
-        st.markdown("<h3 style='text-align: center; color: #94a3b8;'>بوابة الوصول الآمن</h3>", unsafe_allow_html=True)
-        
-        with st.form("auth_matrix"):
-            # استخدام st.secrets هو الأسلوب الاحترافي (سنستخدم قيمة افتراضية للتجربة فقط)
-            # في الإنتاج الحقيقي، ضع كلمة السر في Secrets Management
-            password = st.text_input("مفتاح التشفير:", type="password")
-            
-            if st.form_submit_button("بدء الجلسة 🚀", use_container_width=True):
-                # هنا يجب استبدال النص الثابت بـ st.secrets["APP_PASSWORD"]
-                if password == st.secrets["APP_PASSWORD"]: 
-                    st.session_state.page = 'dashboard'
+        st.markdown("<br><br><h1 style='text-align: center; color: #003057 !important;'>بوابة التحرير</h1>", unsafe_allow_html=True)
+        with st.form("login_frm"):
+            pwd = st.text_input("كلمة المرور:", type="password")
+            if st.form_submit_button("دخول", use_container_width=True):
+                # استخدم st.secrets["APP_PASSWORD"] في الإنتاج
+                if pwd == "Manager_Tech_2026": 
+                    st.session_state.page = 'newsroom'
                     st.rerun()
                 else:
-                    st.error("⛔ محاولة وصول غير مصرح بها.")
+                    st.error("بيانات الدخول غير صحيحة")
 
-# --- لوحة القيادة (Dashboard) ---
-elif st.session_state.page == 'dashboard':
+# --- غرفة الأخبار (Newsroom Dashboard) ---
+elif st.session_state.page == 'newsroom':
     
-    # القائمة الجانبية الذكية
+    # 1. الشريط العلوي (الهيدر)
+    st.markdown(get_header_html(), unsafe_allow_html=True)
+    
+    # 2. القائمة الجانبية (فلاتر الأخبار)
     with st.sidebar:
-        if os.path.exists("logo.png"): st.image("logo.png", width=100)
-        st.markdown("### 🎮 مركز القيادة")
+        st.markdown("### 🎛️ وحدة التحكم")
+        selected_cat = st.radio("الأقسام:", list(RSS_DATABASE.keys()))
+        st.markdown("---")
+        keyword_input = st.text_input("SEO Keyword:", "يقين بريس")
         
-        # تحكم بالرادار
-        target_sector = st.selectbox("اختر القطاع:", list(RSS_DATABASE.keys()))
-        keyword_input = st.text_input("هدف الـ SEO:", "يقين بريس")
-        
-        st.divider()
-        if st.button("🔒 إغلاق الجلسة"):
-            st.session_state.page = 'login'
+        if st.button("تحديث المصادر 🔄"):
+            st.cache_data.clear()
             st.rerun()
             
-        st.caption("System Status: ONLINE 🟢")
+        if st.button("تسجيل خروج 🔒"):
+            st.session_state.page = 'login'
+            st.rerun()
 
-    # المنطقة الرئيسية
-    st.markdown(f"## 📡 رادار الأخبار: {target_sector}")
-    
-    # شريط الحالة العلوي (Stats)
-    stat1, stat2, stat3 = st.columns(3)
-    stat1.metric("المصادر النشطة", len(RSS_DATABASE[target_sector]))
-    
-    with st.spinner("جاري مسح الطيف الترددي للأخبار..."):
-        news_data = scan_radar(target_sector, RSS_DATABASE[target_sector])
-        
-    stat2.metric("الإشارات الملتقطة", len(news_data))
-    stat3.metric("كفاءة المعالجة", "98%")
+    # 3. شريط الأخبار العاجلة (محاكاة)
+    st.markdown(f"""
+    <div class="breaking-news">
+        <span class="breaking-label">عاجل</span>
+        <span>جاري رصد آخر التطورات في قسم: {selected_cat} - تحديث مستمر على مدار الساعة</span>
+    </div>
+    """, unsafe_allow_html=True)
 
-    if news_data:
-        # تحويل القائمة لقاموس للبحث السريع
-        news_map = {f"[{item['source']}] {item['title']}": item for item in news_data}
+    # 4. عرض الأخبار
+    col_main, col_details = st.columns([1.5, 1])
+    
+    with st.spinner("جاري جلب الأنباء من المصادر..."):
+        news_list = scan_news_sector(selected_cat, RSS_DATABASE[selected_cat])
+
+    if news_list:
+        news_map = {f"{item['source']}: {item['title']}": item for item in news_list}
         
-        # اختيار الخبر
-        selected_key = st.selectbox("حدد الهدف للمعالجة:", list(news_map.keys()), label_visibility="collapsed")
-        target_item = news_map[selected_key]
-        
-        # بطاقة المعاينة (Preview Card)
-        with st.container():
-            st.markdown(f"""
-            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; border-right: 4px solid #3b82f6;">
-                <h4 style="margin:0;">{target_item['title']}</h4>
-                <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">
-                    المصدر: {target_item['source']} | التاريخ: {target_item['published']}
-                </p>
-                <a href="{target_item['link']}" target="_blank" style="color: #60a5fa; text-decoration: none;">🔗 معاينة المصدر الأصلي</a>
-            </div>
-            """, unsafe_allow_html=True)
+        # العمود الأيمن: القائمة والاختيار
+        with col_main:
+            st.subheader(f"📌 نشرة {selected_cat}")
+            selected_news_key = st.selectbox("اختر خبراً للتحرير:", list(news_map.keys()), label_visibility="collapsed")
+            target_news = news_map[selected_news_key]
             
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # زر الإطلاق
-        if st.button("⚡ تشغيل محرك الصياغة (AI Engine)", use_container_width=True):
-            content, err = ai_engine_core(target_item['link'], keyword_input)
+            # بطاقة تفاصيل الخبر الأصلي
+            st.info(f"""
+            **المصدر:** {target_news['source']}
+            \n**العنوان الأصلي:** {target_news['title']}
+            \n**التوقيت:** {target_news['published']}
+            \n[🔗 رابط المصدر الأصلي]({target_news['link']})
+            """)
             
-            if err:
-                st.error(f"❌ فشل المهمة: {err}")
-            else:
-                st.balloons()
+            if st.button("✨ بدء الصياغة الصحفية (AI)", use_container_width=True):
+                content, error = smart_editor_ai(target_news['link'], keyword_input)
+                if error:
+                    st.error(error)
+                else:
+                    st.session_state['generated_article'] = content
+        
+        # العمود الأيسر: منطقة العمل والنتيجة
+        with col_details:
+            st.subheader("📝 المحرر الذكي")
+            
+            if 'generated_article' in st.session_state:
+                raw_art = st.session_state['generated_article']
+                lines = raw_art.split('\n')
                 
-                # معالجة النتيجة
-                lines = content.split('\n')
                 final_title = lines[0].replace('العنوان:', '').strip()
                 final_body = '\n'.join(lines[1:])
                 
-                st.success("✅ تمت المهمة بنجاح")
-                
-                # عرض النتيجة في تبويبات
-                tab1, tab2 = st.tabs(["📝 المقال النهائي", "💻 كود HTML"])
-                
-                with tab1:
-                    st.text_input("العنوان:", value=final_title)
-                    st.text_area("المحتوى:", value=final_body, height=500)
-                
-                with tab2:
-                    html_code = f"<h2>{final_title}</h2><p>{final_body.replace(chr(10), '<br>')}</p>"
-                    st.code(html_code, language="html")
+                with st.container(border=True):
+                    st.markdown("#### المسودة النهائية")
+                    title_edit = st.text_input("العنوان:", value=final_title)
+                    body_edit = st.text_area("المحتوى:", value=final_body, height=400)
+                    
+                    st.success("جاهز للنشر على المنصة")
+            else:
+                st.markdown("""
+                <div style="text-align: center; padding: 50px; color: #888;">
+                    يرجى اختيار خبر من القائمة لبدء المعالجة
+                </div>
+                """, unsafe_allow_html=True)
 
     else:
-        st.warning("لم يتم العثور على بيانات. تحقق من اتصال الأقمار الصناعية (الإنترنت).")
+        st.warning("لا توجد أخبار جديدة في هذا القسم حالياً.")
