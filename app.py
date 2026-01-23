@@ -20,7 +20,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# التحقق من المكتبة
+# محاولة استيراد المكتبة الخاصة
 try:
     from manadger_lib import RSS_DATABASE, get_safe_key, ELITE_PROMPT
 except ImportError:
@@ -35,7 +35,7 @@ socket.setdefaulttimeout(25)
 if 'page' not in st.session_state: st.session_state.page = 'login'
 
 # ==========================================
-# 1. محرك التصميم (CSS Fix) - إصلاح الخطوط
+# 1. محرك التصميم (CSS Fix) - إصلاح الخطوط والهيدر
 # ==========================================
 def inject_newsroom_css():
     st.markdown("""
@@ -49,66 +49,68 @@ def inject_newsroom_css():
             direction: rtl;
         }
         
-        /* لون الخلفية للجزيرة/العربية */
+        /* لون الخلفية مثل المواقع الإخبارية */
         .stApp {
             background-color: #f0f2f5;
         }
         
-        /* إخفاء الهيدر الافتراضي */
+        /* إخفاء الهيدر الافتراضي المزعج */
         header { visibility: hidden; }
         
-        /* تصميم الهيدر الجديد */
+        /* تصميم الهيدر الجديد (الأزرق الداكن) */
         .news-header {
             background: linear-gradient(90deg, #003057 0%, #005090 100%);
-            padding: 1rem 2rem;
+            padding: 1.5rem 2rem;
             color: white;
-            border-bottom: 5px solid #bfa058;
+            border-bottom: 5px solid #bfa058; /* الخط الذهبي */
             border-radius: 0 0 15px 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        /* شريط عاجل */
+        /* شريط عاجل (الأحمر) */
         .breaking-bar {
-            background-color: #d93025; /* أحمر العربية */
+            background-color: #d93025;
             color: white;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 6px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
         }
         
-        /* البطاقات */
+        /* تحسين البطاقات */
         div[data-testid="stExpander"] {
             background: white;
-            border: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             border-radius: 8px;
         }
         
-        /* الأزرار */
+        /* الأزرار الاحترافية */
         .stButton>button {
             background-color: #003057;
             color: white;
-            border-radius: 5px;
+            border-radius: 6px;
+            height: 3rem;
             font-weight: bold;
             border: none;
             transition: 0.3s;
         }
         .stButton>button:hover {
-            background-color: #bfa058; /* الذهبي عند التمرير */
+            background-color: #bfa058;
             color: white;
+            transform: translateY(-2px);
         }
 
         /* إصلاحات الموبايل */
         @media only screen and (max-width: 600px) {
-            .news-header { flex-direction: column; text-align: center; gap: 10px; }
+            .news-header { flex-direction: column; text-align: center; gap: 10px; padding: 1rem; }
             .block-container { padding-top: 1rem !important; }
             h1 { font-size: 1.4rem !important; }
         }
@@ -118,29 +120,28 @@ def inject_newsroom_css():
 inject_newsroom_css()
 
 # ==========================================
-# 2. الترسانة البرمجية
+# 2. دوال العرض والمنطق
 # ==========================================
 
-# دالة الهيدر (بدون مشاكل الكود الظاهر)
+# دالة الهيدر (تم إصلاح خطأ الـ div الظاهر)
 def render_header():
     date_str = time.strftime("%A | %d-%m-%Y")
     
-    # HTML نظيف جداً
     html_code = f"""
     <div class="news-header">
         <div style="display: flex; flex-direction: column;">
-            <h1 style="color: white !important; margin: 0; font-size: 1.8rem;">يقين بريس</h1>
-            <span style="font-size: 0.8rem; opacity: 0.8; letter-spacing: 1px;">Sovereignty Platform</span>
+            <h1 style="color: white !important; margin: 0; font-size: 2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">يقين بريس</h1>
+            <span style="font-size: 0.9rem; opacity: 0.9; letter-spacing: 1px;">Sovereignty Platform</span>
         </div>
         <div style="text-align: left;">
-            <div style="font-weight: bold; font-size: 1.1rem;">{date_str}</div>
-            <div style="background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 20px; display: inline-block; margin-top: 5px;">
+            <div style="font-weight: bold; font-size: 1.2rem; color: #bfa058;">{date_str}</div>
+            <div style="background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; display: inline-block; margin-top: 5px; font-size: 0.8rem;">
                 🔴 Live Coverage
             </div>
         </div>
     </div>
     """
-    # هنا الإصلاح: unsafe_allow_html=True ضروري!
+    # الحل الجذري هنا: unsafe_allow_html=True
     st.markdown(html_code, unsafe_allow_html=True)
 
 @st.cache_data(ttl=900, show_spinner=False)
@@ -195,10 +196,10 @@ def smart_editor_ai(link, keyword):
         return None, str(e)
 
 # ==========================================
-# 3. الواجهة (التطبيق)
+# 3. واجهة التطبيق
 # ==========================================
 
-# --- تسجيل الدخول ---
+# --- صفحة تسجيل الدخول ---
 if st.session_state.page == 'login':
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -206,6 +207,7 @@ if st.session_state.page == 'login':
         with st.form("login_frm"):
             pwd = st.text_input("كود الدخول:", type="password")
             if st.form_submit_button("تسجيل الدخول", use_container_width=True):
+                # يمكنك استبدال هذا لاحقاً بـ st.secrets
                 if pwd == "Manager_Tech_2026":
                     st.session_state.page = 'newsroom'
                     st.rerun()
@@ -215,13 +217,16 @@ if st.session_state.page == 'login':
 # --- غرفة الأخبار ---
 elif st.session_state.page == 'newsroom':
     
-    # 1. استدعاء الهيدر (تم الإصلاح)
+    # 1. عرض الهيدر (بالطريقة الصحيحة)
     render_header()
     
     # 2. القائمة الجانبية
     with st.sidebar:
+        # إصلاح مشكلة الشعار (استخدام if العادية)
         if os.path.exists("logo.png"):
             st.image("logo.png", width=120)
+        else:
+            st.markdown("### 🦅 Yaqeen")
         
         st.markdown("### 🎛️ التحكم")
         selected_cat = st.radio("الأقسام:", list(RSS_DATABASE.keys()))
@@ -244,16 +249,17 @@ elif st.session_state.page == 'newsroom':
     </div>
     """, unsafe_allow_html=True)
 
-    # 4. المحتوى
+    # 4. المحتوى الرئيسي
     with st.spinner("جاري الاتصال بالمراسلين (جلب الأخبار)..."):
         news_list = scan_news_sector(selected_cat, RSS_DATABASE[selected_cat])
 
     if news_list:
-        # تقسيم الشاشة: قائمة الأخبار (يمين) - المحرر (يسار)
-        col_list, col_editor = st.columns([1, 1.5])
+        # تقسيم الشاشة
+        col_list, col_editor = st.columns([1, 2])
         
         news_map = {f"{item['source']} - {item['title']}": item for item in news_list}
         
+        # العمود الأيمن: القائمة
         with col_list:
             st.subheader("📌 شريط الأنباء")
             selected_key = st.selectbox("اختر الخبر:", list(news_map.keys()), label_visibility="collapsed")
@@ -271,6 +277,7 @@ elif st.session_state.page == 'newsroom':
                 else:
                     st.session_state['current_article'] = content
 
+        # العمود الأيسر: المحرر
         with col_editor:
             st.subheader("📝 المحرر الصحفي")
             
@@ -282,7 +289,7 @@ elif st.session_state.page == 'newsroom':
                 
                 with st.container(border=True):
                     st.text_input("العنوان المقترح:", value=final_title)
-                    st.text_area("نص المقال:", value=final_body, height=500)
+                    st.text_area("نص المقال:", value=final_body, height=600)
                     st.success("جاهز للنشر")
             else:
                 st.info("اختر خبراً من القائمة واضغط 'تحرير' لبدء العمل.")
