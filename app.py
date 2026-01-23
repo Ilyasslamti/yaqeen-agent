@@ -377,19 +377,8 @@ for i, cat in enumerate(list(RSS_DATABASE.keys())):
                         st.markdown("---")
                         st.markdown(f"<h1 style='color: #3b82f6; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(59,130,246,0.5);'>{headline}</h1>", unsafe_allow_html=True)
                         st.markdown(f"<div class='article-output'>{body}</div>", unsafe_allow_html=True)
-                        
-                        st.markdown("<br><h3>🖼️ وسائط متوافقة مع Yoast SEO</h3>", unsafe_allow_html=True)
-                        images = get_yoast_seo_images(final_keyword, headline)
-                        
-                        if images:
-                            cols = st.columns(len(images))
-                            for idx, img_url in enumerate(images):
-                                with cols[idx]:
-                                    st.image(img_url, use_container_width=True)
-                                    st.caption(f"📝 Alt Text: {final_keyword}")
-                        else:
-                            st.warning("لم يتم العثور على صور دقيقة.")
-                        
+                                          
+                          
                         st.text_area("نسخة النشر (Raw Text):", article, height=300)
                     else: st.error("فشل الرادار في سحب النص من المصدر.")
         else:
