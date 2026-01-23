@@ -1,14 +1,11 @@
 import streamlit as st
 import feedparser
 import trafilatura
-import json
 import os
 import socket
 import concurrent.futures
 import base64
-import requests
 from openai import OpenAI
-from duckduckgo_search import DDGS
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
@@ -22,7 +19,7 @@ except ImportError:
 # ==========================================
 # 0. الإعدادات والتهيئة
 # ==========================================
-st.set_page_config(page_title="يقين بريس | غرفة العمليات", page_icon="🦅", layout="wide")
+st.set_page_config(page_title="يقين بريس | موبايل", page_icon="🦅", layout="wide")
 
 # إعدادات الأمان والشبكة
 ua = UserAgent()
@@ -32,33 +29,30 @@ socket.setdefaulttimeout(30)
 # 1. دوال النظام (Core Functions)
 # ==========================================
 
-# دالة جلب الصور مع تحسين الكاش لعدم استهلاك الموارد
-@st.cache_data(ttl=3600) # يحفظ الصور في الذاكرة لمدة ساعة
+@st.cache_data(ttl=3600)
 def get_base64_logo():
     if os.path.exists("logo.png"):
         with open("logo.png", "rb") as f:
             data = f.read()
         encoded = base64.b64encode(data).decode()
-        return f'<img src="data:image/png;base64,{encoded}" style="width: 120px; display: block; margin: 0 auto;">'
+        # تنسيق يجعل الصورة متجاوبة (Responsive)
+        return f'<img src="data:image/png;base64,{encoded}" style="max-width: 100%; width: 120px; display: block; margin: 0 auto;">'
     return ""
 
-# نظام جلب الأخبار (محرك الرادار) - محسن للسرعة
-@st.cache_data(ttl=900, show_spinner=False) # تحديث كل 15 دقيقة تلقائياً
+@st.cache_data(ttl=900, show_spinner=False)
 def fetch_news_category(category_name, sources):
     news_items = []
     
     def fetch_single_source(source_name, url):
         try:
-            # استخدام User-Agent لتجنب الحظر
             feed = feedparser.parse(url, agent=ua.random)
             if not feed.entries: return []
-            
             return [{
                 "title": entry.title,
                 "link": entry.link,
                 "source": source_name,
-                "summary": getattr(entry, 'summary', '')[:200] + "..."
-            } for entry in feed.entries[:6]] # نكتفي بـ 6 أخبار حديثة لكل مصدر للسرعة
+                "published": entry.get('published', '')
+            } for entry in feed.entries[:6]]
         except:
             return []
 
@@ -70,26 +64,20 @@ def fetch_news_category(category_name, sources):
     
     return news_items
 
-# محرك معالجة النصوص (الذكاء الاصطناعي)
 def process_article_with_ai(link, keyword):
     try:
-        # 1. سحب المحتوى بذكاء
         downloaded = trafilatura.fetch_url(link)
         if not downloaded: return None, "فشل سحب الرابط"
-        
         main_text = trafilatura.extract(downloaded, include_comments=False, include_tables=False)
-        if not main_text or len(main_text) < 100: return None, "المتوى قصير جداً أو محمي"
+        if not main_text or len(main_text) < 100: return None, "المتوى قصير جداً"
 
-        # 2. تنظيف إضافي
         soup = BeautifulSoup(main_text, "html.parser")
-        clean_text = soup.get_text()[:4000] # نرسل فقط 4000 حرف لتوفير التوكنز
+        clean_text = soup.get_text()[:4000]
 
-        # 3. استدعاء الماندجر AI
         api_key = get_safe_key()
         if not api_key: return None, "مفتاح API مفقود"
 
         client = OpenAI(api_key=api_key, base_url="https://api.sambanova.ai/v1")
-        
         response = client.chat.completions.create(
             model='Meta-Llama-3.3-70B-Instruct',
             messages=[
@@ -103,95 +91,143 @@ def process_article_with_ai(link, keyword):
         return None, str(e)
 
 # ==========================================
-# 2. الواجهة الرسومية (UI)
+# 2. تصميم الواجهة المتجاوب (Responsive UI)
 # ==========================================
-
-# CSS مخصص للوضع الداكن الاحترافي
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
-    html, body, [class*="css"] { font-family: 'Tajawal', sans-serif; direction: rtl; }
-    .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; }
-    .block-container { padding-top: 2rem; }
-    h1, h2, h3 { color: #4aa3df !important; }
-    .news-card { background-color: #262730; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-right: 5px solid #4aa3df; }
+    
+    html, body, [class*="css"] {
+        font-family: 'Tajawal', sans-serif;
+        direction: rtl;
+    }
+
+    /* === تنسيقات عامة === */
+    h1 { color: #4aa3df !important; font-size: 2.2rem !important; text-align: center; }
+    h2, h3 { color: #e0e0e0 !important; }
+    .stButton>button { 
+        border-radius: 12px; 
+        font-weight: bold; 
+        background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+        border: none;
+        color: white;
+    }
+
+    /* === 📱 قواعد الجوال الصارمة (Mobile Rules) === */
+    @media only screen and (max-width: 600px) {
+        
+        /* تقليل الهوامش الجانبية للاستفادة من الشاشة */
+        .block-container {
+            padding-top: 1rem !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+
+        /* تصغير العنوان الرئيسي ليناسب الجوال */
+        h1 { font-size: 1.5rem !important; margin-bottom: 0.5rem !important; }
+        
+        /* جعل الأزرار عريضة وسهلة اللمس */
+        .stButton>button {
+            width: 100% !important;
+            height: 3.5rem !important; /* ارتفاع مريح للإبهام */
+            font-size: 1.1rem !important;
+            margin-top: 10px;
+        }
+
+        /* تحسين شكل القوائم المنسدلة */
+        .stSelectbox div[data-baseweb="select"] {
+            font-size: 1rem !important;
+        }
+        
+        /* إخفاء العناصر غير الضرورية */
+        header {visibility: hidden;}
+        footer {visibility: hidden;}
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# الهيدر
-col_logo, col_title = st.columns([1, 4])
-with col_logo:
-    st.markdown(get_base64_logo(), unsafe_allow_html=True)
-with col_title:
-    st.title("منصة يقين بريس | YAQEEN PRESS")
-    st.caption("نظام السيادة المعلوماتية - نسخة السحابة V2.0")
+# ==========================================
+# 3. واجهة التطبيق
+# ==========================================
 
-# التحقق من كلمة المرور (يفضل نقلها لـ st.secrets لاحقاً)
+# التحقق من كلمة المرور
 if "auth" not in st.session_state: st.session_state.auth = False
 
 if not st.session_state.auth:
-    pwd = st.text_input("🔑 كود الدخول:", type="password")
-    if st.button("دخول"):
-        if pwd == "Manager_Tech_2026": # غير هذا لاحقاً!
-            st.session_state.auth = True
-            st.rerun()
-        else:
-            st.error("كود خاطئ")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown(get_base64_logo(), unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center;'>بوابة الدخول 🔐</h3>", unsafe_allow_html=True)
+        with st.form("login"):
+            pwd = st.text_input("الكود السري:", type="password")
+            sub = st.form_submit_button("دخول للنظام")
+            if sub:
+                if pwd == "Manager_Tech_2026":
+                    st.session_state.auth = True
+                    st.rerun()
+                else:
+                    st.error("⛔ كود خاطئ")
     st.stop()
 
-# ==========================================
-# 3. منطقة العمليات
-# ==========================================
+# --- بعد تسجيل الدخول ---
 
-# القائمة الجانبية (Sidebar) للتحكم
+# القائمة الجانبية (تتحول لأيقونة في الموبايل تلقائياً)
 with st.sidebar:
-    st.header("🎮 وحدة التحكم")
-    selected_category = st.selectbox("اختار القطاع:", list(RSS_DATABASE.keys()))
-    
+    st.image("logo.png", width=100) if os.path.exists("logo.png") else None
+    st.title("لوحة التحكم")
+    selected_category = st.selectbox("📡 اختر الرادار:", list(RSS_DATABASE.keys()))
     st.divider()
-    keyword_input = st.text_input("الكلمة المفتاحية (SEO):", "يقين بريس")
-    
-    if st.button("مسح الكاش (تحديث إجباري)"):
+    keyword_input = st.text_input("🔑 الكلمة المفتاحية (SEO):", "يقين بريس")
+    if st.button("🔄 تحديث البيانات"):
         st.cache_data.clear()
         st.rerun()
 
-# جلب الأخبار
-with st.spinner(f"جاري الاتصال بالأقمار الصناعية لجلب أخبار {selected_category}..."):
+# الرأس
+st.markdown(f"<h1 style='text-align: center;'>أخبار {selected_category}</h1>", unsafe_allow_html=True)
+
+# جلب البيانات
+with st.spinner("جاري المسح..."):
     news_list = fetch_news_category(selected_category, RSS_DATABASE[selected_category])
 
-if not news_list:
-    st.warning("لم يتم العثور على أخبار، أو هناك مشكلة في الاتصال بالمصادر.")
-    st.stop()
-
-st.success(f"تم رصد {len(news_list)} خبراً ساخناً 🔥")
-
-# عرض الأخبار واختيار أحدها
-# نقوم بإنشاء قائمة للعرض فقط
-display_options = [f"{item['source']} - {item['title']}" for item in news_list]
-selected_index = st.selectbox("اختر الخبر للمعالجة:", range(len(news_list)), format_func=lambda x: display_options[x])
-
-target_news = news_list[selected_index]
-
-# زر التنفيذ
-if st.button(f"🚀 صياغة الخبر: {target_news['title'][:30]}..."):
-    st.info(f"المصدر: {target_news['source']} | جاري المعالجة...")
+if news_list:
+    # عرض الأخبار في بطاقات (Container) لتبدو جميلة على الموبايل
+    st.success(f"تم التقاط {len(news_list)} إشارة.")
     
-    article_content, error = process_article_with_ai(target_news['link'], keyword_input)
+    # تحويل القائمة لقاموس لسهولة البحث
+    news_map = {f"{item['source']} | {item['title']}": item for item in news_list}
     
-    if error:
-        st.error(f"حدث خطأ: {error}")
-    else:
-        st.balloons()
-        st.markdown("### ✨ المقال الجاهز للنشر")
+    selected_title = st.selectbox("اختر خبراً للمعالجة:", list(news_map.keys()))
+    target_news = news_map[selected_title]
+
+    # عرض تفاصيل الخبر المحدد
+    with st.expander("📄 تفاصيل الخبر الأصلي (اضغط للعرض)", expanded=True):
+        st.markdown(f"**المصدر:** {target_news['source']}")
+        st.markdown(f"**العنوان:** [{target_news['title']}]({target_news['link']})")
+        st.caption(f"نشر في: {target_news.get('published', 'غير محدد')}")
+
+    # زر المعالجة الكبير
+    if st.button("✨ صياغة الخبر الآن (AI)"):
+        progress_text = st.empty()
+        progress_text.info("الذكاء الاصطناعي يقرأ ويحلل...")
         
-        # تقسيم العنوان عن المحتوى (افتراض أن السطر الأول عنوان)
-        lines = article_content.split('\n')
-        title = lines[0].replace('العنوان:', '').strip()
-        body = '\n'.join(lines[1:])
+        article_content, error = process_article_with_ai(target_news['link'], keyword_input)
         
-        # عرض منسق
-        st.text_input("العنوان المقترح:", value=title)
-        st.text_area("نص المقال (جاهز للنسخ):", value=body, height=400)
-        
-        st.markdown("---")
-        st.markdown(f"**رابط المصدر:** [اضغط هنا]({target_news['link']})")
+        if error:
+            st.error(f"حدث خطأ: {error}")
+        else:
+            progress_text.empty()
+            st.balloons()
+            
+            # معالجة الناتج للعرض
+            lines = article_content.split('\n')
+            final_title = lines[0].replace('العنوان:', '').strip()
+            final_body = '\n'.join(lines[1:])
+            
+            # العرض النهائي
+            st.markdown("### 📝 المقال الجاهز")
+            st.text_input("العنوان:", value=final_title)
+            st.text_area("المحتوى:", value=final_body, height=400)
+            st.success("جاهز للنسخ والنشر! 🚀")
+
+else:
+    st.warning("الرادار لم يلتقط شياً. تأكد من الاتصال أو جرب قسماً آخر.")
