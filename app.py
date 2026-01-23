@@ -195,7 +195,7 @@ if st.session_state.page == 'login':
             
             if st.form_submit_button("بدء الجلسة 🚀", use_container_width=True):
                 # هنا يجب استبدال النص الثابت بـ st.secrets["APP_PASSWORD"]
-                if password == "Manager_Tech_2026": 
+                if password == st.secrets["APP_PASSWORD"]: 
                     st.session_state.page = 'dashboard'
                     st.rerun()
                 else:
