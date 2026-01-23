@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
 # ==========================================
-# 0. الإعدادات الأساسية
+# 0. الإعدادات والتهيئة
 # ==========================================
 st.set_page_config(
     page_title="Yaqeen Press | سيادة الخبر",
@@ -32,62 +32,68 @@ socket.setdefaulttimeout(30)
 if 'page' not in st.session_state: st.session_state.page = 'login'
 
 # ==========================================
-# 1. التصميم الملكي (مع إصلاح القوائم المنسدلة)
+# 1. التصميم الملكي (مع إصلاح الأيقونات)
 # ==========================================
 def inject_royal_css():
     st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
         
-        html, body, [class*="css"], div, h1, h2, h3, h4, p, span, button, input {
+        /* 1. تطبيق الخط على الحاويات الرئيسية والنصوص الصريحة فقط */
+        html, body, .stApp {
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        /* إجبار النصوص العربية فقط على الخط، وعدم لمس الأيقونات (span/div العامة) */
+        h1, h2, h3, h4, h5, h6, p, label, input, textarea, button {
             font-family: 'Tajawal', sans-serif !important;
             direction: rtl;
         }
         
+        /* خلفية التطبيق */
         .stApp {
             background-color: #0f172a;
             background-image: radial-gradient(at 10% 10%, #1e293b 0, transparent 50%), radial-gradient(at 90% 90%, #0f172a 0, transparent 50%);
         }
         
-        header, footer { visibility: hidden; }
+        /* إخفاء الهيدر والفوتر الافتراضي */
+        header[data-testid="stHeader"] { visibility: hidden; }
+        footer { visibility: hidden; }
         
-        /* === إصلاح القائمة المنسدلة (الحل الجذري) === */
-        /* 1. جعل النص يلتف (Wrap) داخل القائمة ولا ينقص */
-        div[data-baseweb="select"] span, li[role="option"] span {
-            white-space: normal !important;
-            overflow: visible !important;
-            text-overflow: clip !important;
-            line-height: 1.6 !important;
-            height: auto !important;
+        /* === إصلاح زر القائمة (السهم) === */
+        /* نعيد الخط الافتراضي للأزرار العلوية لكي تظهر الأيقونات */
+        button[kind="header"] {
+            font-family: sans-serif !important;
+        }
+        div[data-testid="stSidebarCollapseButton"] span {
+            font-family: sans-serif !important; /* هذا يعيد سهم الإغلاق */
         }
         
-        /* 2. زيادة ارتفاع العناصر في القائمة لتسع النص الطويل */
-        li[role="option"] {
-            border-bottom: 1px solid #334155;
-            padding-top: 10px !important;
-            padding-bottom: 10px !important;
+        /* === إصلاح القائمة المنسدلة (التفاف النص) === */
+        div[data-baseweb="select"] span {
+            white-space: normal !important;
             height: auto !important;
-            min-height: 50px;
         }
         
         /* === تصميم الهيدر === */
         .royal-header {
-            background: rgba(30, 41, 59, 0.7);
+            background: rgba(30, 41, 59, 0.8);
             border-bottom: 2px solid #fbbf24;
-            padding: 20px;
-            margin-bottom: 30px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
             border-radius: 0 0 15px 15px;
-            backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
         
         .brand-title {
             color: white;
             font-size: 1.8rem;
             font-weight: 800;
+            text-shadow: 0 0 10px rgba(0,0,0,0.3);
         }
         
         /* === البطاقات === */
@@ -97,7 +103,8 @@ def inject_royal_css():
             border-radius: 10px;
         }
         
-        p, span, div { color: #cbd5e1 !important; }
+        /* تصحيح ألوان النصوص */
+        p, span, div { color: #cbd5e1; }
         h1, h2, h3, h4 { color: #f8fafc !important; }
         
         /* === الأزرار === */
@@ -105,10 +112,10 @@ def inject_royal_css():
             background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
             color: white !important;
             border: none;
-            height: 3.5rem;
+            height: 3rem;
             font-weight: bold;
-            font-size: 1.1rem;
             border-radius: 8px;
+            font-family: 'Tajawal', sans-serif !important;
         }
 
         /* موبايل */
@@ -116,7 +123,6 @@ def inject_royal_css():
             .royal-header { flex-direction: column; text-align: center; gap: 10px; }
             .brand-title { font-size: 1.5rem; }
         }
-
     </style>
     """, unsafe_allow_html=True)
 
@@ -132,11 +138,11 @@ def render_header():
     <div class="royal-header">
         <div>
             <div class="brand-title">🦅 يقين بريس</div>
-            <div style="color: #94a3b8; font-size: 0.8rem;">غرفة العمليات المركزية</div>
+            <div style="color: #94a3b8; font-size: 0.8rem;">نظام السيادة المعلوماتية</div>
         </div>
         <div style="text-align: left;">
-            <div style="background:#ef4444; color:white; padding:3px 10px; border-radius:15px; font-size:0.7rem; display:inline-block;">● LIVE</div>
-            <div style="color: #cbd5e1; font-weight: bold; font-size: 0.9rem;">{date_now}</div>
+            <div style="background:#dc2626; color:white; padding:2px 10px; border-radius:12px; font-size:0.7rem; display:inline-block; font-weight:bold;">● LIVE</div>
+            <div style="color: #cbd5e1; font-weight: bold; font-size: 0.9rem; margin-top:5px;">{date_now}</div>
         </div>
     </div>
     """
@@ -167,7 +173,7 @@ def smart_editor_ai(link, keyword):
         progress_bar = st.progress(0)
         status_text = st.empty()
         
-        status_text.markdown("📡 **جاري الاتصال...**")
+        status_text.markdown("📡 **جاري سحب البيانات...**")
         progress_bar.progress(20)
         
         downloaded = trafilatura.fetch_url(link)
@@ -181,7 +187,7 @@ def smart_editor_ai(link, keyword):
         clean_text = soup.get_text()[:4500]
         
         progress_bar.progress(80)
-        status_text.markdown("🧠 **جاري الصياغة...**")
+        status_text.markdown("🧠 **المعالج الذكي يعمل...**")
         
         api_key = get_safe_key()
         if not api_key: raise Exception("مفتاح API مفقود")
@@ -227,11 +233,16 @@ elif st.session_state.page == 'newsroom':
     render_header()
     
     with st.sidebar:
+        # === إصلاح توسيط الشعار (الحل بالتقسيم) ===
         if os.path.exists("logo.png"):
-            st.image("logo.png", width=120)
+            # نقسم العمود لثلاثة أجزاء، ونضع الصورة في المنتصف
+            col_l, col_c, col_r = st.columns([1, 2, 1])
+            with col_c:
+                st.image("logo.png", width=110)
         else:
-            st.markdown("### 🦅 Yaqeen")
+            st.markdown("<h3 style='text-align:center'>🦅 Yaqeen</h3>", unsafe_allow_html=True)
         
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("### 🎛️ التحكم")
         selected_cat = st.radio("الأقسام:", list(RSS_DATABASE.keys()))
         st.divider()
@@ -251,21 +262,16 @@ elif st.session_state.page == 'newsroom':
 
     if news_list:
         col_list, col_editor = st.columns([1, 1.5], gap="medium")
-        
-        # تحسين: وضع العنوان أولاً في القائمة لسهولة القراءة
         news_map = {f"{item['title']}": item for item in news_list}
         
         with col_list:
             st.info(f"{len(news_list)} خبر جديد")
-            
-            # هنا التغيير الجوهري: القائمة الآن تعرض العناوين كاملة بفضل CSS و الترتيب
-            selected_title = st.selectbox("🔻 اختر خبراً من القائمة:", list(news_map.keys()))
+            selected_title = st.selectbox("🔻 اختر خبراً:", list(news_map.keys()))
             target_news = news_map[selected_title]
             
-            # بطاقة العرض
             with st.container(border=True):
                 st.markdown(f"<h4 style='color: #60a5fa !important; margin:0;'>{target_news['title']}</h4>", unsafe_allow_html=True)
-                st.caption(f"المصدر: {target_news['source']} | {target_news['published']}")
+                st.caption(f"{target_news['source']} | {target_news['published']}")
                 st.markdown(f"[🔗 المصدر الأصلي]({target_news['link']})")
                 
             if st.button("⚡ تحرير الخبر", use_container_width=True, type="primary"):
