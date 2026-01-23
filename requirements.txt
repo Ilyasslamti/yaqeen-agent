@@ -3,10 +3,8 @@ feedparser
 trafilatura
 openai
 pandas
-streamlit
-openai
-feedparser
-trafilatura
 requests
 lxml_html_clean
 duckduckgo_search
+beautifulsoup4
+fake_useragent
