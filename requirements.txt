@@ -2,9 +2,8 @@ streamlit
 feedparser
 trafilatura
 openai
-pandas
+beautifulsoup4
+fake_useragent
 requests
 lxml_html_clean
 duckduckgo_search
-beautifulsoup4
-fake_useragent
