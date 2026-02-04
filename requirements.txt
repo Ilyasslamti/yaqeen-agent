@@ -1,0 +1,7 @@
+streamlit
+feedparser
+trafilatura
+openai
+fake_useragent
+requests
+supabase>=2.3.0
