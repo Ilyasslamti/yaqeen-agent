@@ -25,7 +25,11 @@ TZ = ZoneInfo("Africa/Casablanca")
 
 def _need_secrets_msg():
     st.error("❌ لم يتم ضبط مفاتيح Supabase داخل Streamlit Secrets.")
-    st.info("ضع القيم التالية في Streamlit → Settings → Secrets:\n\nSUPABASE_URL = "https://...supabase.co"\nSUPABASE_ANON_KEY = "eyJ..."")
+    st.info("""ضع القيم التالية في Streamlit → Settings → Secrets:
+
+SUPABASE_URL = "https://...supabase.co"
+SUPABASE_ANON_KEY = "eyJ..."
+""")
     st.stop()
 
 def sb_client():
