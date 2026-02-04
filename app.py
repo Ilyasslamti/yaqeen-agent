@@ -8,6 +8,7 @@ import concurrent.futures
 import base64
 import time
 import re
+import math
 from openai import OpenAI
 from fake_useragent import UserAgent
 
@@ -145,35 +146,34 @@ def inject_royal_css():
       @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 
       :root{
-        --bg:#0b1220;
-        --panel:#0f172a;
-        --card:#111c33;
-        --card2:#0e1930;
-        --muted:#94a3b8;
-        --text:#e2e8f0;
-        --border:rgba(148,163,184,.18);
-        --brand:#3b82f6;
+        --bg:#f6f8fb;
+        --panel:#ffffff;
+        --card:#ffffff;
+        --card2:#f3f6fb;
+        --muted:#64748b;
+        --text:#0f172a;
+        --border:rgba(255,255,255,.90);
+        --brand:#1d4ed8;
         --brand2:#2563eb;
-        --gold:#fbbf24;
+        --gold:#f59e0b;
         --danger:#ef4444;
-        --ok:#22c55e;
+        --ok:#16a34a;
       }
-
-      html, body, .stApp { font-family:'Tajawal', sans-serif; }
+html, body, .stApp { font-family:'Tajawal', sans-serif; }
       /* لا تفرض الخط على كل span/div حتى لا تتكسر أيقونات Streamlit */
       h1,h2,h3,h4,h5,h6,p,label,button,input,textarea{ font-family:'Tajawal', sans-serif !important; direction:rtl; }
 
       /* خلفية مثل dashboards الوكالات */
       .stApp{
         background:
-          radial-gradient(1200px 600px at 10% 0%, rgba(59,130,246,.20), transparent 60%),
-          radial-gradient(900px 500px at 90% 20%, rgba(251,191,36,.10), transparent 55%),
+          radial-gradient(1200px 600px at 10% 0%, rgba(37,99,235,.10), transparent 60%),
+          radial-gradient(900px 500px at 90% 20%, rgba(245,158,11,.08), transparent 55%),
           linear-gradient(180deg, var(--bg) 0%, var(--panel) 100%);
         color:var(--text);
       }
 
       /* إخفاء الهيدر الافتراضي */
-      header[data-testid="stHeader"] { visibility:hidden; height:0; }
+      header[data-testid="stHeader"]{ background: transparent; }
       footer { visibility:hidden; }
 
       /* الحاوية الرئيسية */
@@ -181,9 +181,9 @@ def inject_royal_css():
 
       /* Sidebar */
       [data-testid="stSidebar"]{
-        background: rgba(17,28,51,.80);
+        background: rgba(255,255,255,.92);
         border-right: 1px solid var(--border);
-        backdrop-filter: blur(12px);
+        backdrop-filter: blur(10px);
       }
       [data-testid="stSidebar"] h1,[data-testid="stSidebar"] h2,[data-testid="stSidebar"] h3{
         color: var(--text) !important;
@@ -191,7 +191,7 @@ def inject_royal_css():
 
       /* Inputs */
       .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] > div{
-        background: rgba(15,23,42,.7) !important;
+        background: rgba(255,255,255,.95) !important;
         border: 1px solid var(--border) !important;
         color: var(--text) !important;
         border-radius: 14px !important;
@@ -214,13 +214,13 @@ def inject_royal_css():
 
       /* Cards / containers */
       div[data-testid="stVerticalBlockBorderWrapper"]{
-        background: rgba(17,28,51,.65);
+        background: rgba(255,255,255,.92);
         border: 1px solid var(--border);
         border-radius: 18px;
         box-shadow: 0 20px 60px rgba(0,0,0,.25);
       }
       div[data-testid="stExpander"]{
-        background: rgba(17,28,51,.55);
+        background: rgba(255,255,255,.92);
         border: 1px solid var(--border);
         border-radius: 18px;
       }
@@ -233,7 +233,7 @@ def inject_royal_css():
         display:inline-flex; align-items:center; gap:8px;
         padding:6px 10px; border-radius: 999px;
         border:1px solid var(--border);
-        background: rgba(15,23,42,.55);
+        background: rgba(255,255,255,.90);
         color: var(--text);
         font-size:.78rem; font-weight:800;
       }
@@ -245,7 +245,7 @@ def inject_royal_css():
         padding: 18px 18px;
         border:1px solid var(--border);
         border-radius: 20px;
-        background: rgba(17,28,51,.55);
+        background: rgba(255,255,255,.92);
         backdrop-filter: blur(14px);
         box-shadow: 0 30px 70px rgba(0,0,0,.25);
         margin-bottom: 18px;
@@ -271,7 +271,7 @@ def inject_royal_css():
       /* News card */
       .news-card{
         border:1px solid var(--border);
-        background: rgba(15,23,42,.55);
+        background: rgba(255,255,255,.90);
         border-radius: 18px;
         padding: 14px 14px;
         margin-bottom: 10px;
@@ -297,7 +297,7 @@ def inject_royal_css():
         margin: 6vh auto 0 auto;
         padding: 24px;
         border-radius: 22px;
-        background: rgba(17,28,51,.60);
+        background: rgba(255,255,255,.92);
         border:1px solid var(--border);
         box-shadow: 0 40px 90px rgba(0,0,0,.30);
       }
@@ -349,7 +349,7 @@ def render_header():
     st.markdown(html, unsafe_allow_html=True)
 
 @st.cache_data(ttl=900, show_spinner=False)
-def scan_news_sector(category, sources):
+def scan_news_sector(category, sources, per_source_limit:int=10):
     items = []
     def fetch(name, url):
         try:
@@ -358,7 +358,7 @@ def scan_news_sector(category, sources):
             return [{
                 "title": e.title, "link": e.link, "source": name,
                 "published": e.get('published', '')[:16]
-            } for e in feed.entries[:5]]
+            } for e in feed.entries[:per_source_limit]]
         except: return []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=20) as ex:
@@ -445,6 +445,10 @@ if st.session_state.page == 'public':
         st.divider()
         selected_cat = st.radio("الأقسام", list(RSS_DATABASE.keys()), label_visibility="collapsed")
 
+        per_source_limit = st.slider("عدد الأخبار لكل مصدر", min_value=3, max_value=30, value=10, step=1,
+                                     help="يزيد عدد العناوين المسحوبة من كل RSS. كلما زاد العدد زاد وقت المسح.")
+
+
         total_sources = len(RSS_DATABASE.get(selected_cat, {}))
         st.markdown(
             f"""<div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -468,7 +472,7 @@ if st.session_state.page == 'public':
     st.markdown(f"<h4 style='border-right: 4px solid #fbbf24; padding-right: 10px; color:white !important;'>🗞️ {selected_cat} — العناوين فقط</h4>", unsafe_allow_html=True)
 
     with st.spinner("جاري المسح..."):
-        news_list = scan_news_sector(selected_cat, RSS_DATABASE[selected_cat])
+        news_list = scan_news_sector(selected_cat, RSS_DATABASE[selected_cat], per_source_limit)
 
     if search_query:
         q = search_query.strip().lower()
@@ -484,7 +488,18 @@ if st.session_state.page == 'public':
         )
 
         # عرض بسيط للعناوين فقط
-        for item in news_list[:60]:
+
+        # --- عرض العناوين مع Pagination (لمنع قطع النتائج) ---
+        page_size = st.selectbox("عدد العناوين في الصفحة", [20, 50, 100, 200, 400], index=1)
+        total_items = len(news_list)
+        total_pages = max(1, math.ceil(total_items / page_size))
+        page = st.number_input("الصفحة", min_value=1, max_value=total_pages, value=1, step=1)
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        st.caption(f"عرض {min(end, total_items)} / {total_items} — صفحة {page} من {total_pages}")
+
+        for item in news_list[start:end]:
             st.markdown(
                 f"""<div class="news-card" style="padding:14px;">
                         <div class="news-title" style="font-size:1.02rem;">{item.get('title','')}</div>
@@ -525,6 +540,10 @@ elif st.session_state.page == 'newsroom':
 
         st.markdown("### 🎛️ غرفة التحكم")
         selected_cat = st.radio("الأقسام", list(RSS_DATABASE.keys()), label_visibility="collapsed")
+
+        per_source_limit = st.slider("عدد الأخبار لكل مصدر", min_value=3, max_value=30, value=10, step=1,
+                                     help="يزيد عدد العناوين المسحوبة من كل RSS. كلما زاد العدد زاد وقت المسح.")
+
 
         # إحصاءات سريعة
         total_sources = len(RSS_DATABASE.get(selected_cat, {}))
@@ -572,7 +591,7 @@ elif st.session_state.page == 'newsroom':
     st.markdown(f"<h4 style='border-right: 4px solid #fbbf24; padding-right: 10px; color:white !important;'>📡 {selected_cat}</h4>", unsafe_allow_html=True)
     
     with st.spinner("جاري المسح..."):
-        news_list = scan_news_sector(selected_cat, RSS_DATABASE[selected_cat])
+        news_list = scan_news_sector(selected_cat, RSS_DATABASE[selected_cat], per_source_limit)
 
     # فلترة حسب البحث
     if 'search_query' in locals() and search_query:
