@@ -1,9 +1,0 @@
-streamlit
-feedparser
-trafilatura
-openai
-beautifulsoup4
-fake_useragent
-requests
-lxml_html_clean
-duckduckgo_search
